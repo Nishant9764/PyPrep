@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { api } from '../api';
 import { CodeEditor } from '../components/CodeEditor';
@@ -23,6 +23,10 @@ export function MockInterview() {
   const [run, setRun] = useState<RunResult | null>(null);
   const [running, setRunning] = useState(false);
   const [runError, setRunError] = useState('');
+  const [roundScores, setRoundScores] = useState<Record<string, boolean>>({});
+  const [predictionCorrect, setPredictionCorrect] = useState(0);
+  const [scoreNotice, setScoreNotice] = useState('');
+  const sessionSaved = useRef(false);
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [predictionIndex, setPredictionIndex] = useState(0);
   const [prediction, setPrediction] = useState('');
@@ -46,13 +50,22 @@ export function MockInterview() {
   }, [started, finished]);
 
   useEffect(() => {
-    if (started && seconds === 0 && !finished) { setTimeExpired(true); setFinished(true); }
+    if (started && seconds === 0 && !finished) { setTimeExpired(true); setFinished(true); void saveMockScore('coding', Object.values(roundScores).filter(Boolean).length, round.length); }
   }, [started, seconds, finished]);
+
+  async function saveMockScore(scoreMode: 'coding' | 'predict', correct: number, total: number) {
+    if (total < 1 || (scoreMode === 'coding' && sessionSaved.current)) return;
+    try {
+      await api(`/tracks/${track}/progress/mock-scores`, { method: 'POST', body: { mode: scoreMode, correct, total } });
+      setScoreNotice(`${scoreMode === 'coding' ? 'Coding sample' : 'Output prediction'} score saved: ${Math.round(correct / total * 100)}% (${correct}/${total}).`);
+      if (scoreMode === 'coding') sessionSaved.current = true;
+    } catch { setScoreNotice('Could not save this mock score. You can still review it in this round.'); }
+  }
 
   function startRound() {
     const chosen = createCodingRound(5);
     setRound(chosen); setIndex(0); setCode(chosen[0]?.starter ?? ''); setDrafts(chosen[0] ? { [chosen[0].id]: chosen[0].starter } : {}); setSeconds(ROUND_LENGTH);
-    setRun(null); setRunError(''); setNotes({}); setFinished(false); setTimeExpired(false); setStarted(true);
+    setRun(null); setRunError(''); setNotes({}); setRoundScores({}); sessionSaved.current = false; setScoreNotice(''); setFinished(false); setTimeExpired(false); setStarted(true);
   }
 
   function reviewAnswer(answer: string, level: number) {
@@ -93,13 +106,14 @@ export function MockInterview() {
     try {
       const result = await api<RunResult>(`/tracks/${track}/interview/cookbook-mock-${current.id}/run`, { method: 'POST', body: { code } });
       setRun(result);
+      setRoundScores((scores) => ({ ...scores, [current.id]: result.status === 'ok' && !result.error && result.stdout.trimEnd() === current.expected }));
     } catch (error) {
       setRunError(error instanceof Error ? error.message : 'Could not reach the isolated Python runner.');
     } finally { setRunning(false); }
   }
 
   function nextCodingQuestion() {
-    if (index + 1 >= round.length) { setFinished(true); return; }
+    if (index + 1 >= round.length) { setFinished(true); void saveMockScore('coding', Object.values(roundScores).filter(Boolean).length, round.length); return; }
     const next = index + 1;
     setIndex(next); setCode(drafts[round[next].id] ?? round[next].starter); setRun(null); setRunError('');
   }
@@ -119,7 +133,7 @@ export function MockInterview() {
     </div>
 
     {mode === 'coding' && <>
-      {!started && <section className="panel mock-card"><span className="eyebrow">20 MINUTES · 5 PROMPTS</span><h2>Write first. Explain your choices.</h2><p>Each prompt includes a small sample case. Run your code to compare its printed result; this checks that sample only, not hidden cases.</p><button className="btn primary" onClick={startRound}>Start coding round</button></section>}
+      {!started && <section className="panel mock-card"><span className="eyebrow">20 MINUTES · 5 PROMPTS</span><h2>Write first. Explain your choices.</h2><p>Each prompt includes a small sample case. Run your code to compare its printed result; this checks that sample only, not hidden cases.</p><button className="btn primary" onClick={startRound}>Start coding round</button>{scoreNotice && <p className="small" role="status">{scoreNotice}</p>}</section>}
       {started && !finished && current && <section className="panel mock-card">
         <div className="row between"><div><span className="eyebrow">CODING ROUND · QUESTION {index + 1} OF {round.length}</span><h2>{current.title}</h2></div><span className={`chip ${seconds < 120 ? 'hard' : ''}`} aria-live="polite">Time {time}</span></div>
         <p>{current.prompt}</p><p className="small muted">Sample: expected printed output is <code>{current.expected}</code></p>
@@ -130,15 +144,17 @@ export function MockInterview() {
         <label className="field"><span>Explain your approach aloud (notes)</span><textarea className="input" value={notes[current.id] ?? ''} onChange={(event) => setNotes((value) => ({ ...value, [current.id]: event.target.value }))} placeholder="State assumptions, approach, edge cases, and complexity…" /></label>
         <details><summary>Self-review rubric</summary><ul>{current.rubric.map((item) => <li key={item}>{item}</li>)}</ul><pre className="glance-code"><code>{current.solution}</code></pre></details>
       </section>}
-      {started && finished && <section className="panel mock-card"><span className="eyebrow">{timeExpired ? 'TIME IS UP' : 'ROUND COMPLETE'}</span><h2>{timeExpired ? `You reached prompt ${index + 1} of ${round.length}.` : `You completed ${round.length} prompts.`}</h2><p>Review your code, notes, and rubric before starting another round.</p><div className="mock-review">{round.map((item) => <details key={item.id}><summary>{item.title}</summary><pre className="glance-code"><code>{drafts[item.id] ?? item.starter}</code></pre><p><strong>Your explanation notes:</strong> {notes[item.id] || 'No notes saved.'}</p><ul>{item.rubric.map((line) => <li key={line}>{line}</li>)}</ul><details><summary>Reference solution</summary><pre className="glance-code"><code>{item.solution}</code></pre></details></details>)}</div><button className="btn primary" onClick={startRound}>Start another round</button></section>}
+      {started && finished && <section className="panel mock-card"><span className="eyebrow">{timeExpired ? 'TIME IS UP' : 'ROUND COMPLETE'}</span><h2>{timeExpired ? `You reached prompt ${index + 1} of ${round.length}.` : `You completed ${round.length} prompts.`}</h2><p>Sample-run score: {Object.values(roundScores).filter(Boolean).length}/{round.length}. This measures sample output only; it is not a full interview rating.</p><p className="small" role="status">{scoreNotice}</p><p>Review your code, notes, and rubric before starting another round.</p><div className="mock-review">{round.map((item) => <details key={item.id}><summary>{item.title}</summary><pre className="glance-code"><code>{drafts[item.id] ?? item.starter}</code></pre><p><strong>Your explanation notes:</strong> {notes[item.id] || 'No notes saved.'}</p><ul>{item.rubric.map((line) => <li key={line}>{line}</li>)}</ul><details><summary>Reference solution</summary><pre className="glance-code"><code>{item.solution}</code></pre></details></details>)}</div><button className="btn primary" onClick={startRound}>Start another round</button></section>}
     </>}
 
     {mode === 'predict' && currentPrediction && <section className="panel mock-card">
       <div className="row between"><div><span className="eyebrow">OUTPUT PREDICTION · {predictionIndex + 1} OF {predictionDeck.length}</span><h2>{currentPrediction.title}</h2></div><span className="chip">Fresh values each round</span></div>
       <pre className="glance-code"><code>{currentPrediction.code}</code></pre>
       <label className="field"><span>Your predicted output</span><textarea className="input scratch-input" value={prediction} onChange={(event) => setPrediction(event.target.value)} placeholder="Write each printed line in order…" /></label>
-      {!revealed ? <button className="btn primary" onClick={() => setRevealed(true)}>Reveal and compare</button> : <div className="alert info"><strong>{prediction.trimEnd().replace(/\r\n/g, '\n') === currentPrediction.output.trimEnd() ? 'Your prediction matches' : 'Compare your prediction'}</strong><pre className="glance-output">{currentPrediction.output}</pre><p>{currentPrediction.explanation}</p></div>}
-      <button className="btn" onClick={() => { if (predictionIndex + 1 >= predictionDeck.length) { setPredictionDeck(createPredictionRound()); setPredictionIndex(0); } else setPredictionIndex((i) => i + 1); setPrediction(''); setRevealed(false); }}>Next fresh prediction</button>
+      {!revealed ? <button className="btn primary" onClick={() => { const correct = prediction.trimEnd().replace(/\r\n/g, '\n') === currentPrediction.output.trimEnd(); if (correct) setPredictionCorrect((score) => score + 1); setRevealed(true); }}>Reveal and compare</button> : <div className="alert info"><strong>{prediction.trimEnd().replace(/\r\n/g, '\n') === currentPrediction.output.trimEnd() ? 'Your prediction matches' : 'Compare your prediction'}</strong><pre className="glance-output">{currentPrediction.output}</pre><p>{currentPrediction.explanation}</p></div>}
+      <p className="small muted">Current round score: {predictionCorrect}/{predictionIndex + (revealed ? 1 : 0)}</p>
+      {scoreNotice && <p className="small" role="status">{scoreNotice}</p>}
+      <button className="btn" onClick={() => { if (predictionIndex + 1 >= predictionDeck.length) { void saveMockScore('predict', predictionCorrect, predictionDeck.length); setPredictionDeck(createPredictionRound()); setPredictionIndex(0); setPredictionCorrect(0); } else setPredictionIndex((i) => i + 1); setPrediction(''); setRevealed(false); }}>Next fresh prediction</button>
     </section>}
 
     {mode === 'conversation' && currentConversation && <section className="panel mock-card">

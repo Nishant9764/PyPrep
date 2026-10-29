@@ -57,6 +57,7 @@
   { "id": "sliding-window", "title": "Sliding window", "topic": "advanced", "lesson": "complexity-and-interview-patterns", "prereqs": ["for-loops", "list-basics"], "description": "Maintaining a moving range over a sequence to avoid recomputation." },
   { "id": "type-hints", "title": "Type hints", "topic": "advanced", "lesson": "type-hints-modules-and-testing", "prereqs": ["function-basics"], "description": "Annotations, Optional, unions, generics, what hints do and do not enforce." },
   { "id": "modules-testing", "title": "Modules and testing", "topic": "advanced", "lesson": "type-hints-modules-and-testing", "prereqs": ["function-basics"], "description": "import mechanics, __name__ == '__main__', virtual environments, assert and unittest/pytest basics." },
+  { "id": "python-runtime", "title": "Python runtime and bytecode", "topic": "fundamentals", "lesson": "what-is-python", "prereqs": ["variables-types"], "description": "What Python is, REPL versus script, source parsing and bytecode, interpreter/runtime stages, compile-time errors versus runtime exceptions." },
   {
     "id": "program-setup",
     "title": "Running a Python program",

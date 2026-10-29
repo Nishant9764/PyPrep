@@ -13,6 +13,7 @@ const PORT = 5099;
 const SECRET = 'test-secret-0123456789abcdef';
 const BASE = `http://127.0.0.1:${PORT}`;
 const isRoot = typeof process.getuid === 'function' && process.getuid() === 0;
+const linuxRlimits = process.platform === 'linux';
 
 let server: ChildProcess;
 let failures = 0;
@@ -93,11 +94,15 @@ async function main() {
     { ms: r.ms, status: r.body.status },
   );
 
-  r = await run('def f():\n    x = []\n    while True:\n        x.append("a" * 10**6)\n');
-  check('memory bomb is contained (MemoryError, no host impact)', /MemoryError|too much memory/.test(JSON.stringify(r.body)), r.body);
+  if (linuxRlimits) {
+    r = await run('def f():\n    x = []\n    while True:\n        x.append("a" * 10**6)\n');
+    check('memory bomb is contained (MemoryError, no host impact)', /MemoryError|too much memory/.test(JSON.stringify(r.body)), r.body);
 
-  r = await run('def f():\n    x = "a" * (10**9)\n    return 1\n');
-  check('single huge allocation fails', r.body.results[0].passed === false, r.body);
+    r = await run('def f():\n    x = "a" * (10**9)\n    return 1\n');
+    check('single huge allocation fails', r.body.results[0].passed === false, r.body);
+  } else {
+    console.log('  SKIP  RLIMIT_AS memory checks (Linux-only; verify in Linux CI/container)');
+  }
 
   r = await run(
     'import os\ndef f():\n    n = 0\n    try:\n        while True:\n            if os.fork() == 0:\n                while True: pass\n            n += 1\n    except OSError as e:\n        return -n\n',

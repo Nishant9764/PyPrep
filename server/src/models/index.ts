@@ -12,6 +12,7 @@ const userSchema = new Schema(
     usernameLower: { type: String, required: true, unique: true },
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
     passwordHash: { type: String, required: true },
+    sessionVersion: { type: Number, default: 0 },
     role: { type: String, enum: ['user', 'admin'], default: 'user' },
     status: { type: String, enum: USER_STATUSES, default: 'pending', index: true },
     signupNote: { type: String, maxlength: 500 },
@@ -195,6 +196,18 @@ const attemptSchema = new Schema({
 });
 attemptSchema.index({ user: 1, track: 1, question: 1, createdAt: -1 });
 export const Attempt = model('Attempt', attemptSchema);
+
+const mockScoreSchema = new Schema({
+  user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+  track: { type: String, required: true },
+  mode: { type: String, enum: ['coding', 'predict'], required: true },
+  score: { type: Number, required: true, min: 0, max: 100 },
+  correct: { type: Number, required: true, min: 0 },
+  total: { type: Number, required: true, min: 1 },
+  createdAt: { type: Date, default: Date.now },
+});
+mockScoreSchema.index({ user: 1, track: 1, createdAt: -1 });
+export const MockScore = model('MockScore', mockScoreSchema);
 
 /**
  * Per-concept knowledge estimate: a decayed Beta(alpha, beta) distribution. See services/mastery.ts.

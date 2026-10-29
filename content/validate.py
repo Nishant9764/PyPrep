@@ -84,6 +84,8 @@ def main():
                     err(f"concept {c['id']}: unknown prereq {p}")
 
         covered = {}
+        seen_titles = {}
+        seen_prompts = {}
         total_q = total_l = 0
         for topic in track["topics"]:
             ts = topic["slug"]
@@ -138,8 +140,8 @@ def main():
             except json.JSONDecodeError as e:
                 err(f"[{ts}] questions.json invalid JSON: {e}")
                 continue
-            if not (6 <= len(questions) <= 16):
-                warn(f"[{ts}] has {len(questions)} questions (target 8-16, scaled to topic coverage)")
+            if not (6 <= len(questions) <= 20):
+                warn(f"[{ts}] has {len(questions)} questions (target 8-20, scaled to topic coverage)")
             slugs = set()
             counts = {"easy": 0, "medium": 0, "hard": 0}
             interview = 0
@@ -153,6 +155,16 @@ def main():
                 if q["slug"] in slugs:
                     err(f"{tag} duplicate slug")
                 slugs.add(q["slug"])
+                title_key = re.sub(r"\s+", " ", q.get("title", "")).strip().casefold()
+                prompt_key = re.sub(r"\s+", " ", q.get("prompt", "")).strip().casefold()
+                if title_key in seen_titles:
+                    warn(f"{tag} duplicate normalized title also used by {seen_titles[title_key]}")
+                else:
+                    seen_titles[title_key] = f"{ts}/{q['slug']}"
+                if prompt_key in seen_prompts:
+                    warn(f"{tag} duplicate normalized prompt also used by {seen_prompts[prompt_key]}")
+                else:
+                    seen_prompts[prompt_key] = f"{ts}/{q['slug']}"
                 if q["difficulty"] not in counts:
                     err(f"{tag} bad difficulty")
                 else:

@@ -273,7 +273,7 @@
   },
   {
     "slug": "format-receipt-line",
-    "title": "Format a Receipt Line",
+    "title": "Format an Aligned Receipt Line",
     "difficulty": "medium",
     "kind": "practice",
     "concepts": [

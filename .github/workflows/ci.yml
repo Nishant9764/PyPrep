@@ -1,0 +1,32 @@
+name: Verify PyPrep
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            runner/package-lock.json
+            server/package-lock.json
+            client/package-lock.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: npm ci
+      - run: npm ci --prefix runner
+      - run: npm ci --prefix server
+      - run: npm ci --prefix client
+      - run: npm run test

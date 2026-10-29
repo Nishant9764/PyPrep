@@ -1,6 +1,6 @@
 import { NavLink, Outlet, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../auth';
-import { useApi } from '../api';
+import { api, useApi } from '../api';
 import { applyTheme, getTheme, ThemeChoice } from '../theme';
 import type { TrackSummary } from '../types';
 import { BrandMark } from './ui';
@@ -75,6 +75,9 @@ export function Shell() {
               }}
             >
               Log out
+            </button>
+            <button className="btn sm ghost" title="Revoke all active sessions for this account" onClick={async () => { if (!window.confirm('Sign out this account on every device?')) return; await api('/auth/logout-all', { method: 'POST', body: {} }); nav('/login'); }}>
+              Sign out all devices
             </button>
           </div>
         </div>

@@ -174,6 +174,10 @@ export interface Summary {
     lessons: number;
     lessonsDone: number;
     lessonsMastered: number;
+    accuracy: number | null;
+    firstAttemptSuccess: number | null;
+    timeLearningMinutesEstimated: number;
+    timeSolvingMinutes: number;
     bookmarks: number;
     submissions: number;
     activeDays: number;
@@ -192,6 +196,9 @@ export interface Summary {
     mastery: number | null;
     weakConcepts: number;
   }[];
+  skillMastery: { id: string; title: string; topic: string; lesson: string; mastery: number | null; evidence: number; lastPracticedAt: string | null; reviewDueAt: string | null; overdue: boolean }[];
+  readiness: { level: string; score: number; basis: { label: string; value: number; total: number; weight: number }[] }[];
+  readinessNote: string;
   weakConcepts: {
     concept: string;
     title: string;

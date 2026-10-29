@@ -12,8 +12,8 @@ declare global {
   }
 }
 
-export function signSession(userId: string): string {
-  return jwt.sign({ sub: userId }, config.jwtSecret, {
+export function signSession(userId: string, sessionVersion = 0): string {
+  return jwt.sign({ sub: userId, ver: sessionVersion }, config.jwtSecret, {
     expiresIn: `${config.jwtExpiresDays}d`,
     algorithm: 'HS256',
   });
@@ -56,6 +56,11 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
     if (!user) {
       clearSessionCookie(res);
       res.status(401).json({ error: 'Account not found.', code: 'UNAUTHENTICATED' });
+      return;
+    }
+    if ((payload.ver ?? 0) !== user.sessionVersion) {
+      clearSessionCookie(res);
+      res.status(401).json({ error: 'This session was revoked. Please log in again.', code: 'SESSION_REVOKED' });
       return;
     }
     if (user.status !== 'approved') {

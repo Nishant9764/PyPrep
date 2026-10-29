@@ -123,7 +123,7 @@ authRouter.post(
 
     user.lastLoginAt = new Date();
     await user.save();
-    setSessionCookie(res, signSession(String(user._id)));
+    setSessionCookie(res, signSession(String(user._id), user.sessionVersion));
     res.json({ user: publicUser(user) });
   }),
 );
@@ -132,6 +132,13 @@ authRouter.post('/logout', (_req, res) => {
   clearSessionCookie(res);
   res.json({ ok: true });
 });
+
+authRouter.post('/logout-all', requireAuth, wrap(async (req, res) => {
+  req.user!.sessionVersion += 1;
+  await req.user!.save();
+  clearSessionCookie(res);
+  res.json({ ok: true, revokedSessions: true });
+}));
 
 authRouter.get(
   '/me',

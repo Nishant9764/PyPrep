@@ -651,5 +651,43 @@
         "diagnosis": "A single character has no mismatched mirrored pair."
       }
     ]
+  },
+  {
+    "slug": "check-source-syntax",
+    "title": "Separate Syntax Errors from Runtime Errors",
+    "difficulty": "easy",
+    "kind": "interview",
+    "concepts": ["python-runtime", "exceptions"],
+    "estimatedMinutes": 8,
+    "prompt": "Write `syntax_valid(source)` that reports whether Python can compile the source into a code object. Do not execute it. Explain why `x = 1 / 0` is syntactically valid even though running it raises an exception.",
+    "entry": "syntax_valid",
+    "starterCode": "def syntax_valid(source):\n    # Compile to check grammar, but do not execute the code\n    return True\n",
+    "hints": ["Python's built-in `compile()` can create a code object without running it.", "Catch `SyntaxError` only; other failures are not syntax errors.", "Return False when compilation raises SyntaxError and True when it succeeds."],
+    "solution": {"code": "def syntax_valid(source):\n    try:\n        compile(source, '<interview>', 'exec')\n    except SyntaxError:\n        return False\n    return True\n", "explanation": "Compilation checks whether the source follows Python's grammar and creates a code object; it does not run the resulting statements. That is why `x = 1 / 0` passes this check while execution later raises `ZeroDivisionError`. A missing colon or unfinished assignment fails during parsing and raises `SyntaxError`. Catch only `SyntaxError`: swallowing every exception would hide unrelated problems in the checking function. Production tools can also use `ast.parse()` when they need to inspect a syntax tree rather than merely validate compilation."},
+    "tests": [
+      {"args": ["total = 2 + 3"], "expected": true, "tags": ["python-runtime"], "note": "valid assignment"},
+      {"args": ["if True print('hello')"], "expected": false, "tags": ["exceptions"], "note": "missing colon"},
+      {"args": ["x = 1 / 0"], "expected": true, "tags": ["python-runtime"], "hidden": true, "diagnosis": "Compilation does not execute the division. Runtime exceptions are separate from syntax validity."},
+      {"args": ["name ="], "expected": false, "tags": ["exceptions"], "hidden": true, "diagnosis": "An incomplete assignment is invalid grammar, so compile() raises SyntaxError."}
+    ]
+  },
+  {
+    "slug": "trace-object-references",
+    "title": "Trace Aliases and a Shallow Copy",
+    "difficulty": "easy",
+    "kind": "interview",
+    "concepts": ["python-runtime", "mutability-aliasing"],
+    "estimatedMinutes": 8,
+    "prompt": "Write `reference_report(items)` to make an alias and a shallow copy, append `0` through the alias, then return `[items is alias, items is copied, items == copied, items, copied]`. Explain why the first two booleans differ.",
+    "entry": "reference_report",
+    "starterCode": "def reference_report(items):\n    # Create an alias and a shallow copy, then mutate through the alias\n    pass\n",
+    "hints": ["Assignment to `alias` binds another name to the same list.", "Use `items.copy()` to create a separate outer list.", "Append through the alias, then return the three comparisons and both lists."],
+    "solution": {"code": "def reference_report(items):\n    alias = items\n    copied = items.copy()\n    alias.append(0)\n    return [items is alias, items is copied, items == copied, items, copied]\n", "explanation": "`alias = items` binds a second name to the exact same list, so `items is alias` is True and appending through either name changes that object. `items.copy()` creates a new outer list, so `items is copied` is False. After the append, their contents differ, so equality is also False. This copy is shallow: nested mutable elements would still be shared. The function intentionally mutates the caller's list to make alias behavior visible; a non-mutating API should copy first and update the copy instead."},
+    "tests": [
+      {"args": [[1, 2]], "expected": [true, false, false, [1, 2, 0], [1, 2]], "tags": ["python-runtime"], "note": "alias and separate outer copy"},
+      {"args": [[]], "expected": [true, false, false, [0], []], "tags": ["mutability-aliasing"], "note": "empty list"},
+      {"args": [["a"]], "expected": [true, false, false, ["a", 0], ["a"]], "tags": ["python-runtime"], "hidden": true},
+      {"args": [[3, 3]], "expected": [true, false, false, [3, 3, 0], [3, 3]], "tags": ["mutability-aliasing"], "hidden": true, "diagnosis": "The alias must point at the original object; the copied outer list must remain unchanged."}
+    ]
   }
 ]

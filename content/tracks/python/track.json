@@ -13,7 +13,8 @@
         { "slug": "variables-and-types", "title": "Variables, Values and Types" },
         { "slug": "numbers-and-operators", "title": "Numbers and Operators" },
         { "slug": "input-output-and-conversion", "title": "Input, Output and Type Conversion" },
-        { "slug": "first-program-and-debugging", "title": "Your First Program and Debugging" }
+        { "slug": "first-program-and-debugging", "title": "Your First Program and Debugging" },
+        { "slug": "what-is-python", "title": "What Python Is and How Programs Run" }
       ]
     },
     {

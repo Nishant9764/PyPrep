@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { z } from 'zod';
-import { ActivityDay, Attempt, Concept, InterviewProgress, Lesson, LessonProgress, Mastery, Question, QuestionProgress, Track } from '../models';
+import { ActivityDay, Attempt, Concept, InterviewProgress, Lesson, LessonProgress, Mastery, MockScore, Question, QuestionProgress, Track } from '../models';
 import { requireAuth } from '../middleware/auth';
 import { HttpError, localDate, wrap } from '../utils/http';
 import { evidence, isWeak, score } from '../services/mastery';
@@ -42,26 +42,45 @@ progressRouter.get(
   }),
 );
 
+progressRouter.get('/:track/progress/mock-scores', wrap(async (req, res) => {
+  const rows = await MockScore.find({ user: req.user!._id, track: req.params.track }).sort({ createdAt: -1 }).limit(20).lean();
+  res.json({ scores: rows.map((row) => ({ id: String(row._id), mode: row.mode, score: row.score, correct: row.correct, total: row.total, at: row.createdAt })) });
+}));
+
+progressRouter.post('/:track/progress/mock-scores', wrap(async (req, res) => {
+  await trackOr404(req.params.track);
+  const body = z.object({ mode: z.enum(['coding', 'predict']), correct: z.number().int().min(0).max(100), total: z.number().int().min(1).max(100) }).parse(req.body);
+  if (body.correct > body.total) throw new HttpError(400, 'Correct count cannot exceed total.');
+  const row = await MockScore.create({ user: req.user!._id, track: req.params.track, mode: body.mode, correct: body.correct, total: body.total, score: Math.round(body.correct / body.total * 100) });
+  res.status(201).json({ id: String(row._id), mode: row.mode, score: row.score, correct: row.correct, total: row.total, at: row.createdAt });
+}));
+
 progressRouter.get(
   '/:track/progress/summary',
   wrap(async (req, res) => {
     const track = await trackOr404(req.params.track);
     const user = req.user!._id;
-    const [questions, qp, lessons, lp, mastery, concepts, activity, recent, interviewProgress] = await Promise.all([
+    const [questions, qp, lessons, lp, mastery, concepts, activity, recent, interviewProgress, attemptMetrics] = await Promise.all([
       Question.find({ track: track.slug }).select('slug title topic difficulty kind concepts order').lean(),
       QuestionProgress.find({ user, track: track.slug }).lean(),
-      Lesson.find({ track: track.slug }).select('topic slug').lean(),
+      Lesson.find({ track: track.slug }).select('topic slug minutes').lean(),
       LessonProgress.find({ user, track: track.slug }).lean(),
       Mastery.find({ user, track: track.slug }).lean(),
       Concept.find({ track: track.slug }).lean(),
       ActivityDay.find({ user, track: track.slug }).select('date submissions solves lessons revisions').lean(),
       Attempt.find({ user, track: track.slug }).sort({ createdAt: -1 }).limit(8).select('question passed passedCount total createdAt').lean(),
       InterviewProgress.find({ user, track: track.slug }).lean(),
+      Attempt.aggregate([{ $match: { user, track: track.slug } }, { $facet: {
+        totals: [{ $group: { _id: null, attempts: { $sum: 1 }, passed: { $sum: { $cond: ['$passed', 1, 0] } }, timeSpentMs: { $sum: { $ifNull: ['$timeSpentMs', 0] } } } }],
+        first: [{ $sort: { createdAt: 1 } }, { $group: { _id: '$question', passed: { $first: '$passed' } } }],
+      } }]),
     ]);
     const qById = new Map(questions.map((q) => [q.slug, q]));
     const solved = qp.filter((p) => p.status === 'solved');
     const attempted = qp.filter((p) => p.status === 'attempted');
     const conceptById = new Map(concepts.map((c) => [c.id, c]));
+    const aggregate = attemptMetrics[0] ?? { totals: [], first: [] };
+    const attemptTotals = aggregate.totals[0] ?? { attempts: 0, passed: 0, timeSpentMs: 0 };
 
     const topics = track.topics.map((t) => {
       const tq = questions.filter((q) => q.topic === t.slug);
@@ -106,10 +125,28 @@ progressRouter.get(
     const today = localDate(req);
     const dates = activity.filter((a) => a.submissions + a.solves + a.lessons + (a.revisions ?? 0) > 0).map((a) => a.date);
     const byDifficulty = { easy: 0, medium: 0, hard: 0 } as Record<string, number>;
+    const totalByDifficulty = { easy: 0, medium: 0, hard: 0 } as Record<string, number>;
+    for (const q of questions) if (q.difficulty) totalByDifficulty[q.difficulty]++;
     for (const p of solved) {
       const q = qById.get(p.question);
       if (q?.difficulty) byDifficulty[q.difficulty]++;
     }
+    const masteryById = new Map(mastery.map((m) => [m.concept, m]));
+    const skillMastery = concepts.map((concept) => {
+      const m = masteryById.get(concept.id);
+      const lastPracticedAt = m?.lastPracticedAt ?? null;
+      const reviewDueAt = lastPracticedAt ? new Date(new Date(lastPracticedAt).getTime() + 7 * 86_400_000) : null;
+      return { id: concept.id, title: concept.title ?? concept.id, topic: concept.topic, lesson: concept.lesson, mastery: m ? round(score(m)) : null, evidence: m ? round(evidence(m), 1) : 0, lastPracticedAt, reviewDueAt, overdue: !!reviewDueAt && reviewDueAt.getTime() < Date.now() };
+    });
+    const solvedRatio = (kind: 'easy' | 'medium' | 'hard') => totalByDifficulty[kind] ? byDifficulty[kind] / totalByDifficulty[kind] : 0;
+    const lessonRatio = lessons.length ? lp.filter((l) => !!l.masteredAt).length / lessons.length : 0;
+    const assessedSkills = skillMastery.filter((c) => c.evidence >= 1);
+    const strongSkills = assessedSkills.length ? assessedSkills.filter((c) => (c.mastery ?? 0) >= 0.7).length / assessedSkills.length : 0;
+    const readiness = [
+      { level: 'Beginner', score: round(0.6 * solvedRatio('easy') + 0.4 * lessonRatio), basis: [{ label: 'Easy practice solved', value: byDifficulty.easy, total: totalByDifficulty.easy, weight: 60 }, { label: 'Lessons mastered', value: lp.filter((l) => !!l.masteredAt).length, total: lessons.length, weight: 40 }] },
+      { level: 'Internship', score: round(0.3 * solvedRatio('easy') + 0.4 * solvedRatio('medium') + 0.3 * strongSkills), basis: [{ label: 'Easy practice solved', value: byDifficulty.easy, total: totalByDifficulty.easy, weight: 30 }, { label: 'Medium practice solved', value: byDifficulty.medium, total: totalByDifficulty.medium, weight: 40 }, { label: 'Assessed skills at 70%+ mastery', value: assessedSkills.filter((c) => (c.mastery ?? 0) >= 0.7).length, total: assessedSkills.length, weight: 30 }] },
+      { level: 'Junior Python', score: round(0.2 * solvedRatio('easy') + 0.35 * solvedRatio('medium') + 0.25 * solvedRatio('hard') + 0.2 * strongSkills), basis: [{ label: 'Easy practice solved', value: byDifficulty.easy, total: totalByDifficulty.easy, weight: 20 }, { label: 'Medium practice solved', value: byDifficulty.medium, total: totalByDifficulty.medium, weight: 35 }, { label: 'Hard practice solved', value: byDifficulty.hard, total: totalByDifficulty.hard, weight: 25 }, { label: 'Assessed skills at 70%+ mastery', value: assessedSkills.filter((c) => (c.mastery ?? 0) >= 0.7).length, total: assessedSkills.length, weight: 20 }] },
+    ];
     const next = nextUnsolved(
       questions.map((q) => ({ slug: q.slug, title: q.title!, topic: q.topic, difficulty: q.difficulty!, kind: q.kind!, concepts: q.concepts as string[], order: q.order ?? 0 })),
       qp.map((p) => ({ question: p.question, status: p.status as 'attempted' | 'solved' })),
@@ -125,6 +162,10 @@ progressRouter.get(
         lessons: lessons.length,
         lessonsDone: lp.filter((l) => l.completed).length,
         lessonsMastered: lp.filter((l) => !!l.masteredAt).length,
+        accuracy: attemptTotals.attempts ? round(attemptTotals.passed / attemptTotals.attempts) : null,
+        firstAttemptSuccess: aggregate.first.length ? round(aggregate.first.filter((a: any) => a.passed).length / aggregate.first.length) : null,
+        timeLearningMinutesEstimated: lp.filter((l) => l.completed).reduce((total, l) => total + (lessons.find((item) => item.topic === l.topic && item.slug === l.lesson)?.minutes ?? 0), 0),
+        timeSolvingMinutes: Math.round((attemptTotals.timeSpentMs ?? 0) / 60_000),
         bookmarks: qp.filter((p) => p.bookmarked).length + lp.filter((l) => l.bookmarked).length + interviewProgress.filter((p) => p.bookmarked).length,
         submissions: activity.reduce((a, d) => a + d.submissions, 0),
         activeDays: dates.length,
@@ -132,6 +173,9 @@ progressRouter.get(
       streak: streaks(dates, today),
       byDifficulty,
       topics,
+      skillMastery,
+      readiness,
+      readinessNote: 'Evidence-based study estimate, not a hiring prediction. Scores use only the displayed practice, lesson, and skill assessments; missing evidence contributes zero.',
       weakConcepts: weak,
       recent: recent.map((a) => ({
         question: a.question,
