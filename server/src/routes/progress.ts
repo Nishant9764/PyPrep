@@ -241,7 +241,7 @@ progressRouter.get(
   wrap(async (req, res) => {
     await trackOr404(req.params.track);
     const rows = await InterviewProgress.find({ user: req.user!._id, track: req.params.track }).lean();
-    res.json({ items: rows.map((r) => ({ item: r.item, completed: r.completed, bookmarked: r.bookmarked, confidence: r.confidence, lastReviewedAt: r.lastReviewedAt ?? null })) });
+    res.json({ items: rows.map((r) => ({ item: r.item, completed: r.completed, bookmarked: r.bookmarked, confidence: r.confidence, lastReviewedAt: r.lastReviewedAt ?? null, draft: r.draft ?? null })) });
   }),
 );
 
@@ -250,6 +250,7 @@ const interviewStateBody = z.object({
   bookmarked: z.boolean().optional(),
   confidence: z.number().int().min(1).max(5).nullable().optional(),
   reviewed: z.boolean().optional(),
+  draft: z.string().max(20000).optional(),
 });
 
 progressRouter.put(
@@ -264,10 +265,11 @@ progressRouter.put(
     if (body.completed !== undefined) set.completed = body.completed;
     if (body.bookmarked !== undefined) set.bookmarked = body.bookmarked;
     if (body.confidence !== undefined) set.confidence = body.confidence;
+    if (body.draft !== undefined) set.draft = body.draft;
     if (body.reviewed) set.lastReviewedAt = new Date();
     const row = await InterviewProgress.findOneAndUpdate(filter, { $set: set }, { upsert: true, new: true });
     if (body.reviewed) await bumpActivity(user, req.params.track, localDate(req), { revisions: 1 });
-    res.json({ item: row.item, completed: row.completed, bookmarked: row.bookmarked, confidence: row.confidence, lastReviewedAt: row.lastReviewedAt ?? null });
+    res.json({ item: row.item, completed: row.completed, bookmarked: row.bookmarked, confidence: row.confidence, lastReviewedAt: row.lastReviewedAt ?? null, draft: row.draft ?? null });
   }),
 );
 

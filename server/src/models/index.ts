@@ -173,6 +173,7 @@ const interviewProgressSchema = new Schema({
   bookmarked: { type: Boolean, default: false },
   confidence: { type: Number, min: 1, max: 5, default: null },
   lastReviewedAt: Date,
+  draft: { type: String, maxlength: 20000 },
 }, { timestamps: true });
 interviewProgressSchema.index({ user: 1, track: 1, item: 1 }, { unique: true });
 export const InterviewProgress = model('InterviewProgress', interviewProgressSchema);

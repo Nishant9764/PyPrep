@@ -8,6 +8,7 @@ import { HttpError, localDate, wrap } from '../utils/http';
 import { grade, toPublicTest } from '../services/grading';
 import { diagnose } from '../services/diagnosis';
 import { bumpActivity, masteryScores, prereqMap, recordEvidence } from '../services/learnerState';
+import { runCode } from '../services/runnerClient';
 
 export const practiceRouter = Router();
 practiceRouter.use(requireAuth);
@@ -25,6 +26,16 @@ const runLimiter = perUser(config.runsPerMinute, 60_000, 'runs');
 const submitLimiter = perUser(config.submitsPerMinute, 60_000, 'submissions');
 
 const codeSchema = z.object({ code: z.string().max(20000) });
+const interviewCodeSchema = z.object({ code: z.string().max(20000), stdin: z.string().max(20000).optional() });
+
+async function runInterviewCode(trackSlug: string, item: string, code: string, stdin: string) {
+  if (!/^(?:(python|sql)-(?:0[1-9]|[1-4]\d|50)|cookbook-[a-z0-9-]{1,40})$/.test(item)) throw new HttpError(404, 'Interview item not found.');
+  const track = await Track.findOne({ slug: trackSlug }).lean();
+  if (!track) throw new HttpError(404, 'Track not found.');
+  if (track.language !== 'python') throw new HttpError(400, 'The interview scratch editor currently runs Python code only.');
+  const result = await runCode({ language: track.language, code, entry: '', tests: [{ program: 'result = None', expected: null, stdin }] });
+  return { status: result.status, message: result.message, stdout: result.results[0]?.stdout ?? '', error: result.results[0]?.error };
+}
 
 async function load(trackSlug: string, slug: string) {
   const [track, question] = await Promise.all([
@@ -43,6 +54,16 @@ async function progressFor(userId: any, track: string, slug: string) {
 }
 
 const base = '/:track/questions/:slug';
+
+/** Interview scratchpad run: executes the learner's script in the same isolated runner as practice. */
+practiceRouter.post(
+  '/:track/interview/:item/run',
+  runLimiter,
+  wrap(async (req, res) => {
+    const { code, stdin = '' } = interviewCodeSchema.parse(req.body);
+    res.json(await runInterviewCode(req.params.track, req.params.item, code, stdin));
+  }),
+);
 
 /** Run against the VISIBLE tests only. Nothing is recorded: this is a scratchpad run. */
 practiceRouter.post(

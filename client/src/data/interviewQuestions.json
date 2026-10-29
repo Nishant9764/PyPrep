@@ -24,7 +24,33 @@
     "followUp": "How would you adapt reverse a string for larger inputs or a different edge case?",
     "challenge": "Explain an alternative approach to reverse a string, then compare its time and space complexity.",
     "timeSaver": "For a built-in shortcut, `s[::-1]` is concise. If asked to avoid slicing, build a list of characters and join it once instead of repeatedly concatenating strings.",
-    "complexity": "O(n) time and O(n) output space"
+    "complexity": "O(n) time and O(n) output space",
+    "approaches": [
+      {
+        "name": "Slicing",
+        "code": "s = \"hello\"\nprint(s[::-1])",
+        "tradeoff": "Shortest and idiomatic; creates a reversed copy.",
+        "complexity": "O(n) time, O(n) extra space"
+      },
+      {
+        "name": "reversed()",
+        "code": "s = \"hello\"\nprint(\"\".join(reversed(s)))",
+        "tradeoff": "Uses Python’s reverse iterator, then joins once.",
+        "complexity": "O(n) time, O(n) extra space"
+      },
+      {
+        "name": "Manual loop",
+        "code": "s = \"hello\"\nchars = []\nfor char in s:\n    chars.insert(0, char)\nprint(\"\".join(chars))",
+        "tradeoff": "Shows the loop explicitly; insert-at-front is simple but can take O(n²). For an efficient manual version, append then reverse the list.",
+        "complexity": "O(n²) time as written, O(n) space"
+      },
+      {
+        "name": "Manual efficient",
+        "code": "s = \"hello\"\nchars = []\nfor char in s:\n    chars.append(char)\nchars.reverse()\nprint(\"\".join(chars))",
+        "tradeoff": "No slicing; reverses a character list in place and joins once.",
+        "complexity": "O(n) time, O(n) extra space"
+      }
+    ]
   },
   {
     "id": "python-02",
@@ -51,7 +77,27 @@
     "followUp": "How would you adapt check palindrome for larger inputs or a different edge case?",
     "challenge": "Explain an alternative approach to check palindrome, then compare its time and space complexity.",
     "timeSaver": "For normalized text, compare a cleaned string with its reverse. Decide whether case, spaces, and punctuation should be ignored before coding.",
-    "complexity": "O(n) time and O(n) space for the reversed copy"
+    "complexity": "O(n) time and O(n) space for the reversed copy",
+    "approaches": [
+      {
+        "name": "Slicing",
+        "code": "s = \"level\"\nprint(s == s[::-1])",
+        "tradeoff": "Concise for an exact, case-sensitive palindrome.",
+        "complexity": "O(n) time, O(n) extra space"
+      },
+      {
+        "name": "reversed()",
+        "code": "s = \"level\"\nprint(s == \"\".join(reversed(s)))",
+        "tradeoff": "Uses the built-in reverse iterator; still creates a reversed copy.",
+        "complexity": "O(n) time, O(n) extra space"
+      },
+      {
+        "name": "Two pointers",
+        "code": "s = \"level\"\nleft, right = 0, len(s) - 1\nwhile left < right and s[left] == s[right]:\n    left += 1\n    right -= 1\nprint(left >= right)",
+        "tradeoff": "Stops at the first mismatch and avoids making a reversed string.",
+        "complexity": "O(n) time, O(1) extra space"
+      }
+    ]
   },
   {
     "id": "python-03",
@@ -78,7 +124,21 @@
     "followUp": "How would you adapt count vowels for larger inputs or a different edge case?",
     "challenge": "Explain an alternative approach to count vowels, then compare its time and space complexity.",
     "timeSaver": "Use a set for vowel membership when the allowed characters are fixed; normalize case once with `lower()` if uppercase vowels count too.",
-    "complexity": "O(n) time and O(1) extra space"
+    "complexity": "O(n) time and O(1) extra space",
+    "approaches": [
+      {
+        "name": "sum + membership",
+        "code": "s = \"hello\"\nvowels = set(\"aeiou\")\nprint(sum(char.lower() in vowels for char in s))",
+        "tradeoff": "Compact and readable; sum consumes a generator.",
+        "complexity": "O(n) time, O(1) space"
+      },
+      {
+        "name": "Manual loop",
+        "code": "s = \"hello\"\nvowels = \"aeiouAEIOU\"\ncount = 0\nfor char in s:\n    if char in vowels:\n        count += 1\nprint(count)",
+        "tradeoff": "Explicit control flow that is easy to explain and debug.",
+        "complexity": "O(n) time, O(1) space"
+      }
+    ]
   },
   {
     "id": "python-04",
@@ -159,7 +219,27 @@
     "followUp": "How would you adapt remove spaces for larger inputs or a different edge case?",
     "challenge": "Explain an alternative approach to remove spaces, then compare its time and space complexity.",
     "timeSaver": "`replace(\" \", \"\")` removes ordinary spaces; `\"\".join(s.split())` removes all whitespace runs when that is the requirement.",
-    "complexity": "O(n) time and O(n) output space"
+    "complexity": "O(n) time and O(n) output space",
+    "approaches": [
+      {
+        "name": "Slicing",
+        "code": "items = [1, 2, 3, 2]\nprint(items[::-1])",
+        "tradeoff": "Returns a new reversed list; original is unchanged.",
+        "complexity": "O(n) time, O(n) space"
+      },
+      {
+        "name": "reversed()",
+        "code": "items = [1, 2, 3, 2]\nprint(list(reversed(items)))",
+        "tradeoff": "Built-in iterator; list() materializes a new list.",
+        "complexity": "O(n) time, O(n) space"
+      },
+      {
+        "name": "In-place reverse",
+        "code": "items = [1, 2, 3, 2]\nitems.reverse()\nprint(items)",
+        "tradeoff": "Mutates the original list and returns None.",
+        "complexity": "O(n) time, O(1) extra space"
+      }
+    ]
   },
   {
     "id": "python-07",
@@ -186,7 +266,27 @@
     "followUp": "How would you adapt convert to uppercase for larger inputs or a different edge case?",
     "challenge": "Explain an alternative approach to convert to uppercase, then compare its time and space complexity.",
     "timeSaver": "Use `upper()` or `casefold()` for case-insensitive comparisons; strings are immutable, so these return a new string.",
-    "complexity": "O(n) time and O(n) output space"
+    "complexity": "O(n) time and O(n) output space",
+    "approaches": [
+      {
+        "name": "dict.fromkeys",
+        "code": "items = [1, 2, 1, 3]\nprint(list(dict.fromkeys(items)))",
+        "tradeoff": "Keeps first-seen order in modern Python.",
+        "complexity": "O(n) expected time, O(k) space"
+      },
+      {
+        "name": "Manual set",
+        "code": "items = [1, 2, 1, 3]\nseen = set()\nunique = []\nfor item in items:\n    if item not in seen:\n        seen.add(item)\n        unique.append(item)\nprint(unique)",
+        "tradeoff": "Makes order preservation explicit; values must be hashable.",
+        "complexity": "O(n) expected time, O(k) space"
+      },
+      {
+        "name": "set",
+        "code": "items = [1, 2, 1, 3]\nprint(set(items))",
+        "tradeoff": "Short, but set iteration does not promise the original order.",
+        "complexity": "O(n) expected time, O(k) space"
+      }
+    ]
   },
   {
     "id": "python-08",
@@ -213,7 +313,21 @@
     "followUp": "How would you adapt check anagrams for larger inputs or a different edge case?",
     "challenge": "Explain an alternative approach to check anagrams, then compare its time and space complexity.",
     "timeSaver": "Sorting is simple, but `collections.Counter` gives average O(n) counting when only character frequencies matter.",
-    "complexity": "O(n log n) time and O(n) space from sorting both strings"
+    "complexity": "O(n log n) time and O(n) space from sorting both strings",
+    "approaches": [
+      {
+        "name": "max()",
+        "code": "items = [4, 9, 2, 7]\nprint(max(items))",
+        "tradeoff": "Best default for a non-empty iterable; handle empty input with default= or a check.",
+        "complexity": "O(n) time, O(1) space"
+      },
+      {
+        "name": "Manual scan",
+        "code": "items = [4, 9, 2, 7]\nbest = items[0]\nfor value in items[1:]:\n    if value > best:\n        best = value\nprint(best)",
+        "tradeoff": "Shows the comparison and makes empty-input handling visible.",
+        "complexity": "O(n) time, O(1) space"
+      }
+    ]
   },
   {
     "id": "python-09",
@@ -240,7 +354,21 @@
     "followUp": "How would you adapt count a character for larger inputs or a different edge case?",
     "challenge": "Explain an alternative approach to count a character, then compare its time and space complexity.",
     "timeSaver": "`str.count()` is the concise built-in. For many different characters, build one frequency dictionary in a single pass.",
-    "complexity": "O(n) time and O(1) extra space"
+    "complexity": "O(n) time and O(1) extra space",
+    "approaches": [
+      {
+        "name": "sorted(set())",
+        "code": "items = [4, 9, 2, 7, 9]\nprint(sorted(set(items))[-2])",
+        "tradeoff": "Simple when duplicates should count once; sorting costs more than a scan.",
+        "complexity": "O(n log n) time, O(n) space"
+      },
+      {
+        "name": "One pass",
+        "code": "items = [4, 9, 2, 7, 9]\nfirst = second = float(\"-inf\")\nfor value in items:\n    if value > first:\n        first, second = value, first\n    elif first > value > second:\n        second = value\nprint(second)",
+        "tradeoff": "Tracks the top two distinct values without sorting.",
+        "complexity": "O(n) time, O(1) space"
+      }
+    ]
   },
   {
     "id": "python-10",
@@ -267,7 +395,21 @@
     "followUp": "How would you adapt remove duplicate characters for larger inputs or a different edge case?",
     "challenge": "Explain an alternative approach to remove duplicate characters, then compare its time and space complexity.",
     "timeSaver": "`dict.fromkeys(s)` preserves first-seen order and avoids the repeated membership scan; use a set only when output order does not matter.",
-    "complexity": "O(n²) in this version because membership scans the growing result"
+    "complexity": "O(n²) in this version because membership scans the growing result",
+    "approaches": [
+      {
+        "name": "all() + zip()",
+        "code": "s = \"level\"\nprint(all(left == right for left, right in zip(s, reversed(s))))",
+        "tradeoff": "Compact iterator-based check; compares mirrored characters.",
+        "complexity": "O(n) time, O(1) auxiliary space"
+      },
+      {
+        "name": "Two pointers",
+        "code": "s = \"level\"\nleft, right = 0, len(s) - 1\nwhile left < right:\n    if s[left] != s[right]:\n        print(False)\n        break\n    left += 1\n    right -= 1\nelse:\n    print(True)",
+        "tradeoff": "Manual and short-circuiting; useful when normalization rules are added.",
+        "complexity": "O(n) time, O(1) space"
+      }
+    ]
   },
   {
     "id": "python-11",
@@ -483,7 +625,27 @@
     "followUp": "How would you adapt find even numbers for larger inputs or a different edge case?",
     "challenge": "Explain an alternative approach to find even numbers, then compare its time and space complexity.",
     "timeSaver": "A list comprehension is concise for producing a new filtered list; use a generator expression when the consumer can stream values.",
-    "complexity": "O(n) time plus O(k) output space"
+    "complexity": "O(n) time plus O(k) output space",
+    "approaches": [
+      {
+        "name": "sorted()",
+        "code": "a, b = \"listen\", \"silent\"\nprint(sorted(a) == sorted(b))",
+        "tradeoff": "Easy to explain, but sorts both strings.",
+        "complexity": "O(n log n) time, O(n) space"
+      },
+      {
+        "name": "Counter",
+        "code": "from collections import Counter\na, b = \"listen\", \"silent\"\nprint(Counter(a) == Counter(b))",
+        "tradeoff": "Counts characters directly; input strings must use the same normalization.",
+        "complexity": "O(n) expected time, O(k) space"
+      },
+      {
+        "name": "Manual frequency map",
+        "code": "a, b = \"listen\", \"silent\"\ncounts = {}\nfor char in a:\n    counts[char] = counts.get(char, 0) + 1\nfor char in b:\n    counts[char] = counts.get(char, 0) - 1\nprint(all(count == 0 for count in counts.values()))",
+        "tradeoff": "No Counter import; explicitly demonstrates frequency balancing.",
+        "complexity": "O(n) expected time, O(k) space"
+      }
+    ]
   },
   {
     "id": "python-19",

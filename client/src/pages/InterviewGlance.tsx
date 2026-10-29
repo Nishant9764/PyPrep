@@ -5,13 +5,16 @@ import { ErrorBox, Loading, PageHead } from '../components/ui';
 import questions from '../data/interviewQuestions.json';
 
 type InterviewQuestion = (typeof questions)[number];
+interface CodeApproach { name: string; code: string; tradeoff: string; complexity: string }
 interface ReviewState {
   item: string;
   completed: boolean;
   bookmarked: boolean;
   confidence: number | null;
   lastReviewedAt: string | null;
+  draft: string | null;
 }
+interface RunFeedback { status: string; stdout: string; error?: string; message?: string }
 
 export function InterviewGlance() {
   const { track = 'python' } = useParams();
@@ -25,6 +28,11 @@ export function InterviewGlance() {
   const [status, setStatus] = useState('');
   const [quick, setQuick] = useState(false);
   const [saveError, setSaveError] = useState('');
+  const [drafts, setDrafts] = useState<Record<string, string>>({});
+  const [approachIndexes, setApproachIndexes] = useState<Record<string, number>>({});
+  const [inputs, setInputs] = useState<Record<string, string>>({});
+  const [runs, setRuns] = useState<Record<string, RunFeedback>>({});
+  const [running, setRunning] = useState<string | null>(null);
   const progress = useMemo(() => new Map((data?.items ?? []).map((item) => [item.item, item])), [data]);
   const topics = [...new Set(questions.filter((q) => q.area === area).map((q) => q.topic))];
   const filtered = questions.filter((q) => {
@@ -46,6 +54,18 @@ export function InterviewGlance() {
     }
   }
 
+  async function execute(item: InterviewQuestion, submit: boolean) {
+    const code = drafts[item.id] ?? progress.get(item.id)?.draft ?? item.code;
+    setRunning(item.id); setSaveError('');
+    try {
+      const result = await api<RunFeedback>(`/tracks/${track}/interview/${item.id}/run`, { method: 'POST', body: { code, stdin: inputs[item.id] ?? '' } });
+      setRuns((current) => ({ ...current, [item.id]: result }));
+      if (submit) await update(item, { draft: code, completed: true, reviewed: true });
+    } catch (e) {
+      setRuns((current) => ({ ...current, [item.id]: { status: 'error', stdout: '', error: e instanceof Error ? e.message : 'Could not reach the isolated runner.' } }));
+    } finally { setRunning(null); }
+  }
+
   const select = (label: string, value: string, set: (value: string) => void, options: string[]) => (
     <label className="field glance-filter"><span>{label}</span><select className="input" value={value} onChange={(event) => set(event.target.value)}>
       <option value="">All</option>{options.map((option) => <option key={option} value={option}>{option}</option>)}
@@ -55,7 +75,7 @@ export function InterviewGlance() {
   return <div className="page">
     <PageHead title="Interview Glance">
       <p>100 compact Python and SQL interview patterns with working solutions, expected results, edge cases, and a quick explanation you can say aloud.</p>
-      <div className="row"><Link className="btn primary" to={`/t/${track}/trace-bench`}>Open Trace Bench</Link><span className="small muted">Guided dry runs for loops, strings, collections, and common patterns.</span></div>
+      <div className="row"><Link className="btn primary" to={`/t/${track}/trace-bench`}>Open Trace Bench</Link><Link className="btn" to={`/t/${track}/interview-guide`}>Complete Interview Guide</Link><span className="small muted">Guided dry runs and 400+ questions from the supplied guide.</span></div>
     </PageHead>
 
     <section className="glance-banner panel">
@@ -83,15 +103,24 @@ export function InterviewGlance() {
     <div className="glance-list">
       {filtered.map((q) => {
         const p = progress.get(q.id);
+        const approaches = ('approaches' in q ? q.approaches : []) as CodeApproach[];
+        const approach = approaches[approachIndexes[q.id] ?? 0];
         return <article className="glance-card panel" id={q.id} key={q.id}>
           <div className="glance-card-head"><div className="glance-title"><span className="glance-number">{String(q.number).padStart(2, '0')}</span><div><h2>{q.title}</h2><p className="small muted">{q.topic} · {q.pattern}</p></div></div><div className="glance-tags"><span className={`chip ${q.difficulty}`}>{q.difficulty}</span><span className="chip">{q.experience}</span><span className="chip">{q.minutes} min</span>{p?.completed && <span className="chip solved">Revised</span>}</div></div>
           {quick && <p className="glance-answer"><strong>Quick answer:</strong> {q.answer}</p>}
           <details className="glance-details"><summary>{quick ? 'Open worked answer and interview notes' : 'Show concise answer, full code, and interview notes'}</summary>
             <div className="glance-detail-grid">
               <section><h3>Interview answer</h3><p>{q.answer}</p><h3>How to walk through it</h3><ol>{q.steps.map((step, i) => <li key={i}>{step}</li>)}</ol></section>
-              <section><h3>Full solution</h3><pre className="glance-code"><code>{q.code}</code></pre><h3>Expected output</h3><pre className="glance-output">{q.expectedOutput}</pre></section>
+              <section><h3>Full solution</h3>{approaches.length > 1 && <div className="approach-tabs" role="tablist" aria-label={`Approaches for ${q.title}`}>{approaches.map((option, i) => <button key={option.name} className="btn sm" role="tab" aria-selected={(approachIndexes[q.id] ?? 0) === i} onClick={() => { setApproachIndexes((current) => ({ ...current, [q.id]: i })); setDrafts((current) => p?.draft || current[q.id] ? current : ({ ...current, [q.id]: option.code })); }}>{option.name}</button>)}</div>}{approach && <p className="small muted approach-note">{approach.tradeoff} · {approach.complexity}</p>}<pre className="glance-code"><code>{approach?.code ?? q.code}</code></pre><h3>Expected output</h3><pre className="glance-output">{q.expectedOutput}</pre></section>
               <section><h3>Edge case to mention</h3><p>{q.edgeCase}</p><h3>Time-saving cue</h3><p>{q.timeSaver}</p></section>
               <section><h3>Follow-up</h3><p>{q.followUp}</p><h3>Try this next</h3><p>{q.challenge}</p></section>
+              {q.area === 'Python' && <section className="glance-practice"><h3>Practice in the editor</h3><p className="small muted">Edit the sample or write your own solution. Code runs in PyPrep’s isolated Python runner.</p>
+                <textarea className="input scratch-editor" aria-label={`Python scratch editor for ${q.title}`} spellCheck={false} value={drafts[q.id] ?? p?.draft ?? approach?.code ?? q.code} onChange={(e) => setDrafts((current) => ({ ...current, [q.id]: e.target.value }))} />
+                <label className="field"><span>Standard input (optional)</span><textarea className="input scratch-input" aria-label={`Standard input for ${q.title}`} value={inputs[q.id] ?? ''} onChange={(e) => setInputs((current) => ({ ...current, [q.id]: e.target.value }))} /></label>
+                <div className="row"><button className="btn sm" disabled={running !== null} onClick={() => void execute(q, false)}>{running === q.id ? 'Running…' : 'Run code'}</button><button className="btn sm primary" disabled={running !== null} onClick={() => void execute(q, true)}>{running === q.id ? 'Submitting…' : 'Submit for self-review'}</button></div>
+                {runs[q.id] && <div className={`alert ${runs[q.id].error ? 'error' : 'info'}`}><strong>{runs[q.id].error ? 'Run stopped' : 'Run output'}</strong>{runs[q.id].error ? runs[q.id].error : <><pre className="glance-output">{runs[q.id].stdout || '(no output)'}</pre><p className="small">{runs[q.id].status === 'ok' && (runs[q.id].stdout.trimEnd() === q.expectedOutput.trimEnd() ? 'Output matches the sample.' : 'Compare your output with the sample above; your input may differ.')}</p></>}</div>}
+              </section>}
+              {q.area === 'SQL' && <section><h3>Practice note</h3><p>SQL runs against a database schema and dialect; this sheet has no live database attached. Use the query as a model and adapt table and column names to the interviewer’s schema.</p></section>}
             </div>
           </details>
           <div className="glance-actions">
