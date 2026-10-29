@@ -53,6 +53,7 @@ export function Shell() {
           <NavLink to={`${base}/practice`}>Practice</NavLink>
           <NavLink to={`${base}/interview-glance`}>Interview Glance</NavLink>
           <NavLink to={`${base}/interview-guide`}>Interview Guide</NavLink>
+          <NavLink to={`${base}/mock-interview`}>Mock Interview</NavLink>
           <NavLink to={`${base}/saved`}>Saved</NavLink>
           {user?.role === 'admin' && <NavLink to="/admin">Approvals</NavLink>}
         </nav>

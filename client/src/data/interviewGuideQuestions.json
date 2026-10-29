@@ -188,7 +188,7 @@
     "difficulty": "beginner",
     "kind": "concept",
     "question": "What are Python 2 and Python 3? Why use Python 3?",
-    "answer": "Python is a high-level general-purpose language with dynamic typing, readable syntax, and a broad standard library. It is used for automation, web services, data work, scripting, and more; trade-offs include interpreter overhead and deployment/runtime considerations. Use Python 3 for supported modern development.",
+    "answer": "Python 2 is end-of-life and should not be used for new development. Python 3 is the supported modern language; choose a currently supported release for security and library compatibility.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -416,7 +416,7 @@
     "difficulty": "beginner",
     "kind": "concept",
     "question": "What is the difference between `=`, `==`, and `is`?",
-    "answer": "`=` binds a name, `==` tests value equality, and `is` tests object identity. Use `is None` because `None` is a singleton; do not use identity to compare ordinary strings or numbers.",
+    "answer": "`=` assigns a value to a name; `==` compares values for equality; `is` checks whether two references point to the same object. Use `is None` for the singleton `None`, and use `==` for ordinary value comparison.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -440,7 +440,7 @@
     "difficulty": "beginner",
     "kind": "concept",
     "question": "What are syntax errors and indentation errors?",
-    "answer": "Indentation delimits Python suites and is part of syntax. Use consistent spaces (commonly four) so block structure is visible and unambiguous.",
+    "answer": "A syntax error means code violates Python grammar. An indentation error is a syntax error caused by inconsistent or unexpected block indentation; align suites consistently.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -464,7 +464,7 @@
     "difficulty": "beginner",
     "kind": "concept",
     "question": "What is a variable in Python's object model?",
-    "answer": "Type hints document intended types and help static tools; Python does not generally enforce them at runtime. `Any` opts out of checking, `object` is any value with only object-level operations, and `Never`/`NoReturn` represent code that cannot return normally.",
+    "answer": "A variable is a name bound to an object, not a typed storage box. Assignment changes the binding; mutating a mutable object changes the object visible through all aliases.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -488,7 +488,7 @@
     "difficulty": "beginner",
     "kind": "concept",
     "question": "Explain identity, equality, and value.",
-    "answer": "`=` binds a name, `==` tests value equality, and `is` tests object identity. Use `is None` because `None` is a singleton; do not use identity to compare ordinary strings or numbers.",
+    "answer": "Equality asks whether objects compare as having the same value; identity asks whether they are the same object (`a is b`). Two separately created lists can be equal but not identical.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -500,7 +500,7 @@
     "difficulty": "beginner",
     "kind": "concept",
     "question": "When should `is` be used? Why use `is None`?",
-    "answer": "`=` binds a name, `==` tests value equality, and `is` tests object identity. Use `is None` because `None` is a singleton; do not use identity to compare ordinary strings or numbers.",
+    "answer": "Use `is` when identity is part of the contract, especially `value is None`. Use `==` for strings, numbers, and other value comparisons.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -512,7 +512,7 @@
     "difficulty": "beginner",
     "kind": "concept",
     "question": "What are aliasing and rebinding?",
-    "answer": "Assignment binds names to objects, so `a = b = []` makes both names refer to one list. Rebinding changes a name’s target; mutation changes the shared object. Unpacking assigns iterable elements to multiple targets.",
+    "answer": "Aliasing means two names point to the same object; rebinding makes one name point somewhere else. Mutating through either alias is visible through both names.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -524,7 +524,7 @@
     "difficulty": "beginner",
     "kind": "concept",
     "question": "What happens in `a = b = []`?",
-    "answer": "Assignment binds names to objects, so `a = b = []` makes both names refer to one list. Rebinding changes a name’s target; mutation changes the shared object. Unpacking assigns iterable elements to multiple targets.",
+    "answer": "`a = b = []` evaluates one empty list and binds both names to it. `a.append(1)` is visible through `b`; assigning `a = [1]` later only rebinds `a`.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -536,7 +536,7 @@
     "difficulty": "beginner",
     "kind": "concept",
     "question": "What are unpacking and chained assignment?",
-    "answer": "Assignment binds names to objects, so `a = b = []` makes both names refer to one list. Rebinding changes a name’s target; mutation changes the shared object. Unpacking assigns iterable elements to multiple targets.",
+    "answer": "Chained assignment binds several names to the same right-hand object. Unpacking assigns parts of an iterable to separate targets, for example `x, y = (1, 2)`.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -560,7 +560,7 @@
     "difficulty": "beginner",
     "kind": "concept",
     "question": "What are shallow and deep copies?",
-    "answer": "A shallow copy creates a new outer container but retains references to nested values. A deep copy recursively copies supported nested objects. Choose based on which parts should be shared; deep copying can be costly or inappropriate for external resources.",
+    "answer": "A shallow copy duplicates the outer container but shares nested references; a deep copy recursively copies supported members. Deep copying can be expensive and is inappropriate for some resources.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -584,7 +584,7 @@
     "difficulty": "beginner",
     "kind": "concept",
     "question": "List the main built-in types and typical use cases.",
-    "answer": "Name the type and whether it is mutable/hashable, explain truthiness and conversion behavior, and call out precision or encoding concerns when relevant.",
+    "answer": "Common built-ins include numeric types (`int`, `float`, `complex`), text (`str`), binary data (`bytes`, `bytearray`), collections (`list`, `tuple`, `set`, `dict`), and `bool`. Choose based on mutation, ordering, lookup, and uniqueness needs.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -596,7 +596,7 @@
     "difficulty": "beginner",
     "kind": "concept",
     "question": "What is mutable versus immutable? Give examples.",
-    "answer": "Mutable objects can change in place; immutable objects cannot. Empty containers, zero, `False`, and `None` are falsy; nonempty strings such as `\"False\"` are truthy. A tuple is immutable as a container but may reference a mutable list.",
+    "answer": "Mutable objects, such as lists and dictionaries, can change in place. Immutable objects, such as strings, integers, and tuples, cannot be changed after creation.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -608,7 +608,7 @@
     "difficulty": "beginner",
     "kind": "concept",
     "question": "Can an immutable tuple contain a mutable list? Explain.",
-    "answer": "Mutable objects can change in place; immutable objects cannot. Empty containers, zero, `False`, and `None` are falsy; nonempty strings such as `\"False\"` are truthy. A tuple is immutable as a container but may reference a mutable list.",
+    "answer": "Yes. The tuple’s references cannot be reassigned, but a referenced list can still mutate: `t = ([1],); t[0].append(2)` is valid.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -620,7 +620,7 @@
     "difficulty": "beginner",
     "kind": "concept",
     "question": "What values are truthy and falsy?",
-    "answer": "Mutable objects can change in place; immutable objects cannot. Empty containers, zero, `False`, and `None` are falsy; nonempty strings such as `\"False\"` are truthy. A tuple is immutable as a container but may reference a mutable list.",
+    "answer": "Falsy values include `False`, `None`, numeric zero, and empty containers/strings. Most other objects are truthy unless their type defines otherwise.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -632,7 +632,7 @@
     "difficulty": "beginner",
     "kind": "concept",
     "question": "What do `bool([])`, `bool('0')`, `bool(0)`, and `bool(None)` return?",
-    "answer": "Mutable objects can change in place; immutable objects cannot. Empty containers, zero, `False`, and `None` are falsy; nonempty strings such as `\"False\"` are truthy. A tuple is immutable as a container but may reference a mutable list.",
+    "answer": "The results are `False`, `True`, `False`, and `False`, respectively. Empty list, non-empty string, zero, and `None` are tested using truth-value rules.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -644,7 +644,7 @@
     "difficulty": "beginner",
     "kind": "concept",
     "question": "Why is `bool('False')` true?",
-    "answer": "Mutable objects can change in place; immutable objects cannot. Empty containers, zero, `False`, and `None` are falsy; nonempty strings such as `\"False\"` are truthy. A tuple is immutable as a container but may reference a mutable list.",
+    "answer": "`\"False\"` is a non-empty string, so it is truthy. Boolean conversion tests whether a value is empty/zero or defines false behavior; it does not parse words.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -656,7 +656,7 @@
     "difficulty": "beginner",
     "kind": "concept",
     "question": "What are `int`, `float`, `str`, `bool`, `list`, `tuple`, `set`, and `dict` conversions?",
-    "answer": "Name the type and whether it is mutable/hashable, explain truthiness and conversion behavior, and call out precision or encoding concerns when relevant.",
+    "answer": "`int` represents integers, `float` approximate binary fractions, `str` Unicode text, `bool` truth values, `list` a mutable sequence, `tuple` an immutable sequence, `set` unique hashable values, and `dict` key-value mappings.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -668,7 +668,7 @@
     "difficulty": "beginner",
     "kind": "concept",
     "question": "What are `bytes` and `bytearray`?",
-    "answer": "`bytes` is immutable binary data, `bytearray` is mutable binary data, and `memoryview` exposes a buffer without copying it. Use them when working with encoded data or large binary blocks.",
+    "answer": "`bytes` is immutable binary data; `bytearray` is mutable. Encode text to bytes with an encoding such as UTF-8, and decode bytes with the matching encoding.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -764,7 +764,7 @@
     "difficulty": "beginner",
     "kind": "concept",
     "question": "How do `and`/`or` differ from `&`/`|`?",
-    "answer": "`and` and `or` short-circuit and return one of their operands, not necessarily a bool. `&` and `|` are bitwise operators (or overloaded set operators) and evaluate both sides.",
+    "answer": "`and`/`or` are short-circuiting logical operators and return one of their operands. `&`/`|` are bitwise operators for integers and overloadable operators for types such as sets; they do not short-circuit.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -776,7 +776,7 @@
     "difficulty": "beginner",
     "kind": "concept",
     "question": "What are chained comparisons?",
-    "answer": "Explain the operator’s precedence, result type, short-circuit behavior, and whether the operation may mutate an object. Parenthesize non-obvious logic.",
+    "answer": "Chained comparisons such as `a < b < c` mean both comparisons must be true, with the middle expression evaluated once. They are not equivalent to every parenthesized boolean expression when side effects occur.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -788,7 +788,7 @@
     "difficulty": "beginner",
     "kind": "concept",
     "question": "What are augmented assignments and conditional expressions?",
-    "answer": "Explain the operator’s precedence, result type, short-circuit behavior, and whether the operation may mutate an object. Parenthesize non-obvious logic.",
+    "answer": "Augmented assignment such as `x += y` may update an object in place or create a new result depending on the type. A conditional expression `a if condition else b` chooses one expression based on a condition.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -872,7 +872,7 @@
     "difficulty": "beginner",
     "kind": "concept",
     "question": "Compare f-strings, `str.format`, and percent formatting.",
-    "answer": "F-strings evaluate expressions inside braces and support conversion flags and format specs. `!r` uses `repr`; width, alignment, and precision control display. `str.format` and `%` are older alternatives.",
+    "answer": "F-strings are usually the clearest option for inline values; `str.format` is useful for reusable format templates; percent formatting remains common in older code and logging APIs. Choose consistency with the project.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -932,7 +932,7 @@
     "difficulty": "beginner",
     "kind": "concept",
     "question": "How do you avoid leaking secrets in CLI arguments and logs?",
-    "answer": "`random` is for simulation, not security. `secrets` generates cryptographically secure tokens. `hashlib` provides cryptographic hash functions for integrity/fingerprints, not password storage by itself. Least privilege grants only the permissions needed. Store secrets in a secret manager or protected environment, restrict access, avoid logs, rotate after exposure or policy intervals, and support revocation.",
+    "answer": "Avoid putting secrets in command-line arguments because process listings and shell history may expose them. Prefer protected environment/configuration or a secret manager, and redact sensitive values from logs.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -944,7 +944,7 @@
     "difficulty": "beginner",
     "kind": "concept",
     "question": "Explain `if`, `elif`, `else`, and truth-value testing.",
-    "answer": "`if` evaluates a truth value; `elif` checks another condition only if earlier branches failed; `else` handles the remainder. Prefer clear, ordered conditions and account for falsy values.",
+    "answer": "`if` checks the first condition; `elif` checks alternatives only if earlier conditions failed; `else` handles the remaining case. Conditions use truth-value testing.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -968,7 +968,7 @@
     "difficulty": "beginner",
     "kind": "concept",
     "question": "What does `range(start, stop, step)` produce? Is stop included?",
-    "answer": "Use for when iterating over items/ranges and while for condition-driven repetition. Check termination, range boundaries, mutation behavior, and the special loop-else rule.",
+    "answer": "`range(start, stop, step)` produces integers starting at `start`, advancing by `step`, and stopping before `stop`. The stop value is excluded; a negative step counts downward.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -992,7 +992,7 @@
     "difficulty": "beginner",
     "kind": "concept",
     "question": "When does `else` on a loop run?",
-    "answer": "`if` evaluates a truth value; `elif` checks another condition only if earlier branches failed; `else` handles the remainder. Prefer clear, ordered conditions and account for falsy values.",
+    "answer": "A loop’s `else` suite runs when the loop finishes normally, including when it has zero iterations. It is skipped if the loop exits with `break`.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -1064,7 +1064,7 @@
     "difficulty": "beginner",
     "kind": "concept",
     "question": "Why can mutating a collection while iterating cause bugs?",
-    "answer": "Use for when iterating over items/ranges and while for condition-driven repetition. Check termination, range boundaries, mutation behavior, and the special loop-else rule.",
+    "answer": "Changing a collection while iterating can skip items, revisit items, or raise an error as its size changes. Iterate over a copy or build a new collection when filtering.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -1076,7 +1076,7 @@
     "difficulty": "beginner",
     "kind": "concept",
     "question": "Explain indexing, slicing, negative indexes, and slice steps.",
-    "answer": "Sequences use zero-based indexing; negative indexes count from the end. A slice is `[start:stop:step]`, includes start and excludes stop; `[::-1]` returns a reversed copy for common sequences.",
+    "answer": "Indexing accesses one position; negative indexes count from the end. A slice `[start:stop:step]` includes start and excludes stop; a negative step walks backward.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -1112,7 +1112,7 @@
     "difficulty": "beginner",
     "kind": "concept",
     "question": "What are Unicode code points, UTF-8, encoding, and decoding?",
-    "answer": "Unicode assigns code points to text; UTF-8 encodes code points as bytes. A user-perceived character may contain multiple code points (a grapheme cluster). Decode bytes with the correct encoding and handle invalid data deliberately.",
+    "answer": "Unicode represents text as code points; UTF-8 encodes code points into variable-length bytes. Encoding converts `str` to `bytes`; decoding converts bytes back to text.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -1124,7 +1124,7 @@
     "difficulty": "beginner",
     "kind": "concept",
     "question": "What causes Unicode errors?",
-    "answer": "Unicode assigns code points to text; UTF-8 encodes code points as bytes. A user-perceived character may contain multiple code points (a grapheme cluster). Decode bytes with the correct encoding and handle invalid data deliberately.",
+    "answer": "Unicode errors commonly come from decoding bytes with the wrong encoding or encoding characters that the selected codec cannot represent. Know whether data is text or bytes and use the agreed encoding.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -1136,7 +1136,7 @@
     "difficulty": "beginner",
     "kind": "concept",
     "question": "What is the difference between a character, code point, and grapheme cluster?",
-    "answer": "Unicode assigns code points to text; UTF-8 encodes code points as bytes. A user-perceived character may contain multiple code points (a grapheme cluster). Decode bytes with the correct encoding and handle invalid data deliberately.",
+    "answer": "A code point is a Unicode value; a grapheme cluster is a user-perceived character that can contain multiple code points, such as a base letter plus combining mark.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -1220,7 +1220,7 @@
     "difficulty": "beginner",
     "kind": "concept",
     "question": "Explain indexing, slicing, concatenation, repetition, and membership.",
-    "answer": "Sequences use zero-based indexing; negative indexes count from the end. A slice is `[start:stop:step]`, includes start and excludes stop; `[::-1]` returns a reversed copy for common sequences.",
+    "answer": "Sequence indexing and slicing select elements; `+` concatenates compatible sequences; `*` repeats a sequence; `in` checks membership. These operations often create new sequences, so account for their copying cost.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -1268,7 +1268,7 @@
     "difficulty": "beginner",
     "kind": "concept",
     "question": "Explain shallow versus deep copy for nested lists.",
-    "answer": "A shallow copy creates a new outer container but retains references to nested values. A deep copy recursively copies supported nested objects. Choose based on which parts should be shared; deep copying can be costly or inappropriate for external resources.",
+    "answer": "For nested lists, `copy.copy()` or `list.copy()` copies only the outer list; nested lists remain shared. `copy.deepcopy()` recursively copies them when independent nested state is required.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -1292,7 +1292,7 @@
     "difficulty": "beginner",
     "kind": "concept",
     "question": "What are tuple packing and unpacking?",
-    "answer": "Assignment binds names to objects, so `a = b = []` makes both names refer to one list. Rebinding changes a name’s target; mutation changes the shared object. Unpacking assigns iterable elements to multiple targets.",
+    "answer": "Packing collects comma-separated values into a tuple; unpacking assigns iterable elements to matching targets. Use `*rest` to capture a variable number of remaining items.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -1340,7 +1340,7 @@
     "difficulty": "beginner",
     "kind": "concept",
     "question": "How do you create, access, update, iterate, and delete dict entries?",
-    "answer": "Dictionaries and sets use hashing for average constant-time lookup. Keys must be hashable, equality must agree with hashing, and worst-case performance is not guaranteed constant.",
+    "answer": "Use `d[key]` to read (raises `KeyError` when absent), `d.get(key, default)` for optional lookup, assignment or `update()` to write, `items()` to iterate pairs, and `del`/`pop()` to remove.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -1376,7 +1376,7 @@
     "difficulty": "beginner",
     "kind": "concept",
     "question": "What are dict/set comprehensions?",
-    "answer": "Dictionaries and sets use hashing for average constant-time lookup. Keys must be hashable, equality must agree with hashing, and worst-case performance is not guaranteed constant.",
+    "answer": "A dictionary comprehension builds key-value pairs; a set comprehension builds distinct values. Both can filter with a trailing `if`, for example `{x: x*x for x in values if x > 0}`.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -1388,7 +1388,7 @@
     "difficulty": "beginner",
     "kind": "concept",
     "question": "Explain set union, intersection, difference, and symmetric difference.",
-    "answer": "Dictionaries and sets use hashing for average constant-time lookup. Keys must be hashable, equality must agree with hashing, and worst-case performance is not guaranteed constant.",
+    "answer": "Union keeps values from either set; intersection keeps shared values; difference keeps values only in the left set; symmetric difference keeps values in exactly one set.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -1424,7 +1424,7 @@
     "difficulty": "beginner",
     "kind": "concept",
     "question": "What does insertion order mean for modern dicts?",
-    "answer": "Dictionaries and sets use hashing for average constant-time lookup. Keys must be hashable, equality must agree with hashing, and worst-case performance is not guaranteed constant.",
+    "answer": "Modern Python guarantees dictionary iteration in insertion order. Replacing a value does not move its key; deleting and reinserting it places it at the end.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -1448,7 +1448,7 @@
     "difficulty": "beginner",
     "kind": "concept",
     "question": "What are typical hash-table complexities and their caveats?",
-    "answer": "Dictionaries and sets use hashing for average constant-time lookup. Keys must be hashable, equality must agree with hashing, and worst-case performance is not guaranteed constant.",
+    "answer": "Hash-table lookup, insertion, and deletion are average O(1), but can degrade to O(n) under heavy collisions. Keys must be hashable and equality/hash behavior must agree.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -1460,7 +1460,7 @@
     "difficulty": "beginner",
     "kind": "concept",
     "question": "How do you group records, count frequencies, and merge dictionaries?",
-    "answer": "Dictionaries and sets use hashing for average constant-time lookup. Keys must be hashable, equality must agree with hashing, and worst-case performance is not guaranteed constant.",
+    "answer": "Count with `Counter` or `dict.get`; group with `defaultdict(list)` or `setdefault`; merge with `|` (Python 3.9+) or `update()`. State what should happen for duplicate keys or records.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -1472,7 +1472,7 @@
     "difficulty": "beginner",
     "kind": "concept",
     "question": "What are list, set, dict, and generator comprehensions?",
-    "answer": "A generator function returns a lazy iterator; each `yield` pauses it and preserves local state for the next `next()` call. `return` ends it (with `StopIteration`); a generator is normally one-shot.",
+    "answer": "List comprehensions create lists, set comprehensions create sets, dictionary comprehensions create mappings, and generator expressions produce lazy iterators. Use the form whose output and memory behavior fit the task.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -1556,7 +1556,7 @@
     "difficulty": "beginner",
     "kind": "concept",
     "question": "Compare assignment, shallow copy, and deep copy.",
-    "answer": "A shallow copy creates a new outer container but retains references to nested values. A deep copy recursively copies supported nested objects. Choose based on which parts should be shared; deep copying can be costly or inappropriate for external resources.",
+    "answer": "Assignment adds another name for the same object; a shallow copy creates a new outer container but may share nested objects; deep copy recursively duplicates supported contents.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -1580,7 +1580,7 @@
     "difficulty": "beginner",
     "kind": "concept",
     "question": "Compare generator expressions and list comprehensions.",
-    "answer": "A generator function returns a lazy iterator; each `yield` pauses it and preserves local state for the next `next()` call. `return` ends it (with `StopIteration`); a generator is normally one-shot.",
+    "answer": "A list comprehension evaluates eagerly and stores every result; a generator expression yields values lazily as consumed. Generators save memory for large streams but are generally one-shot.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -1856,7 +1856,7 @@
     "difficulty": "intermediate",
     "kind": "concept",
     "question": "What are immutable data and persistent data structures conceptually?",
-    "answer": "Mutable objects can change in place; immutable objects cannot. Empty containers, zero, `False`, and `None` are falsy; nonempty strings such as `\"False\"` are truthy. A tuple is immutable as a container but may reference a mutable list.",
+    "answer": "Persistent data structures preserve earlier versions after an update by sharing unchanged parts and creating changed parts anew. This supports safe snapshots but adds implementation and memory trade-offs.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -1904,7 +1904,7 @@
     "difficulty": "intermediate",
     "kind": "concept",
     "question": "What are absolute and relative imports?",
-    "answer": "A module is an importable namespace, usually a `.py` file; a package groups modules, commonly with `__init__.py`. A namespace package can span directories without that file.",
+    "answer": "An absolute import starts from an importable top-level package; a relative import uses leading dots within a package. Prefer clear imports and avoid running a module as a script when it relies on package-relative imports.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -1952,7 +1952,7 @@
     "difficulty": "intermediate",
     "kind": "concept",
     "question": "What are circular imports and how can you avoid them?",
-    "answer": "A module is an importable namespace, usually a `.py` file; a package groups modules, commonly with `__init__.py`. A namespace package can span directories without that file.",
+    "answer": "Circular imports occur when modules depend on each other during initialization, so one may observe a partially initialized module. Move shared code to a third module and reduce import-time side effects.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -1988,7 +1988,7 @@
     "difficulty": "intermediate",
     "kind": "concept",
     "question": "How do you structure a maintainable package?",
-    "answer": "A module is an importable namespace, usually a `.py` file; a package groups modules, commonly with `__init__.py`. A namespace package can span directories without that file.",
+    "answer": "Group related modules in packages, keep responsibilities narrow, expose a small public interface, avoid circular dependencies, and put executable startup under a `__main__` guard.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -2060,7 +2060,7 @@
     "difficulty": "intermediate",
     "kind": "concept",
     "question": "What happens if `finally` raises an exception or returns?",
-    "answer": "`if` evaluates a truth value; `elif` checks another condition only if earlier branches failed; `else` handles the remainder. Prefer clear, ordered conditions and account for falsy values.",
+    "answer": "If `finally` raises, that new exception can replace an exception already in flight. A `return` from `finally` can suppress a pending exception or override an earlier return, so avoid control-flow exits there.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -2132,7 +2132,7 @@
     "difficulty": "intermediate",
     "kind": "concept",
     "question": "How do you avoid swallowing exceptions or exposing secrets?",
-    "answer": "`random` is for simulation, not security. `secrets` generates cryptographically secure tokens. `hashlib` provides cryptographic hash functions for integrity/fingerprints, not password storage by itself. Least privilege grants only the permissions needed. Store secrets in a secret manager or protected environment, restrict access, avoid logs, rotate after exposure or policy intervals, and support revocation.",
+    "answer": "Catch only exceptions you can handle, keep the original cause when translating errors, and avoid logging credentials or sensitive input. Let unexpected exceptions surface with useful diagnostics.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -2144,7 +2144,7 @@
     "difficulty": "intermediate",
     "kind": "concept",
     "question": "Explain `open` modes `r`, `w`, `a`, `x`, `b`, and `+`.",
-    "answer": "Use context managers for reliable cleanup, explicit encodings for text, streaming for large files, and safe formats for untrusted data. Constrain user-supplied paths.",
+    "answer": "`r` reads; `w` creates or truncates; `a` appends; `x` creates exclusively and fails if present; `b` selects binary mode; `+` enables both reading and writing. Combine flags as needed.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -2168,7 +2168,7 @@
     "difficulty": "intermediate",
     "kind": "concept",
     "question": "How do text and binary I/O differ?",
-    "answer": "Use context managers for reliable cleanup, explicit encodings for text, streaming for large files, and safe formats for untrusted data. Constrain user-supplied paths.",
+    "answer": "Text I/O decodes and encodes characters using an encoding; binary I/O reads and writes raw bytes. Specify encoding for text and do not pass an encoding in binary mode.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -2252,7 +2252,7 @@
     "difficulty": "intermediate",
     "kind": "concept",
     "question": "What are bytes, bytearray, memoryview, and buffering?",
-    "answer": "`bytes` is immutable binary data, `bytearray` is mutable binary data, and `memoryview` exposes a buffer without copying it. Use them when working with encoded data or large binary blocks.",
+    "answer": "`bytes`/`bytearray` represent binary data; `memoryview` accesses a buffer without copying it. Buffered I/O batches operations to reduce overhead when reading or writing.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -2264,7 +2264,7 @@
     "difficulty": "intermediate",
     "kind": "concept",
     "question": "How do you write files atomically and use temporary files?",
-    "answer": "Use context managers for reliable cleanup, explicit encodings for text, streaming for large files, and safe formats for untrusted data. Constrain user-supplied paths.",
+    "answer": "Write to a temporary file in the destination directory, flush/close it, then replace the destination with a rename. Use `tempfile` for safe temporary names; exact durability and atomicity guarantees depend on the filesystem.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -2300,7 +2300,7 @@
     "difficulty": "intermediate",
     "kind": "concept",
     "question": "What are class attributes versus instance attributes?",
-    "answer": "Explain class/instance state and method binding, then map OOP concepts to an example. Favor composition when it reduces coupling; mention MRO for multiple inheritance.",
+    "answer": "A class attribute is stored on the class and can be shared by instances. An instance attribute belongs to one object and shadows a class attribute with the same name.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -2336,7 +2336,7 @@
     "difficulty": "intermediate",
     "kind": "concept",
     "question": "Compare instance, class, and static methods.",
-    "answer": "HTTP is a request/response protocol. Methods describe intent, headers carry metadata, status codes summarize outcomes, and bodies carry representations. GET is safe/read-oriented; PUT is idempotent replacement; PATCH applies partial change; POST commonly creates or triggers work.",
+    "answer": "An instance method receives `self`; a class method receives `cls` and is often used for alternate constructors; a static method receives neither automatically and is a namespaced helper.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -2360,7 +2360,7 @@
     "difficulty": "intermediate",
     "kind": "concept",
     "question": "What are public conventions, `_name`, `__name`, and name mangling?",
-    "answer": "Explain class/instance state and method binding, then map OOP concepts to an example. Favor composition when it reduces coupling; mention MRO for multiple inheritance.",
+    "answer": "A leading underscore is a convention meaning “internal”; Python does not enforce privacy. A double leading underscore triggers name mangling to reduce accidental subclass name collisions.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -2372,7 +2372,7 @@
     "difficulty": "intermediate",
     "kind": "concept",
     "question": "What is method overriding? Does Python support traditional method overloading?",
-    "answer": "Explain class/instance state and method binding, then map OOP concepts to an example. Favor composition when it reduces coupling; mention MRO for multiple inheritance.",
+    "answer": "Overriding replaces an inherited method implementation in a subclass. Python does not select methods by signature for traditional overloading; use defaults, `*args`, or singledispatch-style tools when appropriate.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -2384,7 +2384,7 @@
     "difficulty": "intermediate",
     "kind": "concept",
     "question": "What is composition and when is it better than inheritance?",
-    "answer": "Encapsulation keeps state behind methods/invariants, abstraction exposes an interface, inheritance derives behavior, and polymorphism lets different implementations satisfy the same interface. Prefer composition when a “has-a” relationship or independent change is clearer.",
+    "answer": "Composition gives an object other objects to delegate to; inheritance derives behavior from a base class. Prefer composition when you want replaceable parts and looser coupling; inherit for a true substitutable “is-a” relationship.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -2396,7 +2396,7 @@
     "difficulty": "intermediate",
     "kind": "concept",
     "question": "What are association, aggregation, and composition conceptually?",
-    "answer": "Explain class/instance state and method binding, then map OOP concepts to an example. Favor composition when it reduces coupling; mention MRO for multiple inheritance.",
+    "answer": "Association is a general relationship, aggregation is a whole-part relationship where parts can live independently, and composition is stronger ownership where a part’s lifecycle is tied to the whole.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -2408,7 +2408,7 @@
     "difficulty": "intermediate",
     "kind": "concept",
     "question": "What are properties and `@property`?",
-    "answer": "`@property` exposes method-backed behavior using attribute syntax and supports validation or computed values. It is implemented through the descriptor protocol.",
+    "answer": "`@property` lets a method be accessed like an attribute, useful for validation, computed values, or compatibility when an implementation changes. A setter can control assignment.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -2420,7 +2420,7 @@
     "difficulty": "intermediate",
     "kind": "concept",
     "question": "What are ABCs and abstract methods?",
-    "answer": "HTTP is a request/response protocol. Methods describe intent, headers carry metadata, status codes summarize outcomes, and bodies carry representations. GET is safe/read-oriented; PUT is idempotent replacement; PATCH applies partial change; POST commonly creates or triggers work.",
+    "answer": "An abstract base class can define a shared interface and mark methods with `@abstractmethod`. Concrete subclasses must implement those methods before they can be instantiated.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -2432,7 +2432,7 @@
     "difficulty": "intermediate",
     "kind": "concept",
     "question": "What are dataclasses and when are they useful?",
-    "answer": "Explain class/instance state and method binding, then map OOP concepts to an example. Favor composition when it reduces coupling; mention MRO for multiple inheritance.",
+    "answer": "A dataclass generates common methods such as `__init__` and `__repr__` for data-focused classes. Use `field(default_factory=list)` for per-instance mutable defaults.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -2456,7 +2456,7 @@
     "difficulty": "intermediate",
     "kind": "concept",
     "question": "What are MRO and C3 linearization?",
-    "answer": "Python computes a Method Resolution Order using C3 linearization to keep a consistent order across multiple inheritance. `super()` delegates to the next class in that MRO; cooperative methods should accept and forward compatible arguments.",
+    "answer": "MRO is Python’s ordered method lookup path for a class and its bases. C3 linearization produces a consistent order; inspect it with `ClassName.mro()` or `ClassName.__mro__`.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -2480,7 +2480,7 @@
     "difficulty": "intermediate",
     "kind": "concept",
     "question": "What are `__str__`, `__repr__`, `__eq__`, `__hash__`, and `__len__`?",
-    "answer": "`__str__` is user-friendly text; `__repr__` is developer-oriented representation; `__eq__` defines equality; `__hash__` must agree with equality; `__len__` provides length and may support truth testing.",
+    "answer": "`__str__` is readable display text; `__repr__` is a developer representation; `__eq__` defines equality; `__hash__` must be compatible with equality; `__len__` reports a non-negative size.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -2516,7 +2516,7 @@
     "difficulty": "intermediate",
     "kind": "concept",
     "question": "Compare single, multilevel, hierarchical, and multiple inheritance.",
-    "answer": "Encapsulation keeps state behind methods/invariants, abstraction exposes an interface, inheritance derives behavior, and polymorphism lets different implementations satisfy the same interface. Prefer composition when a “has-a” relationship or independent change is clearer.",
+    "answer": "Single inheritance has one direct base; multilevel chains through a base’s subclass; hierarchical gives several subclasses one base; multiple inheritance has more than one base and uses MRO to resolve lookup.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -2528,7 +2528,7 @@
     "difficulty": "intermediate",
     "kind": "concept",
     "question": "How do you inspect MRO?",
-    "answer": "Python computes a Method Resolution Order using C3 linearization to keep a consistent order across multiple inheritance. `super()` delegates to the next class in that MRO; cooperative methods should accept and forward compatible arguments.",
+    "answer": "Inspect a class’s method resolution order with `MyClass.mro()` or `MyClass.__mro__`. It shows the sequence used for attribute lookup.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -2540,7 +2540,7 @@
     "difficulty": "intermediate",
     "kind": "concept",
     "question": "How does cooperative `super()` work in a diamond hierarchy?",
-    "answer": "Python computes a Method Resolution Order using C3 linearization to keep a consistent order across multiple inheritance. `super()` delegates to the next class in that MRO; cooperative methods should accept and forward compatible arguments.",
+    "answer": "Cooperative `super()` calls the next implementation in the MRO, not simply a named parent. In a diamond hierarchy, each participating method should accept compatible arguments and call `super()` once.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -2648,7 +2648,7 @@
     "difficulty": "intermediate",
     "kind": "concept",
     "question": "How do you refactor a giant class or deep inheritance tree?",
-    "answer": "Encapsulation keeps state behind methods/invariants, abstraction exposes an interface, inheritance derives behavior, and polymorphism lets different implementations satisfy the same interface. Prefer composition when a “has-a” relationship or independent change is clearer.",
+    "answer": "Give each class one cohesive responsibility, move independent behavior into collaborators, and define narrow interfaces between them. Refactor incrementally with tests rather than rewriting a large hierarchy at once.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -2660,7 +2660,7 @@
     "difficulty": "intermediate",
     "kind": "concept",
     "question": "What are special/dunder methods?",
-    "answer": "HTTP is a request/response protocol. Methods describe intent, headers carry metadata, status codes summarize outcomes, and bodies carry representations. GET is safe/read-oriented; PUT is idempotent replacement; PATCH applies partial change; POST commonly creates or triggers work.",
+    "answer": "Dunder methods implement Python protocols. For example, `__len__` supports `len(x)`, `__iter__` supports iteration, and `__eq__` supports `==`; implement the documented behavior consistently.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -2672,7 +2672,7 @@
     "difficulty": "intermediate",
     "kind": "concept",
     "question": "Compare `__repr__` and `__str__`.",
-    "answer": "`__str__` is user-friendly text; `__repr__` is developer-oriented representation; `__eq__` defines equality; `__hash__` must agree with equality; `__len__` provides length and may support truth testing.",
+    "answer": "`__str__` aims for readable output for people; `__repr__` aims for an unambiguous debugging representation, ideally one that can recreate the object when practical.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -2684,7 +2684,7 @@
     "difficulty": "intermediate",
     "kind": "concept",
     "question": "What is the `__eq__` and `__hash__` contract?",
-    "answer": "`__str__` is user-friendly text; `__repr__` is developer-oriented representation; `__eq__` defines equality; `__hash__` must agree with equality; `__len__` provides length and may support truth testing.",
+    "answer": "If two objects compare equal, they must have the same hash. Mutable objects that change equality-relevant state should generally not be hashable, especially if used as dictionary keys or set members.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -2696,7 +2696,7 @@
     "difficulty": "intermediate",
     "kind": "concept",
     "question": "What do `__bool__` and `__len__` affect?",
-    "answer": "`__str__` is user-friendly text; `__repr__` is developer-oriented representation; `__eq__` defines equality; `__hash__` must agree with equality; `__len__` provides length and may support truth testing.",
+    "answer": "`bool(x)` uses `__bool__` when present, otherwise `__len__`; zero length is false. A defined `__bool__` should return an actual boolean.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -2708,7 +2708,7 @@
     "difficulty": "intermediate",
     "kind": "concept",
     "question": "Explain `__iter__`, `__next__`, and `__getitem__`.",
-    "answer": "Dunder methods implement Python protocols. Explain which operator or built-in invokes a method and preserve contracts such as equality/hash consistency.",
+    "answer": "`iter(x)` calls `__iter__` to obtain an iterator; `next(it)` calls `__next__`; `__getitem__` supports indexed access and can also provide legacy iteration when indexes continue until `IndexError`.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -2720,7 +2720,7 @@
     "difficulty": "intermediate",
     "kind": "concept",
     "question": "What do `__contains__`, `__enter__`, and `__exit__` do?",
-    "answer": "A context manager performs setup in `__enter__` and cleanup in `__exit__`, even when an exception occurs. `contextlib` can build managers from generators; `ExitStack` manages a dynamic number of resources.",
+    "answer": "`__contains__` supports `in`; `__enter__` returns the value bound after `as`; `__exit__` performs cleanup and can suppress an exception only by returning true.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -2732,7 +2732,7 @@
     "difficulty": "intermediate",
     "kind": "concept",
     "question": "What are `__add__`, `__radd__`, and `__iadd__`?",
-    "answer": "Dunder methods implement Python protocols. Explain which operator or built-in invokes a method and preserve contracts such as equality/hash consistency.",
+    "answer": "`__add__` handles left-side `+`; `__radd__` gives the right operand a chance when the left cannot handle the operation; `__iadd__` implements in-place `+=` behavior where supported.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -2744,7 +2744,7 @@
     "difficulty": "intermediate",
     "kind": "concept",
     "question": "Compare `__getattribute__` and `__getattr__`.",
-    "answer": "Dunder methods implement Python protocols. Explain which operator or built-in invokes a method and preserve contracts such as equality/hash consistency.",
+    "answer": "`__getattribute__` runs for every attribute lookup and is easy to recurse accidentally. `__getattr__` is a fallback called only after ordinary lookup fails.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -2756,7 +2756,7 @@
     "difficulty": "intermediate",
     "kind": "concept",
     "question": "What are `__setattr__` and `__delattr__`?",
-    "answer": "Dunder methods implement Python protocols. Explain which operator or built-in invokes a method and preserve contracts such as equality/hash consistency.",
+    "answer": "`__setattr__` intercepts attribute assignment and `__delattr__` intercepts deletion. When customizing them, use `object.__setattr__` carefully to avoid infinite recursion.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -2780,7 +2780,7 @@
     "difficulty": "intermediate",
     "kind": "concept",
     "question": "What are data versus non-data descriptors?",
-    "answer": "Dunder methods implement Python protocols. Explain which operator or built-in invokes a method and preserve contracts such as equality/hash consistency.",
+    "answer": "A data descriptor defines `__set__` or `__delete__` as well as `__get__` and takes precedence over an instance dictionary. A non-data descriptor defines only `__get__` and can be shadowed by an instance attribute.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -2792,7 +2792,7 @@
     "difficulty": "intermediate",
     "kind": "concept",
     "question": "How does `property` use descriptors?",
-    "answer": "`@property` exposes method-backed behavior using attribute syntax and supports validation or computed values. It is implemented through the descriptor protocol.",
+    "answer": "A `property` is a descriptor: its getter, setter, and deleter participate in attribute lookup and assignment. This lets a class expose managed attribute syntax.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -2804,7 +2804,7 @@
     "difficulty": "intermediate",
     "kind": "concept",
     "question": "What are `__slots__`, `__dict__`, weak references, and `__init_subclass__`?",
-    "answer": "`__slots__` can restrict per-instance attributes and reduce overhead; descriptors customize attribute access; metaclasses control class creation. `__dict__` stores attributes when present, and weak references do not keep the referent alive.",
+    "answer": "`__slots__` can restrict instance attributes and avoid a per-instance `__dict__` unless one is included; weak references do not keep their targets alive; `__init_subclass__` runs when a subclass is created.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -2816,7 +2816,7 @@
     "difficulty": "intermediate",
     "kind": "concept",
     "question": "How does class creation and metaclass selection work conceptually?",
-    "answer": "`__slots__` can restrict per-instance attributes and reduce overhead; descriptors customize attribute access; metaclasses control class creation. `__dict__` stores attributes when present, and weak references do not keep the referent alive.",
+    "answer": "Class creation executes the class body in a namespace, then the metaclass constructs the class object. The metaclass is chosen from explicit bases/keywords and base classes; `type` is the default.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -2864,7 +2864,7 @@
     "difficulty": "intermediate",
     "kind": "concept",
     "question": "How do `yield` and `return` differ?",
-    "answer": "A generator function returns a lazy iterator; each `yield` pauses it and preserves local state for the next `next()` call. `return` ends it (with `StopIteration`); a generator is normally one-shot.",
+    "answer": "`yield` produces a value and pauses a generator so it can resume later. `return` ends the function; in a generator it signals completion (and may carry a `StopIteration` value).",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -2876,7 +2876,7 @@
     "difficulty": "intermediate",
     "kind": "concept",
     "question": "What are generator expressions and lazy evaluation?",
-    "answer": "A generator function returns a lazy iterator; each `yield` pauses it and preserves local state for the next `next()` call. `return` ends it (with `StopIteration`); a generator is normally one-shot.",
+    "answer": "A generator expression, such as `(x*x for x in values)`, lazily produces values on demand instead of building a list immediately.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -2888,7 +2888,7 @@
     "difficulty": "intermediate",
     "kind": "concept",
     "question": "Can a generator restart? How do you obtain a fresh iterator?",
-    "answer": "A generator function returns a lazy iterator; each `yield` pauses it and preserves local state for the next `next()` call. `return` ends it (with `StopIteration`); a generator is normally one-shot.",
+    "answer": "A generator is an iterator and is usually exhausted after one pass. Call the generator function again to get a fresh generator, or materialize values if repeated passes are needed.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -2912,7 +2912,7 @@
     "difficulty": "intermediate",
     "kind": "concept",
     "question": "What are async iterables, async generators, and awaitables?",
-    "answer": "A coroutine is an async computation; the event loop schedules tasks when they suspend at `await`. Async I/O supports many concurrent waits in one thread, but blocking calls stall the loop; use async-compatible APIs or offload blocking work.",
+    "answer": "An awaitable can be used with `await`; an async iterable supplies an async iterator consumed with `async for`; an async generator yields values over time and is consumed asynchronously.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -2936,7 +2936,7 @@
     "difficulty": "intermediate",
     "kind": "concept",
     "question": "What risks come with uneven consumption of `tee` iterators?",
-    "answer": "Use `with open(...)` to ensure a file is closed even when an exception occurs. `r` reads, `w` truncates/creates, `a` appends, `x` creates exclusively, `b` is binary, and `+` adds reading/writing.",
+    "answer": "`itertools.tee` creates independent iterators by caching values consumed by the faster branch. If one branch runs far ahead, the cache can grow substantially; use tee only when that memory behavior is acceptable.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -2960,7 +2960,7 @@
     "difficulty": "intermediate",
     "kind": "concept",
     "question": "What is a decorator and how does `@` syntax work?",
-    "answer": "A decorator is a callable that receives and replaces/wraps a function or class; `@decorator` is reassignment syntax. Use `functools.wraps` to preserve metadata, and return the wrapped function’s result.",
+    "answer": "A decorator is a callable that takes a function/class and returns a replacement or wrapper. `@decorator` is equivalent to assigning the decorated name to `decorator(original)`; use `functools.wraps` for wrappers.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -2972,7 +2972,7 @@
     "difficulty": "intermediate",
     "kind": "concept",
     "question": "How do you write a decorator accepting arguments?",
-    "answer": "A decorator is a callable that receives and replaces/wraps a function or class; `@decorator` is reassignment syntax. Use `functools.wraps` to preserve metadata, and return the wrapped function’s result.",
+    "answer": "A decorator factory accepts configuration and returns the actual decorator, which then wraps the function. This adds one call layer: `@repeat(2)` is `func = repeat(2)(func)`.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -2996,7 +2996,7 @@
     "difficulty": "intermediate",
     "kind": "concept",
     "question": "What is decorator stacking order?",
-    "answer": "A decorator is a callable that receives and replaces/wraps a function or class; `@decorator` is reassignment syntax. Use `functools.wraps` to preserve metadata, and return the wrapped function’s result.",
+    "answer": "Decorators apply from the closest to the function outward: `@a` above `@b` is `a(b(func))`. The outer decorator receives the result of the inner one.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -3008,7 +3008,7 @@
     "difficulty": "intermediate",
     "kind": "concept",
     "question": "What are context managers and `with`?",
-    "answer": "Use `with open(...)` to ensure a file is closed even when an exception occurs. `r` reads, `w` truncates/creates, `a` appends, `x` creates exclusively, `b` is binary, and `+` adds reading/writing.",
+    "answer": "A context manager supports `with` by acquiring or preparing a resource in `__enter__` and cleaning it up in `__exit__`, even when the body raises.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -3020,7 +3020,7 @@
     "difficulty": "intermediate",
     "kind": "concept",
     "question": "How do `__enter__` and `__exit__` work?",
-    "answer": "A context manager performs setup in `__enter__` and cleanup in `__exit__`, even when an exception occurs. `contextlib` can build managers from generators; `ExitStack` manages a dynamic number of resources.",
+    "answer": "`__enter__` runs when entering a `with` block and supplies the optional `as` value. `__exit__` runs on exit, including exceptional exit, and can suppress an exception by returning true.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -3032,7 +3032,7 @@
     "difficulty": "intermediate",
     "kind": "concept",
     "question": "How does `contextlib.contextmanager` work?",
-    "answer": "Decorators wrap callables; context managers pair setup and cleanup. Preserve metadata and avoid dynamic execution of untrusted text.",
+    "answer": "`@contextmanager` turns a generator into a context manager. Code before `yield` is setup, the yielded value is bound by `as`, and code after `yield` runs during cleanup; put cleanup in `finally`.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -3044,7 +3044,7 @@
     "difficulty": "intermediate",
     "kind": "concept",
     "question": "What are `ExitStack`, monkey patching, introspection, and reflection?",
-    "answer": "A context manager performs setup in `__enter__` and cleanup in `__exit__`, even when an exception occurs. `contextlib` can build managers from generators; `ExitStack` manages a dynamic number of resources.",
+    "answer": "`ExitStack` registers multiple cleanup callbacks and closes them in reverse order, useful when the number of resources is dynamic. Monkey patching replaces an attribute temporarily; introspection examines objects at runtime; reflection can inspect or alter program structure.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -3056,7 +3056,7 @@
     "difficulty": "intermediate",
     "kind": "concept",
     "question": "What do `getattr`, `setattr`, `hasattr`, `vars`, and `inspect` do?",
-    "answer": "Decorators wrap callables; context managers pair setup and cleanup. Preserve metadata and avoid dynamic execution of untrusted text.",
+    "answer": "`getattr` reads an attribute with an optional default; `setattr` assigns; `hasattr` checks lookup; `vars(obj)` returns its instance dictionary when available; `inspect` exposes signatures and callable metadata.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -3068,7 +3068,7 @@
     "difficulty": "intermediate",
     "kind": "concept",
     "question": "What are metaclasses and class decorators?",
-    "answer": "Decorators wrap callables; context managers pair setup and cleanup. Preserve metadata and avoid dynamic execution of untrusted text.",
+    "answer": "A metaclass customizes class creation; a class decorator transforms a class after it is created. Both are advanced tools—prefer ordinary functions, descriptors, or base classes unless class-construction behavior itself needs changing.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -3140,7 +3140,7 @@
     "difficulty": "advanced",
     "kind": "concept",
     "question": "What are strong and weak references?",
-    "answer": "`__slots__` can restrict per-instance attributes and reduce overhead; descriptors customize attribute access; metaclasses control class creation. `__dict__` stores attributes when present, and weak references do not keep the referent alive.",
+    "answer": "A strong reference keeps an object alive. A weak reference allows observing an object without preventing its collection; use it for caches or back-references when ownership should remain elsewhere.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -3248,7 +3248,7 @@
     "difficulty": "advanced",
     "kind": "concept",
     "question": "What is memoryview and how can it avoid copying?",
-    "answer": "`bytes` is immutable binary data, `bytearray` is mutable binary data, and `memoryview` exposes a buffer without copying it. Use them when working with encoded data or large binary blocks.",
+    "answer": "A memoryview exposes a buffer-protocol object without copying its bytes, which can help with large binary data. The underlying object must support the buffer protocol and may constrain mutation while a view exists.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -3284,7 +3284,7 @@
     "difficulty": "advanced",
     "kind": "concept",
     "question": "What is interning and why not rely on it?",
-    "answer": "Interning may reuse immutable objects such as some strings, but the scope is implementation-dependent. Compare values with `==`; never rely on two equal values having the same identity.",
+    "answer": "Interning reuses certain immutable objects as an implementation optimization. Which values are interned can vary; compare values with `==` and do not rely on object identity.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -3296,7 +3296,7 @@
     "difficulty": "advanced",
     "kind": "concept",
     "question": "What is the GIL and how does its role depend on CPython build/version?",
-    "answer": "CPython is the standard C implementation; PyPy uses a tracing JIT for many workloads; Jython runs on the JVM; MicroPython targets constrained devices. They share much of Python syntax but differ in performance, platform support, and native-extension compatibility. The traditional GIL in conventional CPython builds limits simultaneous execution of Python bytecode by threads, so threads commonly help I/O-bound work while processes suit CPU-bound work. Free-threaded CPython builds make the GIL optional, but extension support and behavior depend on the build and version; protect shared mutable state explicitly.",
+    "answer": "In conventional CPython builds the GIL allows one thread at a time to execute Python bytecode, which can limit CPU-bound threading. This is a CPython implementation detail; free-threaded CPython builds can run without the GIL, with compatibility and performance trade-offs.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -3440,7 +3440,7 @@
     "difficulty": "advanced",
     "kind": "concept",
     "question": "Explain `list[int]`, `dict[str, int]`, `Optional`, `Union`, and `|`.",
-    "answer": "Type annotations document intent and support static tools; runtime checks require explicit code or a framework. Explain generic shape and version compatibility.",
+    "answer": "`list[int]` describes a list of integers; `dict[str, int]` maps strings to integers; `Optional[T]` means `T | None`; `Union[A, B]` or `A | B` describes alternative types.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -3452,7 +3452,7 @@
     "difficulty": "advanced",
     "kind": "concept",
     "question": "What are `Any`, `object`, `Never`, and `NoReturn` conceptually?",
-    "answer": "Type hints document intended types and help static tools; Python does not generally enforce them at runtime. `Any` opts out of checking, `object` is any value with only object-level operations, and `Never`/`NoReturn` represent code that cannot return normally.",
+    "answer": "`Any` disables most static checking for a value; `object` is the safe top type and requires narrowing before type-specific operations; `Never`/`NoReturn` indicate code that cannot return normally.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -3488,7 +3488,7 @@
     "difficulty": "advanced",
     "kind": "concept",
     "question": "What are covariance, contravariance, and invariance at a high level?",
-    "answer": "Type annotations document intent and support static tools; runtime checks require explicit code or a framework. Explain generic shape and version compatibility.",
+    "answer": "Variance describes how subtype relationships carry through generic types. Covariant outputs preserve direction, contravariant inputs reverse it, and invariant containers allow neither direction; mutable containers are commonly invariant for safety.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -3500,7 +3500,7 @@
     "difficulty": "advanced",
     "kind": "concept",
     "question": "What are `Callable` and callback annotations?",
-    "answer": "Type annotations document intent and support static tools; runtime checks require explicit code or a framework. Explain generic shape and version compatibility.",
+    "answer": "`Callable[[A, B], R]` describes a callable taking argument types `A` and `B` and returning `R`. Use it for callbacks passed into functions.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -3536,7 +3536,7 @@
     "difficulty": "advanced",
     "kind": "concept",
     "question": "What are enums and `NamedTuple`?",
-    "answer": "Type annotations document intent and support static tools; runtime checks require explicit code or a framework. Explain generic shape and version compatibility.",
+    "answer": "`Enum` names a fixed set of symbolic values. `NamedTuple` provides tuple behavior with named fields; a dataclass is often preferable when mutable or richer record behavior is wanted.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -3548,7 +3548,7 @@
     "difficulty": "advanced",
     "kind": "concept",
     "question": "How do you support multiple Python versions?",
-    "answer": "Type annotations document intent and support static tools; runtime checks require explicit code or a framework. Explain generic shape and version compatibility.",
+    "answer": "Declare the minimum supported Python version, test on that version, and avoid syntax or library APIs introduced later unless guarded. Use compatible typing forms or `typing_extensions` where needed.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -3620,7 +3620,7 @@
     "difficulty": "advanced",
     "kind": "concept",
     "question": "What are dependencies and development dependencies?",
-    "answer": "Keep dependencies isolated, declared, and reproducible. Explain the difference between an environment, package, build metadata, and lock/constraint file.",
+    "answer": "Runtime dependencies are needed by the application; development dependencies support testing, linting, or building. Keep them declared separately when the project’s packaging tool supports dependency groups.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -3656,7 +3656,7 @@
     "difficulty": "advanced",
     "kind": "concept",
     "question": "What are semantic versioning and dependency conflicts?",
-    "answer": "Keep dependencies isolated, declared, and reproducible. Explain the difference between an environment, package, build metadata, and lock/constraint file.",
+    "answer": "Semantic versioning communicates compatibility expectations, but package ecosystems and pre-1.0 versions vary. Conflicts occur when dependency constraints cannot all be satisfied; inspect resolver output and lock a tested environment.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -3668,7 +3668,7 @@
     "difficulty": "advanced",
     "kind": "concept",
     "question": "What are Ruff, Black, mypy, Pyright, and pre-commit?",
-    "answer": "Keep dependencies isolated, declared, and reproducible. Explain the difference between an environment, package, build metadata, and lock/constraint file.",
+    "answer": "Ruff lints and can format Python; Black formats code; mypy and Pyright perform static type checking; pre-commit runs selected checks before commits. Agree on project configuration and run them consistently.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -3680,7 +3680,7 @@
     "difficulty": "advanced",
     "kind": "concept",
     "question": "What belongs in README, license, changelog, and `.gitignore`?",
-    "answer": "Keep dependencies isolated, declared, and reproducible. Explain the difference between an environment, package, build metadata, and lock/constraint file.",
+    "answer": "README explains purpose, setup, and use; a license states reuse terms; a changelog records notable changes; `.gitignore` excludes generated, local, or secret files from version control.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -3752,7 +3752,7 @@
     "difficulty": "advanced",
     "kind": "concept",
     "question": "What are mocks, stubs, fakes, and spies?",
-    "answer": "Test behavior at boundaries and failure paths, not just execution. Explain test doubles, determinism, and why coverage alone does not establish correctness.",
+    "answer": "A stub returns controlled canned responses; a fake is a lightweight working implementation; a mock records or asserts interactions; a spy wraps behavior while observing calls.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -3776,7 +3776,7 @@
     "difficulty": "advanced",
     "kind": "concept",
     "question": "What does patching the name where it is looked up mean?",
-    "answer": "Test behavior at boundaries and failure paths, not just execution. Explain test doubles, determinism, and why coverage alone does not establish correctness.",
+    "answer": "Patch the name as imported and looked up by the code under test, not necessarily the module where the object was originally defined. This ensures the test replaces the reference actually used.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -3800,7 +3800,7 @@
     "difficulty": "advanced",
     "kind": "concept",
     "question": "What are property-based, fuzz, mutation, and contract tests?",
-    "answer": "`@property` exposes method-backed behavior using attribute syntax and supports validation or computed values. It is implemented through the descriptor protocol.",
+    "answer": "Property-based testing generates many inputs from rules and checks invariants; fuzzing explores unexpected inputs; mutation testing alters code to see whether tests catch the changes; contract tests check agreed interfaces.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -3812,7 +3812,7 @@
     "difficulty": "advanced",
     "kind": "concept",
     "question": "How do you test files, environment variables, APIs, and databases?",
-    "answer": "Test behavior at boundaries and failure paths, not just execution. Explain test doubles, determinism, and why coverage alone does not establish correctness.",
+    "answer": "Use temporary directories/files, monkeypatched environment variables, a test client or mocked network boundary, and an isolated test database/transaction. Ensure cleanup and avoid shared state between tests.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -3836,7 +3836,7 @@
     "difficulty": "advanced",
     "kind": "concept",
     "question": "How do linting, formatting, typing, and code review complement tests?",
-    "answer": "Test behavior at boundaries and failure paths, not just execution. Explain test doubles, determinism, and why coverage alone does not establish correctness.",
+    "answer": "Tests check behavior; linting catches suspicious patterns; formatting makes style consistent; typing tools find some shape errors; code review checks design and assumptions. None alone proves correctness.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -3884,7 +3884,7 @@
     "difficulty": "advanced",
     "kind": "concept",
     "question": "Compare inner, left, right, and full joins.",
-    "answer": "Use parameterized SQL, understand join/group/window semantics, and inspect plans/indexes. Explain transaction isolation and ORM query behavior where relevant.",
+    "answer": "INNER keeps matching pairs; LEFT keeps every left row plus matches; RIGHT does the symmetric operation; FULL keeps rows from either side and fills unmatched columns with NULL. Support varies by database.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -3896,7 +3896,7 @@
     "difficulty": "advanced",
     "kind": "concept",
     "question": "What are aggregate and window functions, subqueries, and CTEs?",
-    "answer": "Use parameterized SQL, understand join/group/window semantics, and inspect plans/indexes. Explain transaction isolation and ORM query behavior where relevant.",
+    "answer": "Aggregates summarize groups of rows; window functions compute across related rows while retaining row detail; subqueries nest a query; CTEs name a query expression for readability or reuse.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -3944,7 +3944,7 @@
     "difficulty": "advanced",
     "kind": "concept",
     "question": "What are locks, deadlocks, and optimistic concurrency?",
-    "answer": "Use parameterized SQL, understand join/group/window semantics, and inspect plans/indexes. Explain transaction isolation and ORM query behavior where relevant.",
+    "answer": "Locks coordinate concurrent access but can deadlock if transactions wait in a cycle. Optimistic concurrency detects conflicting updates at write time, often with a version column; retry or report conflicts.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -3992,7 +3992,7 @@
     "difficulty": "advanced",
     "kind": "concept",
     "question": "Compare SQL and NoSQL databases.",
-    "answer": "Use parameterized SQL, understand join/group/window semantics, and inspect plans/indexes. Explain transaction isolation and ORM query behavior where relevant.",
+    "answer": "Relational databases use tables, schemas, and SQL with constraints and joins; NoSQL covers several models with different consistency and query trade-offs. Choose from access patterns and integrity needs, not a blanket rule.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -4040,7 +4040,7 @@
     "difficulty": "advanced",
     "kind": "concept",
     "question": "What is HTTP? Explain methods, headers, status codes, and bodies.",
-    "answer": "HTTP is a request/response protocol. Methods describe intent, headers carry metadata, status codes summarize outcomes, and bodies carry representations. GET is safe/read-oriented; PUT is idempotent replacement; PATCH applies partial change; POST commonly creates or triggers work.",
+    "answer": "HTTP is a request/response protocol. Methods express operation intent, headers carry metadata, status codes summarize the result, and the body carries content. GET is defined as safe; PUT is idempotent by semantics.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -4148,7 +4148,7 @@
     "difficulty": "advanced",
     "kind": "concept",
     "question": "Compare Django, Flask, and FastAPI at a high level.",
-    "answer": "Separate transport, validation, business logic, and persistence. Check authentication, authorization, schema validation, errors, and safe resource limits at boundaries.",
+    "answer": "Django is a batteries-included framework; Flask is a small WSGI framework with extension choices; FastAPI emphasizes type-driven request handling and ASGI async support. Compare ecosystem, project shape, and team familiarity.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -4172,7 +4172,7 @@
     "difficulty": "advanced",
     "kind": "concept",
     "question": "Why validate inputs at system boundaries?",
-    "answer": "Separate transport, validation, business logic, and persistence. Check authentication, authorization, schema validation, errors, and safe resource limits at boundaries.",
+    "answer": "Validate untrusted input at boundaries before it reaches business logic or storage. Validation improves errors and safety, but authorization and domain rules still need separate checks.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -4208,7 +4208,7 @@
     "difficulty": "advanced",
     "kind": "concept",
     "question": "How should passwords be hashed and stored?",
-    "answer": "Separate transport, validation, business logic, and persistence. Check authentication, authorization, schema validation, errors, and safe resource limits at boundaries.",
+    "answer": "Use a dedicated password-hashing algorithm such as Argon2id, scrypt, or bcrypt with a unique salt and suitable work factor. Never store plaintext or use a fast general-purpose hash alone.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -4220,7 +4220,7 @@
     "difficulty": "advanced",
     "kind": "concept",
     "question": "What are JWTs and common pitfalls?",
-    "answer": "Separate transport, validation, business logic, and persistence. Check authentication, authorization, schema validation, errors, and safe resource limits at boundaries.",
+    "answer": "A JWT is a signed token carrying claims. Validate signature, issuer, audience, and expiry; keep claims minimal, protect tokens, and remember a signed JWT is not encrypted and can be hard to revoke.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -4232,7 +4232,7 @@
     "difficulty": "advanced",
     "kind": "concept",
     "question": "What are pagination, filtering, sorting, and API versioning?",
-    "answer": "Separate transport, validation, business logic, and persistence. Check authentication, authorization, schema validation, errors, and safe resource limits at boundaries.",
+    "answer": "Pagination bounds response size; filtering and sorting must use validated, allow-listed fields; versioning provides a managed path for incompatible API changes. Set limits and stable ordering.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -4256,7 +4256,7 @@
     "difficulty": "advanced",
     "kind": "concept",
     "question": "How do you handle uploads safely?",
-    "answer": "Separate transport, validation, business logic, and persistence. Check authentication, authorization, schema validation, errors, and safe resource limits at boundaries.",
+    "answer": "Limit upload size and allowed types, generate server-side filenames, store outside executable/public paths, validate content rather than trusting MIME headers, and scan or process in isolation when needed.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -4268,7 +4268,7 @@
     "difficulty": "advanced",
     "kind": "concept",
     "question": "What are background jobs, queues, health checks, and graceful shutdown?",
-    "answer": "Separate transport, validation, business logic, and persistence. Check authentication, authorization, schema validation, errors, and safe resource limits at boundaries.",
+    "answer": "Background queues move slow/retryable work out of the request path. Health checks report readiness/liveness; graceful shutdown stops accepting work and drains or safely requeues in-flight jobs.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -4316,7 +4316,7 @@
     "difficulty": "advanced",
     "kind": "concept",
     "question": "What is the GIL in conventional CPython builds?",
-    "answer": "CPython is the standard C implementation; PyPy uses a tracing JIT for many workloads; Jython runs on the JVM; MicroPython targets constrained devices. They share much of Python syntax but differ in performance, platform support, and native-extension compatibility. The traditional GIL in conventional CPython builds limits simultaneous execution of Python bytecode by threads, so threads commonly help I/O-bound work while processes suit CPU-bound work. Free-threaded CPython builds make the GIL optional, but extension support and behavior depend on the build and version; protect shared mutable state explicitly.",
+    "answer": "In standard CPython builds, the Global Interpreter Lock (GIL) protects interpreter state and generally prevents multiple threads from executing Python bytecode at the same time. Threads can still overlap I/O; CPU-bound parallel work may need processes or a supported free-threaded build.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -4412,7 +4412,7 @@
     "difficulty": "advanced",
     "kind": "concept",
     "question": "What are event loops, coroutines, tasks, awaitables, and `await`?",
-    "answer": "A coroutine is an async computation; the event loop schedules tasks when they suspend at `await`. Async I/O supports many concurrent waits in one thread, but blocking calls stall the loop; use async-compatible APIs or offload blocking work.",
+    "answer": "A coroutine is an async computation; a task schedules it on an event loop; an awaitable is an object usable with `await`. `await` suspends the current coroutine until the awaited operation can continue.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -4424,7 +4424,7 @@
     "difficulty": "advanced",
     "kind": "concept",
     "question": "Why does blocking code inside async code hurt responsiveness?",
-    "answer": "A coroutine is an async computation; the event loop schedules tasks when they suspend at `await`. Async I/O supports many concurrent waits in one thread, but blocking calls stall the loop; use async-compatible APIs or offload blocking work.",
+    "answer": "Blocking work occupies the event-loop thread, preventing other tasks from running. Use async-compatible I/O or move blocking work to an executor/process as appropriate.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -4448,7 +4448,7 @@
     "difficulty": "advanced",
     "kind": "concept",
     "question": "How do free-threaded CPython builds affect GIL claims?",
-    "answer": "The traditional GIL in conventional CPython builds limits simultaneous execution of Python bytecode by threads, so threads commonly help I/O-bound work while processes suit CPU-bound work. Free-threaded CPython builds make the GIL optional, but extension support and behavior depend on the build and version; protect shared mutable state explicitly. CPython is the standard C implementation; PyPy uses a tracing JIT for many workloads; Jython runs on the JVM; MicroPython targets constrained devices. They share much of Python syntax but differ in performance, platform support, and native-extension compatibility.",
+    "answer": "A free-threaded CPython build can run Python threads in parallel without the traditional GIL, but it does not make shared mutable state automatically safe. Extension compatibility and workload performance depend on the build and dependencies.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -4604,7 +4604,7 @@
     "difficulty": "advanced",
     "kind": "output-trace",
     "question": "Predict shared-list mutation through two names.",
-    "answer": "For output questions, draw a small table of names, referenced objects, and values after each statement. Then trace control flow exactly and distinguish printed output from returned values or exceptions.",
+    "answer": "Both names refer to the same list. If the code appends through one name, printing the other shows the appended value as well.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -4652,7 +4652,7 @@
     "difficulty": "advanced",
     "kind": "output-trace",
     "question": "Trace nested-list multiplication and aliasing.",
-    "answer": "For output questions, draw a small table of names, referenced objects, and values after each statement. Then trace control flow exactly and distinguish printed output from returned values or exceptions.",
+    "answer": "List multiplication repeats references, not nested objects. Rows created with `[[0] * width] * height` all refer to the same inner list; use a comprehension to create independent rows.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -4664,7 +4664,7 @@
     "difficulty": "advanced",
     "kind": "output-trace",
     "question": "What happens when a generator is iterated twice?",
-    "answer": "A generator function returns a lazy iterator; each `yield` pauses it and preserves local state for the next `next()` call. `return` ends it (with `StopIteration`); a generator is normally one-shot.",
+    "answer": "The first iteration consumes the generator; a second pass over that same exhausted generator yields no items. Create a new generator to repeat the work.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -4700,7 +4700,7 @@
     "difficulty": "advanced",
     "kind": "output-trace",
     "question": "How does `break` affect loop `else`?",
-    "answer": "`if` evaluates a truth value; `elif` checks another condition only if earlier branches failed; `else` handles the remainder. Prefer clear, ordered conditions and account for falsy values.",
+    "answer": "`break` exits the loop immediately and skips its `else` suite. The `else` runs only when iteration ends without a break.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -4712,7 +4712,7 @@
     "difficulty": "advanced",
     "kind": "output-trace",
     "question": "Trace class attributes when an instance shadows one.",
-    "answer": "For output questions, draw a small table of names, referenced objects, and values after each statement. Then trace control flow exactly and distinguish printed output from returned values or exceptions.",
+    "answer": "An instance attribute shadows a class attribute during lookup. Mutating an instance attribute affects that instance; changing the class attribute affects lookups that are not shadowed.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -4772,7 +4772,7 @@
     "difficulty": "advanced",
     "kind": "output-trace",
     "question": "Why can blocking I/O inside async code block other tasks?",
-    "answer": "A coroutine is an async computation; the event loop schedules tasks when they suspend at `await`. Async I/O supports many concurrent waits in one thread, but blocking calls stall the loop; use async-compatible APIs or offload blocking work.",
+    "answer": "A blocking call inside async code stalls the event loop and delays unrelated tasks. Await non-blocking APIs; isolate unavoidable blocking work in a thread or process executor.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -4808,7 +4808,7 @@
     "difficulty": "advanced",
     "kind": "project",
     "question": "Build a CLI contact manager with JSON persistence and tests.",
-    "answer": "Use `with open(...)` to ensure a file is closed even when an exception occurs. `r` reads, `w` truncates/creates, `a` appends, `x` creates exclusively, `b` is binary, and `+` adds reading/writing.",
+    "answer": "Separate the `Contact` data model, storage operations, and command-line input/output. Persist contacts as JSON through `Path` and a context manager; validate input and test the functions using a temporary file.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {
@@ -4844,7 +4844,7 @@
     "difficulty": "advanced",
     "kind": "project",
     "question": "Build an OOP inventory or library system using composition.",
-    "answer": "Encapsulation keeps state behind methods/invariants, abstraction exposes an interface, inheritance derives behavior, and polymorphism lets different implementations satisfy the same interface. Prefer composition when a “has-a” relationship or independent change is clearer.",
+    "answer": "Model entities such as `Book`, `Member`, and `Library` separately. Let `Library` compose collections and operations, validate borrowing/return rules, and keep persistence or user interaction outside the domain objects.",
     "sourcePageSet": "Python From Zero to Advanced Interview Guide"
   },
   {

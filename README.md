@@ -4,7 +4,7 @@ A full-stack platform for learning Python from scratch and practising interview 
 
 What makes it a learning tool rather than a quiz site:
 
-* **Real lessons.** 27 lessons across seven topics, each starting from the mental model, then the syntax, then the traps, then self-check questions with collapsible answers.
+* **Real lessons.** 29 lessons across seven topics, including first-program/debugging guidance and files/JSON/CSV, each starting from a mental model, then the syntax, common traps and self-check questions.
 * **Diagnosis, not just "wrong answer".** Every test case is tagged with the skill it probes. When a submission fails, PyPrep looks at the *pattern* of passes and failures and tells you which underlying skill is shaky: indexing, slice bounds, slice step, or loop direction, for example. After repeated misses on the same skill it sends you back to the lesson and to smaller questions on exactly that skill.
 * **A model of what you know.** A per-skill mastery estimate (decayed Beta evidence, discounted when you needed hints or the solution) drives a "what to practise next" list, steps back to a shaky prerequisite instead of drilling the dependent skill, and schedules review of skills you have not touched in a while.
 * **Safe code execution.** Learner code runs in a separate service with no network, its own unprivileged user per run, CPU, memory, process and file limits, and a wall-clock kill.
@@ -55,25 +55,25 @@ Do not judge it by how the pages look. These are the four things worth checking,
 | **Is progress saved after logout?** | Solve a question, bookmark something, complete a lesson, log out, log back in: solved count, bookmarks, lesson completion, weak spots, activity graph, revealed hints and your unsaved editor draft are all restored (all stored server-side, in MongoDB). Also asserted by `npm run test:e2e`. |
 | **Is code execution safely isolated?** | `npm run test:runner` throws infinite loops, a program that swallows the timeout exception, memory bombs, a fork bomb, output floods, `sys.exit`, attempts to read the runner's secret and `/proc`, to write large files, to become root and to raise its own limits at the runner. All must be contained. Details and honest limits in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#security-model). |
 
-`npm test` runs everything that does not need a database (content, typechecks, unit tests, runner isolation, client build). `npm run test:e2e` runs the 70-check API test against a running stack, including interview revision persistence and submitting every reference solution and every starter through the real runner.
+`npm test` runs everything that does not need a database (content, typechecks, unit tests, runner isolation, client build). `npm run test:e2e` runs the API end-to-end checks against a running stack, including interview revision persistence and submitting curriculum solutions through the real runner.
 
 ## The curriculum
 
 | Topic | Lessons | Questions |
 |---|---|---|
-| Fundamentals | 3 | 8 |
+| Fundamentals | 4 | 11 |
 | Control flow | 3 | 8 |
 | Strings | 3 | 10 |
 | Collections | 4 | 8 |
 | Functions | 4 | 8 |
 | Object-oriented Python | 4 | 8 |
-| Advanced Python (exceptions, generators, decorators, complexity, interview patterns, typing, testing and memory management) | 6 | 10 |
+| Advanced Python (exceptions, generators, decorators, complexity, interview patterns, typing, testing, memory management, files and data formats) | 7 | 15 |
 
 Each topic also has a syntax reference (cheat sheet). Questions come in two kinds, *practice* and *interview*, in three difficulties, each with three progressive hints, hidden edge-case tests and a worked solution that explains why, not just what.
 
 ### Interview Glance and Trace Bench
 
-The main navigation includes **Interview Glance**, a searchable revision library with 50 Python and 50 SQL quick-revision questions. Filter by subject, topic, difficulty, experience, question type and revision status. Each expandable entry includes the original working example, expected output (or a note when SQL results depend on database rows), a plain-English explanation, edge-case cue, follow-up, practice challenge and time-saving pattern. Bookmarks, completion, confidence and last-reviewed time are saved per account in MongoDB, and marked revisions count in the activity heatmap. **Trace Bench** provides five curated, step-by-step Python dry runs; these are guided traces, not a live interpreter or a complete view of Python internals.
+The main navigation includes **Interview Glance**, with 79 Python coding prompts and 50 SQL revision entries. Python prompts include built-in, slicing, and manual alternatives where useful; the editor uses the same syntax-aware CodeMirror editor as practice. Revision progress is saved per account. **Complete Interview Guide** contains 409 non-DSA questions from the supplied question guide with concise authored answer notes. **Code Clinic** has 10 runnable examples. **Mock Interview** provides a timed coding round, output-prediction exercises, and project/behavioral prompts. **Trace Bench** has 17 curated, step-by-step Python dry runs; these are guided traces, not a live interpreter or a complete view of Python internals.
 
 **The learning loop**
 
@@ -170,4 +170,5 @@ Docker compose (`.env`): `JWT_SECRET`, `RUNNER_SECRET`, `ADMIN_EMAIL`, `ADMIN_PA
 * **Rate limits are in memory**, per API instance. Behind several instances, switch to a shared store (e.g. Redis).
 * **No email.** Approval decisions are visible in the app, but nobody is notified by email; there is also no password reset yet.
 * **The container runs Python 3.11** (Debian bookworm). Content is written for 3.10+ and validated on 3.13 here; behaviour differences are unlikely but run `validate.py` with your target version.
-* The curriculum is 60 questions, enough to learn the topics but not exhaustive. Four skills (`context-managers`, `iterators`, `generators`, `two-pointers`) have only one question each, so remediation practice for them is thin; the validator lists these.
+* The curriculum currently has 68 graded exercises across 55 skill concepts. Every concept has at least two tagged questions, but this is still a compact first release rather than an exhaustive Python reference.
+* The supplied interview guide is a question list, not an answer key. PyPrep authors concise study notes for it; a continuing editorial review is needed for complete, individualized answers, examples, and version/source notes.

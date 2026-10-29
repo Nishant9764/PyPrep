@@ -56,5 +56,39 @@
   { "id": "hash-map-patterns", "title": "Hash map patterns", "topic": "advanced", "lesson": "complexity-and-interview-patterns", "prereqs": ["dict-counting", "tuples-sets"], "description": "Two-sum style lookups, seen-sets, complement search, grouping by key." },
   { "id": "sliding-window", "title": "Sliding window", "topic": "advanced", "lesson": "complexity-and-interview-patterns", "prereqs": ["for-loops", "list-basics"], "description": "Maintaining a moving range over a sequence to avoid recomputation." },
   { "id": "type-hints", "title": "Type hints", "topic": "advanced", "lesson": "type-hints-modules-and-testing", "prereqs": ["function-basics"], "description": "Annotations, Optional, unions, generics, what hints do and do not enforce." },
-  { "id": "modules-testing", "title": "Modules and testing", "topic": "advanced", "lesson": "type-hints-modules-and-testing", "prereqs": ["function-basics"], "description": "import mechanics, __name__ == '__main__', virtual environments, assert and unittest/pytest basics." }
+  { "id": "modules-testing", "title": "Modules and testing", "topic": "advanced", "lesson": "type-hints-modules-and-testing", "prereqs": ["function-basics"], "description": "import mechanics, __name__ == '__main__', virtual environments, assert and unittest/pytest basics." },
+  {
+    "id": "program-setup",
+    "title": "Running a Python program",
+    "topic": "fundamentals",
+    "lesson": "first-program-and-debugging",
+    "prereqs": [
+      "variables-types",
+      "io-formatting"
+    ],
+    "description": "Run code in a REPL or script and distinguish the shell, syntax failures, runtime exceptions, and logic bugs."
+  },
+  {
+    "id": "debugging",
+    "title": "Reading errors and debugging",
+    "topic": "fundamentals",
+    "lesson": "first-program-and-debugging",
+    "prereqs": [
+      "program-setup",
+      "variables-types"
+    ],
+    "description": "Use tracebacks, inspect state, and reduce a failure to a reproducible example."
+  },
+  {
+    "id": "file-io-data",
+    "title": "Files and structured data",
+    "topic": "advanced",
+    "lesson": "files-and-data-formats",
+    "prereqs": [
+      "exceptions",
+      "context-managers",
+      "modules-testing"
+    ],
+    "description": "Use paths and context managers; read/write text, JSON, and CSV safely."
+  }
 ]

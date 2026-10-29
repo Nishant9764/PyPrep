@@ -119,10 +119,11 @@ A JSON array. Each element:
 
 ### Quality bar for questions
 
-* Every topic gets **6–8 questions**: about 3 `easy`, 3 `medium`, 1–2 `hard`; at least 2 of them
-  `kind: "interview"` (the kind of question asked in real screens, with a realistic framing).
-* Together, the questions in a topic must exercise **every concept of that topic** at least once, and
-  important concepts at least twice at different difficulty levels so that remediation practice exists.
+* Start with **8–12 questions per topic**, then add more where the topic contains more distinct skills
+  or where learner data shows recurring gaps. Include approachable, intermediate, and challenging
+  work; at least 2 should use `kind: "interview"` with realistic framing.
+* Together, questions must exercise **every concept of the topic** and important foundational
+  concepts at least twice at different difficulty levels, so remediation has a meaningful next step.
 * Starter code must **fail** the tests (so it is a real starting point) and must be syntactically valid.
 * The reference `solution.code` must pass every test. `python3 content/validate.py` checks this using the
   same harness that grades learners.

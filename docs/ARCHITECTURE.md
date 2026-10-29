@@ -153,4 +153,4 @@ GET    /tracks/:t/progress/interview
 PUT    /tracks/:t/progress/interview/:item
 ```
 
-The Interview Glance bank is structured client data in `client/src/data/interviewQuestions.json` (50 Python and 50 SQL entries); progress alone is stored per learner in MongoDB. The Trace Bench uses curated walkthroughs from `client/src/data/traceScenarios.ts` and labels them as guided dry runs rather than full interpreter traces.
+Interview prep is split across structured banks: `client/src/data/interviewQuestions.json` (79 Python and 50 SQL entries), `client/src/data/interviewGuideQuestions.json` (409 non-DSA prompts from the supplied guide), `client/src/data/interviewCookbook.ts` (10 runnable examples), and `client/src/data/mockInterviewData.ts` (timed coding prompts, output prediction and project/behavioral prompts). Review progress alone is stored per learner in MongoDB. The Trace Bench uses curated walkthroughs from `client/src/data/traceScenarios.ts` and labels them as guided dry runs rather than full interpreter traces.

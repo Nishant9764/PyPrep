@@ -243,5 +243,216 @@
       { "args": ["1234.50"], "expected": 123450, "tags": ["variables-types", "type-conversion"], "hidden": true,
         "diagnosis": "Convert each part with int() separately, then combine: dollars * 100 + cents." }
     ]
+  },
+  {
+    "slug": "format-greeting",
+    "title": "Format a Greeting",
+    "difficulty": "easy",
+    "kind": "practice",
+    "concepts": [
+      "program-setup",
+      "io-formatting"
+    ],
+    "estimatedMinutes": 8,
+    "prompt": "Write `greeting(name)` to return `\"Hello, <name>!\"` without printing. Preserve the supplied name exactly.\n\n```python\ngreeting(\"Mina\")  # \"Hello, Mina!\"\n```",
+    "entry": "greeting",
+    "starterCode": "def greeting(name):\n    pass\n",
+    "hints": [
+      "Build the required text from a fixed prefix, the input, and punctuation.",
+      "Return the completed string; do not print it.",
+      "An f-string is the shortest readable option."
+    ],
+    "solution": {
+      "code": "def greeting(name):\n    return f\"Hello, {name}!\"",
+      "explanation": "Return a string so callers can use the value; `print` is only needed when displaying it. An f-string inserts the name without converting the function into a side-effect-only operation."
+    },
+    "tests": [
+      {
+        "args": [
+          "Mina"
+        ],
+        "expected": "Hello, Mina!",
+        "tags": [
+          "program-setup",
+          "io-formatting"
+        ]
+      },
+      {
+        "args": [
+          "Ada"
+        ],
+        "expected": "Hello, Ada!",
+        "tags": [
+          "program-setup"
+        ],
+        "note": "ordinary name"
+      },
+      {
+        "args": [
+          ""
+        ],
+        "expected": "Hello, !",
+        "tags": [
+          "program-setup"
+        ],
+        "hidden": true,
+        "diagnosis": "The empty name is valid here; preserve the required punctuation and return a string."
+      },
+      {
+        "args": [
+          "Jo!"
+        ],
+        "expected": "Hello, Jo!!",
+        "tags": [
+          "program-setup"
+        ],
+        "hidden": true,
+        "note": "punctuation preserved",
+        "diagnosis": "Keep the requested prefix and suffix exactly; do not rewrite punctuation supplied in the name."
+      }
+    ]
+  },
+  {
+    "slug": "parse-integer-safely",
+    "title": "Parse an Integer Safely",
+    "difficulty": "easy",
+    "kind": "practice",
+    "concepts": [
+      "debugging",
+      "type-conversion"
+    ],
+    "estimatedMinutes": 8,
+    "prompt": "Write `parse_integer(text)` that returns the integer represented by the string, or `None` when conversion raises `ValueError`. Do not catch unrelated exceptions.\n\n```python\nparse_integer(\"42\")      # 42\nparse_integer(\"four\")    # None\n```",
+    "entry": "parse_integer",
+    "starterCode": "def parse_integer(text):\n    # Convert the text and handle invalid integer input\n    pass\n",
+    "hints": [
+      "`int(text)` returns an integer or raises `ValueError`.",
+      "Put the conversion in a `try` block and return the converted value.",
+      "Catch `ValueError` and return `None` from the `except` block."
+    ],
+    "solution": {
+      "code": "def parse_integer(text):\n    try:\n        return int(text)\n    except ValueError:\n        return None\n",
+      "explanation": "`int()` is responsible for parsing the text. Invalid integer syntax raises `ValueError`, which is the specific error this function can turn into the documented `None` result. Catching only that exception avoids hiding unrelated programming mistakes. For richer applications, returning a result object or raising a domain-specific error may distinguish invalid input from a legitimate missing value."
+    },
+    "tests": [
+      {
+        "args": [
+          "42"
+        ],
+        "expected": 42,
+        "tags": [
+          "type-conversion"
+        ]
+      },
+      {
+        "args": [
+          "-7"
+        ],
+        "expected": -7,
+        "tags": [
+          "type-conversion"
+        ],
+        "note": "negative integer"
+      },
+      {
+        "args": [
+          "four"
+        ],
+        "expected": null,
+        "tags": [
+          "debugging"
+        ],
+        "hidden": true,
+        "diagnosis": "Invalid integer text raises ValueError; handle that expected input error and return None."
+      },
+      {
+        "args": [
+          ""
+        ],
+        "expected": null,
+        "tags": [
+          "debugging"
+        ],
+        "hidden": true,
+        "diagnosis": "Empty text is not an integer representation and should follow the same documented invalid-input behavior."
+      }
+    ]
+  },
+  {
+    "slug": "format-receipt",
+    "title": "Format a Receipt Line",
+    "difficulty": "easy",
+    "kind": "interview",
+    "concepts": [
+      "program-setup",
+      "debugging",
+      "io-formatting",
+      "numeric-operators"
+    ],
+    "estimatedMinutes": 10,
+    "prompt": "Write `receipt_line(item, quantity, unit_price)` that returns one line in the form `\"Tea x2: $5.00\"`. Compute the total by multiplying quantity by unit price and format it with exactly two decimal places. Do not print inside the function.\n\n```python\nreceipt_line(\"Tea\", 2, 2.5)  # \"Tea x2: $5.00\"\n```",
+    "entry": "receipt_line",
+    "starterCode": "def receipt_line(item, quantity, unit_price):\n    # Calculate the total and return a formatted line\n    pass\n",
+    "hints": [
+      "Separate the numeric total from its display format.",
+      "Multiply quantity by unit_price.",
+      "Use an f-string format specifier such as `{total:.2f}` and return the text."
+    ],
+    "solution": {
+      "code": "def receipt_line(item, quantity, unit_price):\n    total = quantity * unit_price\n    return f\"{item} x{quantity}: ${total:.2f}\"\n",
+      "explanation": "The function returns a value so the caller can print it, store it, or test it. Multiplication is performed before formatting. The `.2f` format specifier produces two digits after the decimal point, including for whole-dollar amounts. In a real currency system, use `Decimal` with an explicit rounding policy rather than binary floating point."
+    },
+    "tests": [
+      {
+        "args": [
+          "Tea",
+          2,
+          2.5
+        ],
+        "expected": "Tea x2: $5.00",
+        "tags": [
+          "program-setup",
+          "io-formatting"
+        ]
+      },
+      {
+        "args": [
+          "Book",
+          1,
+          10
+        ],
+        "expected": "Book x1: $10.00",
+        "tags": [
+          "numeric-operators"
+        ],
+        "note": "whole number formatting"
+      },
+      {
+        "args": [
+          "Pen",
+          3,
+          0.1
+        ],
+        "expected": "Pen x3: $0.30",
+        "tags": [
+          "debugging"
+        ],
+        "hidden": true,
+        "diagnosis": "Multiply quantity by unit price before formatting, and preserve exactly two decimal places."
+      },
+      {
+        "args": [
+          "",
+          0,
+          4.5
+        ],
+        "expected": " x0: $0.00",
+        "tags": [
+          "program-setup"
+        ],
+        "hidden": true,
+        "diagnosis": "Zero quantity still produces the required formatted line; do not omit the item or amount."
+      }
+    ]
   }
 ]

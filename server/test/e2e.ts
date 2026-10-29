@@ -194,7 +194,7 @@ async function main() {
   check('interview review state starts empty for a new learner', r.status === 200 && r.body.items.length === 0, r.body);
   r = await user.call('PUT', `/api/tracks/${TRACK}/progress/interview/python-01`, { bookmarked: true, completed: true, confidence: 4, reviewed: true });
   check('interview question bookmark, completion and confidence are saved', r.status === 200 && r.body.bookmarked && r.body.completed && r.body.confidence === 4 && !!r.body.lastReviewedAt, r.body);
-  r = await user.call('PUT', `/api/tracks/${TRACK}/progress/interview/python-51`, { bookmarked: true });
+  r = await user.call('PUT', `/api/tracks/${TRACK}/progress/interview/python-80`, { bookmarked: true });
   check('unknown interview question IDs are rejected', r.status === 404, r);
   r = await user.call('PUT', `/api/tracks/${TRACK}/questions/${dirQ.slug}/bookmark`);
   check('question can be bookmarked', r.status === 200 && r.body.bookmarked === true, r);

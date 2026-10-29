@@ -29,7 +29,7 @@ const codeSchema = z.object({ code: z.string().max(20000) });
 const interviewCodeSchema = z.object({ code: z.string().max(20000), stdin: z.string().max(20000).optional() });
 
 async function runInterviewCode(trackSlug: string, item: string, code: string, stdin: string) {
-  if (!/^(?:python-(?:0[1-9]|[1-9]\d)|sql-(?:0[1-9]|[1-4]\d|50)|cookbook-[a-z0-9-]{1,40})$/.test(item)) throw new HttpError(404, 'Interview item not found.');
+  if (!/^(?:python-(?:0[1-9]|[1-6]\d|7[0-9])|sql-(?:0[1-9]|[1-4]\d|50)|cookbook-[a-z0-9-]{1,40})$/.test(item)) throw new HttpError(404, 'Interview item not found.');
   const track = await Track.findOne({ slug: trackSlug }).lean();
   if (!track) throw new HttpError(404, 'Track not found.');
   if (track.language !== 'python') throw new HttpError(400, 'The interview scratch editor currently runs Python code only.');

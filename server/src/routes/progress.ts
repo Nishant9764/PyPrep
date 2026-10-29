@@ -256,7 +256,7 @@ const interviewStateBody = z.object({
 progressRouter.put(
   '/:track/progress/interview/:item',
   wrap(async (req, res) => {
-    if (!/^(?:python-(?:0[1-9]|[1-9]\d)|sql-(?:0[1-9]|[1-4]\d|50))$/.test(req.params.item)) throw new HttpError(404, 'Interview item not found.');
+    if (!/^(?:python-(?:0[1-9]|[1-6]\d|7[0-9])|sql-(?:0[1-9]|[1-4]\d|50))$/.test(req.params.item)) throw new HttpError(404, 'Interview item not found.');
     await trackOr404(req.params.track);
     const body = interviewStateBody.parse(req.body);
     const user = req.user!._id;

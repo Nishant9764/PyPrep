@@ -315,5 +315,341 @@
       { "program": "s = 'ab' * 30000 + 'c' * 30000\nresult = longest_k_distinct(s, 2)", "expected": 60000, "tags": ["sliding-window"], "hidden": true,
         "diagnosis": "60,000 characters: checking every substring is quadratic or worse. Slide a window and update the character counts incrementally so each index is handled a constant number of times." }
     ]
+  },
+  {
+    "slug": "sum-csv-column",
+    "title": "Sum a CSV Column",
+    "difficulty": "medium",
+    "kind": "interview",
+    "concepts": [
+      "file-io-data",
+      "exceptions"
+    ],
+    "estimatedMinutes": 15,
+    "prompt": "Write `sum_csv_column(file_obj, column)` to sum integer values in the named CSV column. The first row contains headers. Ignore blank values; let malformed non-empty numbers raise `ValueError`. The caller owns and opens the file.\n\n```python\nimport io\nsource = io.StringIO(\"item,qty\\npen,2\\nbook,\\n\")\nsum_csv_column(source, \"qty\")  # 2\n```",
+    "entry": "sum_csv_column",
+    "starterCode": "import csv\n\ndef sum_csv_column(file_obj, column):\n    # Use DictReader and convert non-empty values to integers\n    pass\n",
+    "hints": [
+      "Use `csv.DictReader(file_obj)` to turn each data row into a dictionary.",
+      "Read the requested column and strip surrounding whitespace.",
+      "Skip empty strings, convert the rest with `int`, and accumulate the values."
+    ],
+    "solution": {
+      "code": "import csv\n\ndef sum_csv_column(file_obj, column):\n    total = 0\n    for row in csv.DictReader(file_obj):\n        value = row[column].strip()\n        if value:\n            total += int(value)\n    return total\n",
+      "explanation": "CSV fields can contain quoted commas and newlines, so `csv.DictReader` is safer than splitting text manually. Blank fields are skipped as specified; `int()` naturally raises `ValueError` for malformed values. The function accepts a file-like object so callers can choose a path, encoding, and lifetime."
+    },
+    "tests": [
+      {
+        "program": "import io\nsource = io.StringIO(\"item,qty\\npen,2\\nbook,\\n\")\nresult = sum_csv_column(source, \"qty\")",
+        "expected": 2,
+        "tags": [
+          "file-io-data"
+        ]
+      },
+      {
+        "program": "import io\nsource = io.StringIO(\"item,qty\\npen,1\\nbook,3\\n\")\nresult = sum_csv_column(source, \"qty\")",
+        "expected": 4,
+        "tags": [
+          "file-io-data"
+        ],
+        "note": "two populated rows"
+      },
+      {
+        "program": "import io\nsource = io.StringIO(\"name,amount\\nA, 4 \\nB,6\\n\")\nresult = sum_csv_column(source, \"amount\")",
+        "expected": 10,
+        "tags": [
+          "file-io-data"
+        ],
+        "hidden": true,
+        "diagnosis": "Strip whitespace before converting numeric fields."
+      },
+      {
+        "program": "import io\nsource = io.StringIO(\"name,amount\\nA,4\\nB,nope\\n\")\ntry:\n    sum_csv_column(source, \"amount\")\nexcept ValueError:\n    result = \"ValueError\"",
+        "expected": "ValueError",
+        "tags": [
+          "exceptions"
+        ],
+        "hidden": true,
+        "diagnosis": "Do not silently turn malformed non-empty values into zero; the prompt requires the conversion error to remain visible."
+      }
+    ]
+  },
+  {
+    "slug": "read-json-config",
+    "title": "Read a JSON Configuration",
+    "difficulty": "medium",
+    "kind": "interview",
+    "concepts": [
+      "file-io-data",
+      "exceptions",
+      "context-managers"
+    ],
+    "estimatedMinutes": 15,
+    "prompt": "Write `read_json_config(path)` to open a UTF-8 JSON file and return its decoded Python value. Use a context manager. Allow `FileNotFoundError` and `json.JSONDecodeError` to propagate so the caller can report them.\n\n```python\n# A file containing {\"theme\": \"dark\"}\nread_json_config(path)[\"theme\"]  # \"dark\"\n```",
+    "entry": "read_json_config",
+    "starterCode": "import json\nfrom pathlib import Path\n\ndef read_json_config(path):\n    pass\n",
+    "hints": [
+      "Open the path in text mode and specify UTF-8.",
+      "Put the file handle in a `with` statement.",
+      "Pass that handle to `json.load` and return the decoded value."
+    ],
+    "solution": {
+      "code": "import json\nfrom pathlib import Path\n\ndef read_json_config(path):\n    with Path(path).open(encoding=\"utf-8\") as file:\n        return json.load(file)\n",
+      "explanation": "The `with` block closes the file on normal return or if parsing raises. `json.load` parses from a file object, while `json.loads` parses a string. Propagating these specific errors avoids disguising a missing or corrupt configuration as valid empty data."
+    },
+    "tests": [
+      {
+        "program": "import tempfile\nfrom pathlib import Path\nwith tempfile.TemporaryDirectory() as tmp:\n    path = Path(tmp) / \"config.json\"\n    path.write_text(\"{\\\"theme\\\": \\\"dark\\\"}\", encoding=\"utf-8\")\n    result = read_json_config(path)",
+        "expected": {
+          "theme": "dark"
+        },
+        "tags": [
+          "file-io-data"
+        ]
+      },
+      {
+        "program": "import tempfile\nfrom pathlib import Path\nwith tempfile.TemporaryDirectory() as tmp:\n    path = Path(tmp) / \"config.json\"\n    path.write_text(\"{\\\"retries\\\": 3}\", encoding=\"utf-8\")\n    result = read_json_config(path)",
+        "expected": {
+          "retries": 3
+        },
+        "tags": [
+          "file-io-data"
+        ],
+        "note": "JSON object with numeric field"
+      },
+      {
+        "program": "import tempfile\nfrom pathlib import Path\nwith tempfile.TemporaryDirectory() as tmp:\n    path = Path(tmp) / \"config.json\"\n    path.write_text(\"[1, 2, 3]\", encoding=\"utf-8\")\n    result = read_json_config(path)",
+        "expected": [
+          1,
+          2,
+          3
+        ],
+        "tags": [
+          "file-io-data"
+        ],
+        "hidden": true,
+        "diagnosis": "JSON arrays decode to Python lists; return the decoded structure rather than assuming every document is an object."
+      },
+      {
+        "program": "import tempfile\nfrom pathlib import Path\nwith tempfile.TemporaryDirectory() as tmp:\n    path = Path(tmp) / \"config.json\"\n    path.write_text(\"not json\", encoding=\"utf-8\")\n    try:\n        read_json_config(path)\n    except json.JSONDecodeError:\n        result = \"invalid\"",
+        "expected": "invalid",
+        "tags": [
+          "exceptions"
+        ],
+        "hidden": true,
+        "diagnosis": "Malformed JSON should raise JSONDecodeError; do not swallow it or use eval."
+      }
+    ]
+  },
+  {
+    "slug": "first-n-from-iterator",
+    "title": "Take Values from an Iterator",
+    "difficulty": "easy",
+    "kind": "practice",
+    "concepts": [
+      "iterators"
+    ],
+    "estimatedMinutes": 10,
+    "prompt": "Write `take_n(iterable, count)` that returns a list containing up to `count` values from the start of an iterable. It must work with one-shot iterators and stop cleanly if fewer values are available. A negative count returns an empty list.",
+    "entry": "take_n",
+    "starterCode": "def take_n(iterable, count):\n    # Consume no more than count values\n    pass\n",
+    "hints": [
+      "Call `iter()` once and keep that iterator.",
+      "Use `next(iterator)` repeatedly; it raises `StopIteration` when values end.",
+      "Catch `StopIteration` and break. Do not convert the whole iterable to a list."
+    ],
+    "solution": {
+      "code": "def take_n(iterable, count):\n    iterator = iter(iterable)\n    result = []\n    for _ in range(max(0, count)):\n        try:\n            result.append(next(iterator))\n        except StopIteration:\n            break\n    return result\n",
+      "explanation": "`iter()` supports both reusable containers and one-shot iterators. `next()` advances that same iterator and raises `StopIteration` when it is exhausted. Catching only that signal lets the function return fewer than count values without materializing the rest of a potentially large or infinite source. The function uses O(min(count, available values)) output space and does O(min(count, available values)) work."
+    },
+    "tests": [
+      {
+        "args": [
+          [
+            1,
+            2,
+            3
+          ],
+          2
+        ],
+        "expected": [
+          1,
+          2
+        ],
+        "tags": [
+          "iterators"
+        ]
+      },
+      {
+        "args": [
+          [
+            1
+          ],
+          5
+        ],
+        "expected": [
+          1
+        ],
+        "tags": [
+          "iterators"
+        ]
+      },
+      {
+        "args": [
+          [],
+          3
+        ],
+        "expected": [],
+        "tags": [
+          "iterators"
+        ],
+        "hidden": true,
+        "diagnosis": "An empty iterator is exhausted immediately; return an empty list."
+      },
+      {
+        "program": "import itertools\nsource = itertools.count(10)\nresult = take_n(source, 3)",
+        "expected": [
+          10,
+          11,
+          12
+        ],
+        "tags": [
+          "iterators"
+        ],
+        "hidden": true,
+        "diagnosis": "The source may be infinite; consume only the requested number of values."
+      }
+    ]
+  },
+  {
+    "slug": "yield-until-sentinel",
+    "title": "Yield Until a Sentinel",
+    "difficulty": "medium",
+    "kind": "interview",
+    "concepts": [
+      "generators",
+      "iterators"
+    ],
+    "estimatedMinutes": 12,
+    "prompt": "Write generator function `before_sentinel(values, sentinel)` that lazily yields items until the first value equal to `sentinel`. Do not yield the sentinel or consume items after it. If no sentinel appears, yield every item.",
+    "entry": "before_sentinel",
+    "starterCode": "def before_sentinel(values, sentinel):\n    # Yield values lazily until sentinel\n    pass\n",
+    "hints": [
+      "This function should use `yield`, not build and return a list.",
+      "Loop through values in order and compare each item with sentinel.",
+      "When it matches, use `return` to end the generator before yielding that value."
+    ],
+    "solution": {
+      "code": "def before_sentinel(values, sentinel):\n    for value in values:\n        if value == sentinel:\n            return\n        yield value\n",
+      "explanation": "A function containing `yield` returns a generator iterator. Each requested value resumes the loop where it paused, so values are processed lazily. Returning at the sentinel ends iteration without yielding it or requesting later values. If the source ends first, the generator ends normally. This uses O(1) generator state, excluding the source and values retained by the caller."
+    },
+    "tests": [
+      {
+        "program": "result = list(before_sentinel([1, 2, 0, 3], 0))",
+        "expected": [
+          1,
+          2
+        ],
+        "tags": [
+          "generators"
+        ]
+      },
+      {
+        "program": "result = list(before_sentinel(\"abc\", \"z\"))",
+        "expected": [
+          "a",
+          "b",
+          "c"
+        ],
+        "tags": [
+          "generators"
+        ]
+      },
+      {
+        "program": "result = list(before_sentinel([], 0))",
+        "expected": [],
+        "tags": [
+          "iterators"
+        ],
+        "hidden": true,
+        "diagnosis": "An empty input produces an exhausted generator and no values."
+      },
+      {
+        "program": "def source():\n    yield 1\n    yield 0\n    raise RuntimeError(\"read too far\")\nresult = list(before_sentinel(source(), 0))",
+        "expected": [
+          1
+        ],
+        "tags": [
+          "generators"
+        ],
+        "hidden": true,
+        "diagnosis": "Stop at the sentinel and do not consume the next source value."
+      }
+    ]
+  },
+  {
+    "slug": "palindrome-two-pointers",
+    "title": "Check a Palindrome with Two Pointers",
+    "difficulty": "easy",
+    "kind": "practice",
+    "concepts": [
+      "two-pointers",
+      "string-indexing"
+    ],
+    "estimatedMinutes": 10,
+    "prompt": "Write `is_palindrome(text)` for an exact, case-sensitive string comparison. Use two indexes that move inward; do not create a reversed copy. Return a boolean.",
+    "entry": "is_palindrome",
+    "starterCode": "def is_palindrome(text):\n    # Compare matching characters from both ends\n    pass\n",
+    "hints": [
+      "Start one index at 0 and one at the last valid index.",
+      "Compare the indexed characters while left is smaller than right.",
+      "Return False on the first mismatch; after the loop return True."
+    ],
+    "solution": {
+      "code": "def is_palindrome(text):\n    left, right = 0, len(text) - 1\n    while left < right:\n        if text[left] != text[right]:\n            return False\n        left += 1\n        right -= 1\n    return True\n",
+      "explanation": "The left and right indexes inspect mirrored characters. A mismatch proves the string is not a palindrome, so the function can return early. When the indexes meet or cross, all required pairs matched. This uses O(n) time in the worst case and O(1) extra space, unlike creating `text[::-1]`, which allocates a second string. Empty and one-character strings are palindromes under this definition."
+    },
+    "tests": [
+      {
+        "args": [
+          "level"
+        ],
+        "expected": true,
+        "tags": [
+          "two-pointers"
+        ]
+      },
+      {
+        "args": [
+          "python"
+        ],
+        "expected": false,
+        "tags": [
+          "string-indexing"
+        ]
+      },
+      {
+        "args": [
+          ""
+        ],
+        "expected": true,
+        "tags": [
+          "two-pointers"
+        ],
+        "hidden": true,
+        "diagnosis": "The loop should do zero comparisons for an empty string and return True."
+      },
+      {
+        "args": [
+          "a"
+        ],
+        "expected": true,
+        "tags": [
+          "two-pointers"
+        ],
+        "hidden": true,
+        "diagnosis": "A single character has no mismatched mirrored pair."
+      }
+    ]
   }
 ]

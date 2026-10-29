@@ -138,8 +138,8 @@ def main():
             except json.JSONDecodeError as e:
                 err(f"[{ts}] questions.json invalid JSON: {e}")
                 continue
-            if not (6 <= len(questions) <= 10):
-                warn(f"[{ts}] has {len(questions)} questions (target 6-8)")
+            if not (6 <= len(questions) <= 16):
+                warn(f"[{ts}] has {len(questions)} questions (target 8-16, scaled to topic coverage)")
             slugs = set()
             counts = {"easy": 0, "medium": 0, "hard": 0}
             interview = 0

@@ -444,5 +444,11 @@ textarea.input { min-height: 5rem; resize: vertical; }
 .guide-answer { display: grid; gap: .45rem; padding: .15rem 1rem 1rem 5rem; }
 .guide-answer strong { color: var(--accent); font-size: .88rem; }
 .guide-answer p { max-width: 90ch; }
+.mock-card { display: grid; gap: .85rem; }
+.mock-card > details { border: 1px solid var(--line); border-radius: var(--r-sm); padding: .75rem; background: var(--paper); }
+.mock-card > details > summary { cursor: pointer; font-weight: 650; }
+.mock-card > details ul { margin: .6rem 0; padding-left: 1.25rem; color: var(--ink-2); }
+.mock-card > details pre { margin-top: .75rem; }
+.mock-notes { min-height: 9rem; }
 @media (max-width: 900px) { .cheat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .trace-layout { grid-template-columns: 1fr; } .trace-picker { position: static; } .trace-options { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 620px) { .glance-banner, .glance-card-head { align-items: flex-start; flex-direction: column; } .glance-banner .facts { gap: .5rem 1rem; } .glance-tags { justify-content: flex-start; } .glance-detail-grid { grid-template-columns: 1fr; } .glance-mode { margin-left: 0; align-self: auto; } .trace-options, .cheat-grid { grid-template-columns: 1fr; } .guide-intro { grid-template-columns: 1fr; } .guide-intro > p { grid-column: auto; } .guide-question > summary { gap: .45rem; padding: .65rem .6rem; } .guide-q-number { min-width: 2.7rem; font-size: .7rem; } .guide-answer { padding-left: 1rem; } }

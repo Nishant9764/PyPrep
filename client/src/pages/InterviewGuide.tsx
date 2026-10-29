@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { api } from '../api';
+import { CodeEditor } from '../components/CodeEditor';
 import { PageHead } from '../components/ui';
 import questions from '../data/interviewGuideQuestions.json';
 import { interviewCookbook } from '../data/interviewCookbook';
@@ -11,7 +12,7 @@ interface RunResult { status: string; stdout: string; error?: string; message?: 
 export function InterviewGuide() {
   const { track = 'python' } = useParams();
   const [search, setSearch] = useState('');
-  const [subject, setSubject] = useState('');
+  const [subject, setSubject] = useState('Python');
   const [section, setSection] = useState('');
   const [difficulty, setDifficulty] = useState('');
   const [kind, setKind] = useState('');
@@ -54,7 +55,7 @@ export function InterviewGuide() {
   return <div className="page">
     <PageHead title="Complete Interview Guide">
       <p>409 concise questions and answer notes drawn from the supplied guide. The guide’s algorithm and data-structure problem section is omitted; this library focuses on Python, SQL, systems, software engineering, output tracing, and project discussions.</p>
-      <div className="row"><Link className="btn" to={`/t/${track}/interview-glance`}>Python + SQL Coding Glance</Link><Link className="btn" to={`/t/${track}/trace-bench`}>Trace Bench</Link><span className="chip">{questions.length} questions</span></div>
+      <div className="row"><Link className="btn" to={`/t/${track}/interview-glance`}>Python Coding Glance</Link><Link className="btn primary" to={`/t/${track}/mock-interview`}>Start a Mock Interview</Link><Link className="btn" to={`/t/${track}/trace-bench`}>Trace Bench</Link><span className="chip">{questions.length} questions</span></div>
     </PageHead>
 
     <section className="panel guide-intro">
@@ -73,7 +74,7 @@ export function InterviewGuide() {
       </div>
       <p>{example.explanation}</p>
       {example.language === 'python' ? <>
-        <textarea className="input scratch-editor" aria-label="Code Clinic Python editor" spellCheck={false} value={code} onChange={(event) => setCode(event.target.value)} />
+        <CodeEditor ariaLabel="Code Clinic Python editor" value={code} onChange={setCode} onRun={() => void runExample()} onSubmit={() => void runExample()} />
         <label className="field"><span>Standard input (optional)</span><textarea className="input scratch-input" value={stdin} onChange={(event) => setStdin(event.target.value)} /></label>
         <div className="row"><button className="btn primary" disabled={running} onClick={() => void runExample()}>{running ? 'Running in sandbox…' : 'Run Python example'}</button>{example.expected && <span className="small muted">Sample output: <code>{example.expected.trimEnd()}</code></span>}</div>
         {runError && <div className="alert error" role="alert">{runError}</div>}

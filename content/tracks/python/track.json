@@ -12,7 +12,8 @@
       "lessons": [
         { "slug": "variables-and-types", "title": "Variables, Values and Types" },
         { "slug": "numbers-and-operators", "title": "Numbers and Operators" },
-        { "slug": "input-output-and-conversion", "title": "Input, Output and Type Conversion" }
+        { "slug": "input-output-and-conversion", "title": "Input, Output and Type Conversion" },
+        { "slug": "first-program-and-debugging", "title": "Your First Program and Debugging" }
       ]
     },
     {
@@ -84,7 +85,8 @@
         { "slug": "decorators-and-functools", "title": "Decorators and functools" },
         { "slug": "complexity-and-interview-patterns", "title": "Complexity and Interview Patterns" },
         { "slug": "type-hints-modules-and-testing", "title": "Type Hints, Modules and Testing" },
-        { "slug": "memory-management", "title": "Memory Management and Python Internals" }
+        { "slug": "memory-management", "title": "Memory Management and Python Internals" },
+        { "slug": "files-and-data-formats", "title": "Files, Paths and Data Formats" }
       ]
     }
   ]

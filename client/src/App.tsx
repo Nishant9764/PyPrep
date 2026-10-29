@@ -17,6 +17,7 @@ const Reference = lazy(() => import('./pages/Reference').then((m) => ({ default:
 const InterviewGlance = lazy(() => import('./pages/InterviewGlance').then((m) => ({ default: m.InterviewGlance })));
 const TraceBench = lazy(() => import('./pages/TraceBench').then((m) => ({ default: m.TraceBench })));
 const InterviewGuide = lazy(() => import('./pages/InterviewGuide').then((m) => ({ default: m.InterviewGuide })));
+const MockInterview = lazy(() => import('./pages/MockInterview').then((m) => ({ default: m.MockInterview })));
 
 function RequireAuth({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();
@@ -57,6 +58,7 @@ export function App() {
         <Route path="/t/:track/practice/:slug" element={<Problem />} />
         <Route path="/t/:track/interview-glance" element={<InterviewGlance />} />
         <Route path="/t/:track/interview-guide" element={<InterviewGuide />} />
+        <Route path="/t/:track/mock-interview" element={<MockInterview />} />
         <Route path="/t/:track/trace-bench" element={<TraceBench />} />
         <Route path="/t/:track/saved" element={<SavedPage />} />
         <Route path="/admin" element={<RequireAdmin><Admin /></RequireAdmin>} />
