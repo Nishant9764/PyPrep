@@ -1,0 +1,261 @@
+[
+  {
+    "slug": "cf-ticket-price",
+    "title": "Ticket Price",
+    "difficulty": "easy",
+    "kind": "practice",
+    "concepts": ["conditionals", "boolean-logic"],
+    "estimatedMinutes": 7,
+    "prompt": "A cinema prices tickets by age and student status. Write `ticket_price(age, is_student)` using these rules, applied in this priority order:\n\n1. Age under 5: price `0`.\n2. Age 5 to 12: price `8`.\n3. Age 65 or over: price `9` (students included).\n4. Any other student: price `10`.\n5. Everyone else: price `15`.\n\n```python\nticket_price(30, True)    # 10\nticket_price(70, True)    # 9\n```",
+    "entry": "ticket_price",
+    "starterCode": "def ticket_price(age, is_student):\n    # your code here\n    return 15\n",
+    "hints": [
+      "Write one `if`/`elif` chain, one branch per rule, in the order listed.",
+      "The first branch whose condition is true runs and the rest are skipped. A 70-year-old student matches both 'senior' and 'student', so which rule must come first?",
+      "`if age < 5: return 0`, `elif age <= 12: return 8`, `elif age >= 65: return 9`, `elif is_student: return 10`, `else: return 15`."
+    ],
+    "solution": {
+      "code": "def ticket_price(age, is_student):\n    if age < 5:\n        return 0\n    elif age <= 12:\n        return 8\n    elif age >= 65:\n        return 9\n    elif is_student:\n        return 10\n    else:\n        return 15\n",
+      "explanation": "An `if`/`elif`/`else` chain tests conditions top to bottom and runs only the first branch that is true, so the order of the branches encodes the priority of the rules. A 70-year-old student satisfies both `age >= 65` and `is_student`; because the senior rule is listed first, they get 9. Early `return`s make each branch independent, and because earlier branches already excluded ages under 13, the later conditions can stay short. Writing `age > 5` instead of `age >= 5` or `age < 12` instead of `<= 12` are the typical boundary slips, so always test the exact boundary values."
+    },
+    "tests": [
+      { "args": [30, true], "expected": 10, "tags": ["boolean-logic"], "note": "adult student" },
+      { "args": [30, false], "expected": 15, "tags": ["conditionals"], "note": "adult" },
+      { "args": [4, false], "expected": 0, "tags": ["conditionals"], "hidden": true,
+        "diagnosis": "Under 5 is free. Check the boundary: age 4 is under 5, age 5 is not." },
+      { "args": [5, false], "expected": 8, "tags": ["conditionals"], "hidden": true,
+        "diagnosis": "Age 5 belongs to the child group, so the free rule must use < 5, not <= 5." },
+      { "args": [12, true], "expected": 8, "tags": ["conditionals"], "hidden": true,
+        "diagnosis": "The child rule has higher priority than the student rule, so check age before is_student." },
+      { "args": [65, true], "expected": 9, "tags": ["conditionals", "boolean-logic"], "hidden": true,
+        "diagnosis": "A senior student must get the senior price: the senior branch has to be checked before the student branch." },
+      { "args": [64, false], "expected": 15, "tags": ["conditionals"], "hidden": true,
+        "diagnosis": "Seniors start at 65 inclusive, so 64 is still a regular adult." }
+    ]
+  },
+  {
+    "slug": "cf-sum-until-negative",
+    "title": "Sum Until a Negative",
+    "difficulty": "easy",
+    "kind": "practice",
+    "concepts": ["accumulator-pattern", "loop-control", "for-loops"],
+    "estimatedMinutes": 7,
+    "prompt": "Write `sum_until_negative(nums)` that adds up the numbers in order and **stops at the first negative number**, which is not included. Return `0` for an empty list or when the first item is negative.\n\n```python\nsum_until_negative([4, 2, -1, 10])   # 6\nsum_until_negative([5, 5])           # 10\n```",
+    "entry": "sum_until_negative",
+    "starterCode": "def sum_until_negative(nums):\n    total = 0\n    for n in nums:\n        total += n\n    return total\n",
+    "hints": [
+      "You need a running total that starts before the loop and grows inside it.",
+      "When you meet a negative number you want to leave the loop entirely, not just skip that one number. Which keyword does that?",
+      "Inside the loop: `if n < 0: break`, then `total += n`. Return `total` after the loop."
+    ],
+    "solution": {
+      "code": "def sum_until_negative(nums):\n    total = 0\n    for n in nums:\n        if n < 0:\n            break\n        total += n\n    return total\n",
+      "explanation": "This is the accumulator pattern with an early exit. `total` is initialised to 0 before the loop (which is also the correct answer for an empty list), and each iteration adds one item. `break` ends the whole loop at the first negative number, so nothing after it is added. `continue` would be wrong here: it only skips the current item and keeps summing the rest. The check must come before `total += n`, otherwise the negative number is added before you stop."
+    },
+    "tests": [
+      { "args": [[4, 2, -1, 10]], "expected": 6, "tags": ["loop-control"], "note": "stops at the negative" },
+      { "args": [[5, 5]], "expected": 10, "tags": ["accumulator-pattern"], "note": "no negatives" },
+      { "args": [[4, -1, 5]], "expected": 4, "tags": ["loop-control"], "hidden": true,
+        "diagnosis": "You kept adding after the negative. break leaves the loop; continue only skips one item." },
+      { "args": [[-3, 1]], "expected": 0, "tags": ["loop-control", "accumulator-pattern"], "hidden": true,
+        "diagnosis": "The negative number itself must not be added. Test for it before updating the total." },
+      { "args": [[]], "expected": 0, "tags": ["accumulator-pattern"], "hidden": true,
+        "diagnosis": "Start the accumulator at 0 before the loop so an empty list returns 0." },
+      { "args": [[0, 0, 7, -2, 9]], "expected": 7, "tags": ["for-loops", "loop-control"], "hidden": true }
+    ]
+  },
+  {
+    "slug": "cf-countdown",
+    "title": "Countdown with a Step",
+    "difficulty": "easy",
+    "kind": "practice",
+    "concepts": ["iteration-direction", "off-by-one", "for-loops"],
+    "estimatedMinutes": 6,
+    "prompt": "Write `countdown(n, step=1)` that returns a list counting **down** from `n` in jumps of `step`, stopping before it would drop below `1`. The value `n` itself is included when `n >= 1`, and `1` is included if the count lands exactly on it.\n\n```python\ncountdown(5)        # [5, 4, 3, 2, 1]\ncountdown(10, 3)    # [10, 7, 4, 1]\ncountdown(0)        # []\n```",
+    "entry": "countdown",
+    "starterCode": "def countdown(n, step=1):\n    result = []\n    for i in range(n):\n        result.append(i)\n    return result\n",
+    "hints": [
+      "`range(n)` counts up and starts at 0. You need to start at `n`, go the other way and stop at 1.",
+      "A range that counts down needs a negative step, and the stop value is excluded. To include 1, the stop must be one position past it.",
+      "`range(n, 0, -step)` starts at `n`, moves down by `step` and stops before reaching 0."
+    ],
+    "solution": {
+      "code": "def countdown(n, step=1):\n    result = []\n    for i in range(n, 0, -step):\n        result.append(i)\n    return result\n",
+      "explanation": "`range(start, stop, step)` includes `start` and excludes `stop`. Counting down needs `start > stop` and a negative step, so we use `range(n, 0, -step)`. The excluded stop of `0` is exactly what makes `1` the last included value. Using stop `1` would be an off-by-one error that silently drops the 1, and omitting the negative step gives an empty range because Python never counts backwards on its own. `list(range(n, 0, -step))` is a one-line alternative."
+    },
+    "tests": [
+      { "args": [5], "expected": [5, 4, 3, 2, 1], "tags": ["iteration-direction"], "note": "basic" },
+      { "args": [10, 3], "expected": [10, 7, 4, 1], "tags": ["iteration-direction"], "note": "step of 3" },
+      { "args": [1], "expected": [1], "tags": ["off-by-one"], "hidden": true,
+        "diagnosis": "The last value 1 is missing: with a negative step the stop is excluded, so use 0 as the stop, not 1." },
+      { "args": [0], "expected": [], "tags": ["off-by-one"], "hidden": true,
+        "diagnosis": "Nothing should be produced when n is 0. Make sure your range does not include 0." },
+      { "args": [9, 3], "expected": [9, 6, 3], "tags": ["off-by-one", "iteration-direction"], "hidden": true,
+        "diagnosis": "The sequence 9, 6, 3 stops before 0. Check that your stop value excludes 0 but includes 3." },
+      { "args": [3], "expected": [3, 2, 1], "tags": ["iteration-direction"], "hidden": true,
+        "diagnosis": "The list must run from large to small. A positive step (or no step) counts upward." }
+    ]
+  },
+  {
+    "slug": "cf-fizzbuzz",
+    "title": "FizzBuzz List",
+    "difficulty": "medium",
+    "kind": "interview",
+    "concepts": ["conditionals", "boolean-logic", "for-loops", "off-by-one"],
+    "estimatedMinutes": 10,
+    "prompt": "The classic screening question, with a return value instead of printing. Write `fizzbuzz(n)` that returns a list of strings for the numbers `1` to `n` inclusive:\n\n* multiples of 3 become `\"Fizz\"`\n* multiples of 5 become `\"Buzz\"`\n* multiples of both become `\"FizzBuzz\"`\n* every other number becomes its decimal text, such as `\"7\"`\n\n```python\nfizzbuzz(5)   # ['1', '2', 'Fizz', '4', 'Buzz']\n```",
+    "entry": "fizzbuzz",
+    "starterCode": "def fizzbuzz(n):\n    result = []\n    for i in range(1, n):\n        if i % 3 == 0:\n            result.append(\"Fizz\")\n        elif i % 5 == 0:\n            result.append(\"Buzz\")\n        else:\n            result.append(str(i))\n    return result\n",
+    "hints": [
+      "Loop over the numbers 1 to n and decide what to append for each one. Remember the last number must be included.",
+      "A multiple of 15 is also a multiple of 3, so a chain that tests 3 first never reaches the FizzBuzz case. Which test must come first?",
+      "`for i in range(1, n + 1)`: check `i % 15 == 0` (or `i % 3 == 0 and i % 5 == 0`) first, then `% 3`, then `% 5`, otherwise `str(i)`."
+    ],
+    "solution": {
+      "code": "def fizzbuzz(n):\n    result = []\n    for i in range(1, n + 1):\n        if i % 15 == 0:\n            result.append(\"FizzBuzz\")\n        elif i % 3 == 0:\n            result.append(\"Fizz\")\n        elif i % 5 == 0:\n            result.append(\"Buzz\")\n        else:\n            result.append(str(i))\n    return result\n",
+      "explanation": "Two ideas are tested. First, `range(1, n + 1)`: the stop is excluded, so you need `n + 1` to include `n`. Second, the order of an `if`/`elif` chain: the first true branch wins, so the most specific condition (divisible by both) must come before the general ones. An equivalent approach builds the text from parts (`s = \"\"`, add `\"Fizz\"` if divisible by 3, add `\"Buzz\"` if divisible by 5, and fall back to `str(i)` when `s` is empty), which avoids the explicit 15 case. Time is O(n). In an interview, say out loud why 15 is checked first."
+    },
+    "tests": [
+      { "args": [5], "expected": ["1", "2", "Fizz", "4", "Buzz"], "tags": ["off-by-one"], "note": "ends on a Buzz" },
+      { "args": [3], "expected": ["1", "2", "Fizz"], "tags": ["off-by-one", "for-loops"], "note": "ends on a Fizz" },
+      { "args": [15], "expected": ["1", "2", "Fizz", "4", "Buzz", "Fizz", "7", "8", "Fizz", "Buzz", "11", "Fizz", "13", "14", "FizzBuzz"], "tags": ["conditionals", "boolean-logic"], "hidden": true,
+        "diagnosis": "15 is divisible by both 3 and 5. If it shows Fizz or Buzz, your FizzBuzz case is checked too late: put the most specific condition first." },
+      { "args": [1], "expected": ["1"], "tags": ["off-by-one"], "hidden": true,
+        "diagnosis": "range(1, n) stops before n. Use range(1, n + 1) so the last number is included." },
+      { "args": [0], "expected": [], "tags": ["for-loops"], "hidden": true,
+        "diagnosis": "For n = 0 there is nothing to produce: return an empty list." },
+      { "args": [10], "expected": ["1", "2", "Fizz", "4", "Buzz", "Fizz", "7", "8", "Fizz", "Buzz"], "tags": ["conditionals"], "hidden": true,
+        "diagnosis": "Each branch of the if/elif chain must append exactly one entry per number." }
+    ]
+  },
+  {
+    "slug": "cf-collatz-steps",
+    "title": "Collatz Steps",
+    "difficulty": "medium",
+    "kind": "practice",
+    "concepts": ["while-loops", "conditionals"],
+    "estimatedMinutes": 9,
+    "prompt": "Start with a positive integer `n`. Repeat: if `n` is even, halve it; if it is odd, replace it with `3 * n + 1`. Count how many steps it takes to reach `1`. This is the famous Collatz process.\n\nWrite `collatz_steps(n)` returning that count (`0` if `n` is already `1`).\n\n```python\ncollatz_steps(6)   # 8   (6 -> 3 -> 10 -> 5 -> 16 -> 8 -> 4 -> 2 -> 1)\ncollatz_steps(1)   # 0\n```",
+    "entry": "collatz_steps",
+    "starterCode": "def collatz_steps(n):\n    steps = 0\n    # your code here\n    return steps\n",
+    "hints": [
+      "You do not know in advance how many steps are needed, so which kind of loop fits better than `for`?",
+      "Loop `while n != 1:`. Inside, change `n` according to its parity and count one step. If `n` never changes, the loop never ends.",
+      "`if n % 2 == 0: n //= 2` `else: n = 3 * n + 1`, then `steps += 1`. Use `//` so `n` stays an integer."
+    ],
+    "solution": {
+      "code": "def collatz_steps(n):\n    steps = 0\n    while n != 1:\n        if n % 2 == 0:\n            n //= 2\n        else:\n            n = 3 * n + 1\n        steps += 1\n    return steps\n",
+      "explanation": "A `while` loop is the right tool when the number of repetitions depends on what happens during the loop. The condition `n != 1` is checked before each pass, so `n = 1` runs zero iterations and returns 0. Every pass changes `n` (halve or `3n + 1`), which is what guarantees progress toward the stopping condition; a loop whose condition variable never changes is an infinite loop. Using `//=` instead of `/=` keeps `n` an integer, since `/` would turn it into a float. It is still unproven that every start reaches 1, but it has been checked for enormous ranges of numbers."
+    },
+    "tests": [
+      { "args": [6], "expected": 8, "tags": ["while-loops"], "note": "worked example" },
+      { "args": [1], "expected": 0, "tags": ["while-loops"], "note": "already at 1" },
+      { "args": [2], "expected": 1, "tags": ["while-loops"], "hidden": true,
+        "diagnosis": "Count the step that takes 2 to 1. The loop should stop only once n equals 1, after counting that step." },
+      { "args": [7], "expected": 16, "tags": ["conditionals", "while-loops"], "hidden": true,
+        "diagnosis": "For odd numbers the rule is 3 * n + 1; for even numbers it is n // 2. Check each branch." },
+      { "args": [27], "expected": 111, "tags": ["while-loops"], "hidden": true,
+        "diagnosis": "A longer chain: make sure the counter is increased once per step, in both the even and the odd branch." }
+    ]
+  },
+  {
+    "slug": "cf-number-staircase",
+    "title": "Descending Number Staircase",
+    "difficulty": "medium",
+    "kind": "practice",
+    "concepts": ["nested-loops", "iteration-direction", "off-by-one"],
+    "estimatedMinutes": 12,
+    "prompt": "Write `staircase(n)` that returns a list of `n` strings. Row `r` (counting from 1) lists the numbers from `r` **down to** `1`, separated by single spaces.\n\n```python\nstaircase(3)   # ['1', '2 1', '3 2 1']\nstaircase(0)   # []\n```",
+    "entry": "staircase",
+    "starterCode": "def staircase(n):\n    rows = []\n    for r in range(1, n + 1):\n        rows.append(str(r))\n    return rows\n",
+    "hints": [
+      "Each row is built by its own inner loop; the outer loop picks the row number `r`.",
+      "The inner loop must start fresh for every row: create the row's list or string inside the outer loop, not before it. It counts from `r` down to 1.",
+      "`for r in range(1, n + 1):` then `parts = []`, `for k in range(r, 0, -1): parts.append(str(k))`, then `rows.append(\" \".join(parts))`."
+    ],
+    "solution": {
+      "code": "def staircase(n):\n    rows = []\n    for r in range(1, n + 1):\n        parts = []\n        for k in range(r, 0, -1):\n            parts.append(str(k))\n        rows.append(\" \".join(parts))\n    return rows\n",
+      "explanation": "The outer loop runs once per row, and for each row the inner loop runs completely, restarting from the beginning. That is why `parts` is created inside the outer loop: it must be empty at the start of every row. If it were created before the outer loop, each row would keep the numbers of the previous ones. The inner `range(r, 0, -1)` counts down and its excluded stop of 0 makes 1 the last value. Joining with `\" \".join(parts)` avoids a trailing space. The total work is 1 + 2 + ... + n, which is O(n squared)."
+    },
+    "tests": [
+      { "args": [3], "expected": ["1", "2 1", "3 2 1"], "tags": ["nested-loops"], "note": "basic" },
+      { "args": [1], "expected": ["1"], "tags": ["off-by-one"], "note": "single row" },
+      { "args": [4], "expected": ["1", "2 1", "3 2 1", "4 3 2 1"], "tags": ["iteration-direction"], "hidden": true,
+        "diagnosis": "Each row must count DOWN from the row number to 1. A positive step produces 1 2 3 ... instead." },
+      { "args": [0], "expected": [], "tags": ["off-by-one"], "hidden": true,
+        "diagnosis": "With n = 0 there are no rows to build." },
+      { "args": [5], "expected": ["1", "2 1", "3 2 1", "4 3 2 1", "5 4 3 2 1"], "tags": ["nested-loops", "off-by-one"], "hidden": true,
+        "diagnosis": "If rows keep growing across the whole list, you forgot to restart the inner row at the beginning of each outer iteration. If the last row is missing or ends at 2, check the range bounds." }
+    ]
+  },
+  {
+    "slug": "cf-count-pairs",
+    "title": "Count Pairs With a Target Sum",
+    "difficulty": "medium",
+    "kind": "interview",
+    "concepts": ["nested-loops", "accumulator-pattern", "off-by-one"],
+    "estimatedMinutes": 12,
+    "prompt": "Given a list of integers `nums` and an integer `target`, return how many **pairs of positions** `i < j` satisfy `nums[i] + nums[j] == target`. The same position may not be used twice, and each pair of positions is counted once even if the values repeat.\n\n```python\ncount_pairs([1, 2, 3, 4], 5)   # 2   (1+4, 2+3)\ncount_pairs([2, 2, 2], 4)      # 3   (positions 0-1, 0-2, 1-2)\n```\n\nThe interviewer wants the brute-force version first and will ask about its complexity.",
+    "entry": "count_pairs",
+    "starterCode": "def count_pairs(nums, target):\n    count = 0\n    for i in range(len(nums)):\n        for j in range(len(nums)):\n            if nums[i] + nums[j] == target:\n                count += 1\n    return count\n",
+    "hints": [
+      "Try every pair of positions with two loops and keep a count of the pairs that hit the target.",
+      "If both loops run over every position, each pair is seen twice (once as i, j and once as j, i) and an element is paired with itself. How can the inner loop start so that j is always greater than i?",
+      "Make the inner loop `for j in range(i + 1, len(nums)):` and increase `count` whenever `nums[i] + nums[j] == target`."
+    ],
+    "solution": {
+      "code": "def count_pairs(nums, target):\n    count = 0\n    for i in range(len(nums)):\n        for j in range(i + 1, len(nums)):\n            if nums[i] + nums[j] == target:\n                count += 1\n    return count\n",
+      "explanation": "Two nested loops enumerate every pair of positions. Starting the inner loop at `i + 1` guarantees `j > i`, so no position is paired with itself and each unordered pair appears exactly once. The counter is initialised once before both loops and incremented inside the innermost `if`. The brute force does n(n-1)/2 comparisons, which is O(n squared). A faster interview follow-up is a single pass with a dictionary of how many times each value has been seen: for each number add `seen[target - x]` to the count, giving O(n) time. The common mistakes are starting `j` at `i` (self-pairing) or at 0 (double counting)."
+    },
+    "tests": [
+      { "args": [[1, 2, 3, 4], 5], "expected": 2, "tags": ["nested-loops"], "note": "distinct values" },
+      { "args": [[2, 2, 2], 4], "expected": 3, "tags": ["nested-loops", "accumulator-pattern"], "note": "duplicates" },
+      { "args": [[5], 10], "expected": 0, "tags": ["off-by-one"], "hidden": true,
+        "diagnosis": "An element must not pair with itself: start the inner loop at i + 1, not at i." },
+      { "args": [[], 3], "expected": 0, "tags": ["accumulator-pattern"], "hidden": true,
+        "diagnosis": "Initialise the counter to 0 before the loops so an empty list returns 0." },
+      { "args": [[1, 2, 3, 4], 8], "expected": 0, "tags": ["nested-loops"], "hidden": true,
+        "diagnosis": "4 + 4 would hit the target but only one 4 exists. Pairs need two different positions." },
+      { "args": [[3, 3, 3, 3], 6], "expected": 6, "tags": ["off-by-one", "nested-loops"], "hidden": true,
+        "diagnosis": "Four equal values have 6 unordered pairs. If you got 12 you count each pair twice; if 16 you also pair items with themselves." },
+      { "args": [[-1, 1, 0, 0], 0], "expected": 2, "tags": ["accumulator-pattern"], "hidden": true,
+        "diagnosis": "Count (-1, 1) and (0, 0) once each; negatives and zeros work like any other values." }
+    ]
+  },
+  {
+    "slug": "cf-is-prime-fast",
+    "title": "Fast Primality Check",
+    "difficulty": "hard",
+    "kind": "interview",
+    "concepts": ["while-loops", "loop-control", "off-by-one", "boolean-logic"],
+    "estimatedMinutes": 15,
+    "prompt": "Write `is_prime(n)` that returns `True` if the integer `n` is prime and `False` otherwise (numbers below 2 are not prime).\n\nYour solution has to be fast enough for values near one billion within the time limit, so trying every divisor up to `n` is too slow.\n\n```python\nis_prime(97)    # True\nis_prime(91)    # False  (7 * 13)\nis_prime(1)     # False\n```\n\nExpect the interviewer to ask: why is it enough to check divisors up to the square root of `n`?",
+    "entry": "is_prime",
+    "starterCode": "def is_prime(n):\n    return n > 1\n",
+    "hints": [
+      "Handle numbers below 2 first, then look for any divisor that proves the number is composite.",
+      "If `n = a * b` with `a <= b`, then `a * a <= n`. So you only need to test divisors `d` while `d * d <= n`. Stop as soon as one divides `n`.",
+      "`if n < 2: return False`, then `d = 2`, `while d * d <= n:` `if n % d == 0: return False` and `d += 1`. After the loop return `True`. Make sure the bound is `<=`, so 9 and 49 are caught."
+    ],
+    "solution": {
+      "code": "def is_prime(n):\n    if n < 2:\n        return False\n    d = 2\n    while d * d <= n:\n        if n % d == 0:\n            return False\n        d += 1\n    return True\n",
+      "explanation": "A composite number `n = a * b` always has a divisor no larger than its square root, because if both factors were above the square root their product would exceed `n`. So we only test `d` while `d * d <= n`, which is about 31,600 steps for a number near a billion instead of a billion. A `while` loop fits since the bound depends on `d`, and returning `False` the moment a divisor is found is an early exit just like `break`. The bound must be `<=`: with `<`, perfect squares such as 9 or 49 are never tested against their root (3 or 7) and are wrongly reported as prime. The `n < 2` guard handles 0, 1 and negatives. Time is O(sqrt n); skipping even divisors would halve it again."
+    },
+    "tests": [
+      { "args": [97], "expected": true, "tags": ["while-loops"], "note": "prime" },
+      { "args": [91], "expected": false, "tags": ["loop-control"], "note": "7 * 13" },
+      { "args": [1], "expected": false, "tags": ["boolean-logic"], "hidden": true,
+        "diagnosis": "1 is not prime. Return False for every n below 2." },
+      { "args": [2], "expected": true, "tags": ["off-by-one"], "hidden": true,
+        "diagnosis": "2 is the smallest prime. Make sure your loop does not test 2 against itself." },
+      { "args": [-7], "expected": false, "tags": ["boolean-logic"], "hidden": true,
+        "diagnosis": "Negative numbers and 0 are not prime. Guard with n < 2 first." },
+      { "args": [49], "expected": false, "tags": ["off-by-one"], "hidden": true,
+        "diagnosis": "49 = 7 * 7. Your loop bound stops one step early: use d * d <= n, not d * d < n." },
+      { "args": [9], "expected": false, "tags": ["off-by-one"], "hidden": true,
+        "diagnosis": "9 = 3 * 3. The divisor equal to the square root must be tested, so the bound is inclusive." },
+      { "args": [999999937], "expected": true, "tags": ["while-loops"], "hidden": true,
+        "diagnosis": "This large prime takes too long if you test every number up to n. Stop at the square root." }
+    ]
+  }
+]

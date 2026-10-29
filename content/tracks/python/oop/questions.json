@@ -1,0 +1,262 @@
+[
+  {
+    "slug": "animal-sounds",
+    "title": "Animals That Introduce Themselves",
+    "difficulty": "easy",
+    "kind": "practice",
+    "concepts": ["inheritance", "polymorphism", "classes-objects"],
+    "estimatedMinutes": 8,
+    "prompt": "Build a small class family.\n\n* `Animal(name)` stores `name`. `speak()` returns `\"...\"`. `intro()` returns `\"<name> says <sound>\"`, where the sound comes from `self.speak()`.\n* `Dog` is an `Animal` whose `speak()` returns `\"Woof\"`.\n* `Cat` is an `Animal` whose `speak()` returns `\"Meow\"`.\n\nDo not rewrite `intro` or `__init__` in the subclasses.\n\n```python\nDog(\"Rex\").intro()      # 'Rex says Woof'\nAnimal(\"Gus\").intro()   # 'Gus says ...'\n```",
+    "entry": "Animal",
+    "starterCode": "class Animal:\n    def __init__(self, name):\n        self.name = name\n\n    def speak(self):\n        return \"...\"\n\n    def intro(self):\n        return f\"{self.name} says {self.speak()}\"\n\n\nclass Dog(Animal):\n    pass\n\n\nclass Cat(Animal):\n    pass\n",
+    "hints": [
+      "The subclasses already inherit `intro`. What do they still need so that the sound differs?",
+      "Override only `speak` in each subclass. `intro` calls `self.speak()`, and `self` is a Dog or Cat, so Python finds the subclass version first.",
+      "Inside `Dog` add `def speak(self): return \"Woof\"`; inside `Cat`, return `\"Meow\"`."
+    ],
+    "solution": {
+      "code": "class Animal:\n    def __init__(self, name):\n        self.name = name\n\n    def speak(self):\n        return \"...\"\n\n    def intro(self):\n        return f\"{self.name} says {self.speak()}\"\n\n\nclass Dog(Animal):\n    def speak(self):\n        return \"Woof\"\n\n\nclass Cat(Animal):\n    def speak(self):\n        return \"Meow\"\n",
+      "explanation": "Attribute lookup starts at the object's own class and walks up. When `intro` (defined once in `Animal`) calls `self.speak()`, `self` is a `Dog`, so `Dog.speak` is found first. That is overriding, and the same call producing different results per class is polymorphism. Subclasses inherit `__init__` and `intro` unchanged, so there is no duplicated code. Typical mistake: copying `intro` into each subclass, or hard-coding the sound in `Animal` with an `if` on the class name, which breaks every time you add an animal."
+    },
+    "tests": [
+      { "program": "result = Animal('Gus').intro()", "expected": "Gus says ...", "tags": ["classes-objects"], "note": "base class" },
+      { "program": "result = Dog('Rex').intro()", "expected": "Rex says Woof", "tags": ["polymorphism"], "note": "Dog overrides speak" },
+      { "program": "result = Cat('Tom').intro()", "expected": "Tom says Meow", "tags": ["polymorphism"], "hidden": true,
+        "diagnosis": "Cat must override speak(); intro() is inherited and finds the overriding method through self." },
+      { "program": "result = [isinstance(Dog('a'), Animal), isinstance(Cat('b'), Animal), isinstance(Animal('c'), Dog)]", "expected": [true, true, false], "tags": ["inheritance"], "hidden": true,
+        "diagnosis": "Dog and Cat must be declared as subclasses: class Dog(Animal). A subclass is an instance of its parent, not the other way round." },
+      { "program": "result = [a.intro() for a in [Dog('A'), Cat('B'), Animal('C')]]", "expected": ["A says Woof", "B says Meow", "C says ..."], "tags": ["polymorphism"], "hidden": true,
+        "diagnosis": "The same intro() call should behave per class. Put the differing behaviour in an overridden speak() rather than branching on the type." },
+      { "program": "result = Dog('Rex').name", "expected": "Rex", "tags": ["inheritance"], "hidden": true,
+        "diagnosis": "Dog inherits Animal.__init__, so name should be set; if you wrote your own __init__ you must call super().__init__(name)." }
+    ]
+  },
+  {
+    "slug": "student-roster",
+    "title": "Student Roster",
+    "difficulty": "easy",
+    "kind": "practice",
+    "concepts": ["instance-vs-class", "classes-objects"],
+    "estimatedMinutes": 10,
+    "prompt": "Write a class `Student`.\n\n* `Student(name)` stores `name` and gives the student their **own** empty list `grades`.\n* `add_grade(g)` appends a grade.\n* `average()` returns the mean of the grades, or `0` if there are none.\n* The class keeps a shared counter `Student.count` of how many students have been created in total.\n\n```python\na = Student(\"Ann\"); b = Student(\"Bo\")\na.add_grade(80); a.add_grade(90)\na.average()      # 85.0\nb.grades         # []\nStudent.count    # 2\n```",
+    "entry": "Student",
+    "starterCode": "class Student:\n    grades = []\n\n    def __init__(self, name):\n        self.name = name\n\n    def add_grade(self, g):\n        self.grades.append(g)\n\n    def average(self):\n        return sum(self.grades) / len(self.grades)\n",
+    "hints": [
+      "Ask of every attribute: should each student have a separate copy, or should all students share one? Where does each kind get created?",
+      "Per-student data (`name`, `grades`) belongs on `self` in `__init__`. The counter is shared, so it lives in the class body and is changed through the class name.",
+      "In `__init__`: `self.grades = []` and `Student.count += 1` (not `self.count += 1`, which would create an instance attribute). Guard `average` against an empty list."
+    ],
+    "solution": {
+      "code": "class Student:\n    count = 0                      # shared by the whole class\n\n    def __init__(self, name):\n        self.name = name\n        self.grades = []           # one fresh list per student\n        Student.count += 1\n\n    def add_grade(self, g):\n        self.grades.append(g)\n\n    def average(self):\n        if not self.grades:\n            return 0\n        return sum(self.grades) / len(self.grades)\n",
+      "explanation": "The class body runs once, so `grades = []` there creates a single list that every student shares: appending through one student changes all of them. Mutable per-object state therefore belongs in `__init__` on `self`. The counter really is shared, so it lives on the class and is incremented through the class: `self.count += 1` would read the class value but assign a new instance attribute, leaving `Student.count` at 0. `average` checks for the empty case to avoid ZeroDivisionError. Alternative: `type(self).count += 1` also works and respects subclasses."
+    },
+    "tests": [
+      { "program": "s = Student('Ann')\ns.add_grade(80)\ns.add_grade(90)\nresult = s.average()", "expected": 85, "tags": ["classes-objects"], "note": "average" },
+      { "program": "Student('a')\nStudent('b')\nresult = Student.count", "expected": 2, "tags": ["instance-vs-class"], "note": "class counter" },
+      { "program": "a = Student('a')\nb = Student('b')\na.add_grade(5)\nresult = b.grades", "expected": [], "tags": ["instance-vs-class"], "hidden": true,
+        "diagnosis": "Students share one grades list: it is defined on the class. Create `self.grades = []` inside __init__ so each object gets its own." },
+      { "program": "a = Student('a')\nb = Student('b')\nresult = [a.count, b.count, Student.count]", "expected": [2, 2, 2], "tags": ["instance-vs-class"], "hidden": true,
+        "diagnosis": "`self.count += 1` creates an instance attribute that shadows the class one. Increment through the class: Student.count += 1." },
+      { "program": "result = Student('x').average()", "expected": 0, "tags": ["classes-objects"], "hidden": true,
+        "diagnosis": "A student with no grades should average 0; check for an empty list before dividing." }
+    ]
+  },
+  {
+    "slug": "safe-bank-account",
+    "title": "Bank Account That Protects Its Balance",
+    "difficulty": "easy",
+    "kind": "practice",
+    "concepts": ["encapsulation", "classes-objects"],
+    "estimatedMinutes": 12,
+    "prompt": "Write `BankAccount(owner, balance=0)`.\n\n* `balance` is a **read-only property**: reading works, assigning to it raises `AttributeError`.\n* `deposit(amount)` adds money; the amount must be positive, else raise `ValueError`.\n* `withdraw(amount)` removes money; the amount must be positive and not exceed the balance, else raise `ValueError`. A refused operation must leave the balance unchanged.\n* A negative opening balance raises `ValueError`.\n\n```python\na = BankAccount(\"Ada\", 100)\na.deposit(50); a.withdraw(30)\na.balance        # 120\na.withdraw(999)  # ValueError\n```",
+    "entry": "BankAccount",
+    "starterCode": "class BankAccount:\n    def __init__(self, owner, balance=0):\n        self.owner = owner\n        self.balance = balance\n\n    def deposit(self, amount):\n        self.balance += amount\n\n    def withdraw(self, amount):\n        self.balance -= amount\n",
+    "hints": [
+      "As written, any code can set `balance` to anything. How can you keep the number but control who changes it and how?",
+      "Store the money in `self._balance`, expose it with a `@property` that has no setter, and let `deposit`/`withdraw` be the only code that changes `_balance`.",
+      "In each method check the rule first and `raise ValueError(...)` before touching `_balance`. Validate the opening balance in `__init__` too."
+    ],
+    "solution": {
+      "code": "class BankAccount:\n    def __init__(self, owner, balance=0):\n        if balance < 0:\n            raise ValueError(\"opening balance cannot be negative\")\n        self.owner = owner\n        self._balance = balance\n\n    @property\n    def balance(self):\n        return self._balance\n\n    def deposit(self, amount):\n        if amount <= 0:\n            raise ValueError(\"deposit must be positive\")\n        self._balance += amount\n\n    def withdraw(self, amount):\n        if amount <= 0:\n            raise ValueError(\"withdrawal must be positive\")\n        if amount > self._balance:\n            raise ValueError(\"insufficient funds\")\n        self._balance -= amount\n",
+      "explanation": "Encapsulation means the object guards its own invariant (here: the balance is never negative). The data lives in `_balance` (an 'internal' name by convention); the public `balance` is a property with no setter, so outsiders can read it but `acct.balance = 10**9` raises `AttributeError`. All changes go through methods that validate first and `raise ValueError` on bad input; raising is better than printing a message or silently ignoring, because the caller learns the operation failed. Validating in `__init__` ensures no invalid object can exist. Alternative: a setter that validates, but for money, explicit deposit/withdraw methods express the intent better."
+    },
+    "tests": [
+      { "program": "a = BankAccount('Ada', 100)\na.deposit(50)\nresult = a.balance", "expected": 150, "tags": ["classes-objects"], "note": "deposit" },
+      { "program": "a = BankAccount('Ada', 100)\na.withdraw(30)\nresult = a.balance", "expected": 70, "tags": ["classes-objects"], "note": "withdraw" },
+      { "program": "a = BankAccount('Ada', 100)\ntry:\n    a.withdraw(500)\n    outcome = 'ok'\nexcept ValueError:\n    outcome = 'refused'\nresult = [outcome, a.balance]", "expected": ["refused", 100], "tags": ["encapsulation"], "hidden": true,
+        "diagnosis": "An overdraft must raise ValueError and leave the balance untouched: validate before you change state." },
+      { "program": "a = BankAccount('Ada', 100)\ntry:\n    a.deposit(-5)\n    outcome = 'ok'\nexcept ValueError:\n    outcome = 'refused'\nresult = [outcome, a.balance]", "expected": ["refused", 100], "tags": ["encapsulation"], "hidden": true,
+        "diagnosis": "Reject non-positive deposits with ValueError; otherwise a negative deposit is a withdrawal that skips the funds check." },
+      { "program": "a = BankAccount('Ada', 100)\ntry:\n    a.balance = 10**9\n    outcome = 'writable'\nexcept AttributeError:\n    outcome = 'read-only'\nresult = [outcome, a.balance]", "expected": ["read-only", 100], "tags": ["encapsulation"], "hidden": true,
+        "diagnosis": "balance should be a read-only @property over a private _balance, so outside code cannot assign it directly." },
+      { "program": "try:\n    BankAccount('Bo', -1)\n    result = 'created'\nexcept ValueError:\n    result = 'refused'", "expected": "refused", "tags": ["encapsulation"], "hidden": true,
+        "diagnosis": "Validate in __init__ as well, so an invalid account can never exist." }
+    ]
+  },
+  {
+    "slug": "temperature-property",
+    "title": "Temperature With Two Views",
+    "difficulty": "medium",
+    "kind": "practice",
+    "concepts": ["encapsulation", "classes-objects"],
+    "estimatedMinutes": 14,
+    "prompt": "Write `Temperature(celsius)` using properties.\n\n* `celsius` is a property with a validating setter: values below `-273.15` raise `ValueError`, and the stored value is unchanged after a refusal. The constructor must use the same validation.\n* `fahrenheit` is a property too. Reading gives `celsius * 9 / 5 + 32`. Assigning converts to Celsius and goes through the same validation.\n* Store only one value internally so the two views can never disagree.\n\n```python\nt = Temperature(100)\nt.fahrenheit        # 212.0\nt.fahrenheit = 32\nt.celsius           # 0.0\nt.celsius = -300    # ValueError\n```",
+    "entry": "Temperature",
+    "starterCode": "class Temperature:\n    def __init__(self, celsius):\n        self.celsius = celsius\n\n    @property\n    def fahrenheit(self):\n        return self.celsius * 9 / 5 + 32\n",
+    "hints": [
+      "Plain attributes cannot validate assignments. Which decorator lets `t.celsius = x` run your code?",
+      "Define `@property celsius` returning `self._celsius`, and `@celsius.setter` that checks the limit before assigning `self._celsius`. In `__init__`, assign to `self.celsius` (not `_celsius`) so the setter runs.",
+      "The `fahrenheit` setter should compute `(value - 32) * 5 / 9` and assign it with `self.celsius = ...`, which reuses the validation."
+    ],
+    "solution": {
+      "code": "class Temperature:\n    def __init__(self, celsius):\n        self.celsius = celsius          # goes through the setter\n\n    @property\n    def celsius(self):\n        return self._celsius\n\n    @celsius.setter\n    def celsius(self, value):\n        if value < -273.15:\n            raise ValueError(\"below absolute zero\")\n        self._celsius = value\n\n    @property\n    def fahrenheit(self):\n        return self._celsius * 9 / 5 + 32\n\n    @fahrenheit.setter\n    def fahrenheit(self, value):\n        self.celsius = (value - 32) * 5 / 9   # reuse the validation\n",
+      "explanation": "A property looks like an attribute but runs a method, so you can validate without changing how callers write `t.celsius = 5`. The data is stored once, in `_celsius`, under a different name than the property (using the same name would recurse forever). Fahrenheit is a derived view: reading computes it and writing converts and delegates to the Celsius setter, so a single validation rule guards both. `__init__` assigns to `self.celsius`, not `self._celsius`, so even the initial value is checked. The validation happens before the store, so a refused assignment leaves the old value intact."
+    },
+    "tests": [
+      { "program": "t = Temperature(100)\nresult = t.fahrenheit", "expected": 212.0, "tags": ["classes-objects"], "note": "derived property" },
+      { "program": "t = Temperature(0)\nt.fahrenheit = 212\nresult = t.celsius", "expected": 100.0, "tags": ["encapsulation"], "note": "fahrenheit setter" },
+      { "program": "try:\n    Temperature(-300)\n    result = 'created'\nexcept ValueError:\n    result = 'rejected'", "expected": "rejected", "tags": ["encapsulation"], "hidden": true,
+        "diagnosis": "The constructor must go through the setter (self.celsius = celsius), not write _celsius directly, or invalid values slip in." },
+      { "program": "t = Temperature(20)\ntry:\n    t.celsius = -500\n    outcome = 'accepted'\nexcept ValueError:\n    outcome = 'rejected'\nresult = [outcome, t.celsius]", "expected": ["rejected", 20], "tags": ["encapsulation"], "hidden": true,
+        "diagnosis": "Validate before assigning: a refused value must leave the stored temperature unchanged." },
+      { "program": "t = Temperature(10)\ntry:\n    t.fahrenheit = -1000\n    outcome = 'accepted'\nexcept ValueError:\n    outcome = 'rejected'\nresult = [outcome, t.celsius]", "expected": ["rejected", 10], "tags": ["encapsulation"], "hidden": true,
+        "diagnosis": "The fahrenheit setter should convert and assign through the celsius property so the same validation applies." },
+      { "program": "t = Temperature(10)\nt.celsius = 20\nresult = t.fahrenheit", "expected": 68.0, "tags": ["encapsulation"], "hidden": true,
+        "diagnosis": "Fahrenheit should be computed from the single stored value each time, not cached when the object was created." }
+    ]
+  },
+  {
+    "slug": "employee-manager",
+    "title": "Employees and Managers",
+    "difficulty": "medium",
+    "kind": "interview",
+    "concepts": ["inheritance", "instance-vs-class", "classes-objects"],
+    "estimatedMinutes": 15,
+    "prompt": "Model a company.\n\n* `Employee(name, salary)` with `pay()` returning the salary, and a **classmethod** `from_string(text)` that parses `\"name:salary\"` (salary as an `int`) and builds an instance.\n* `Manager(Employee)` takes `(name, salary, bonus=0)`. Its `pay()` returns salary plus bonus. It has its own list of reports: `add_report(employee)` and `team_cost()` (sum of the reports' `pay()`; `0` with no reports).\n* `Manager.from_string(\"Ann:5000\")` must return a `Manager`, not an `Employee`.\n\n```python\nEmployee.from_string(\"Bo:3000\").pay()   # 3000\nm = Manager(\"Ann\", 5000, 800); m.pay()  # 5800\n```",
+    "entry": "Employee",
+    "starterCode": "class Employee:\n    def __init__(self, name, salary):\n        self.name = name\n        self.salary = salary\n\n    def pay(self):\n        return self.salary\n\n    @staticmethod\n    def from_string(text):\n        name, salary = text.split(':')\n        return Employee(name, int(salary))\n\n\nclass Manager(Employee):\n    pass\n",
+    "hints": [
+      "Two separate problems: a subclass needs extra data and behaviour, and the alternative constructor must build the right class for whichever class it is called on.",
+      "Manager's `__init__` should call `super().__init__(name, salary)` and then set `bonus` and a fresh `reports` list. For `from_string`, use `@classmethod` and construct with `cls`, not the hard-coded `Employee`.",
+      "`def pay(self): return super().pay() + self.bonus` extends the parent. `team_cost` is `sum(r.pay() for r in self.reports)`. Create `self.reports = []` inside `__init__` so managers do not share it."
+    ],
+    "solution": {
+      "code": "class Employee:\n    def __init__(self, name, salary):\n        self.name = name\n        self.salary = salary\n\n    def pay(self):\n        return self.salary\n\n    @classmethod\n    def from_string(cls, text):\n        name, salary = text.split(':')\n        return cls(name, int(salary))\n\n\nclass Manager(Employee):\n    def __init__(self, name, salary, bonus=0):\n        super().__init__(name, salary)\n        self.bonus = bonus\n        self.reports = []\n\n    def pay(self):\n        return super().pay() + self.bonus\n\n    def add_report(self, employee):\n        self.reports.append(employee)\n\n    def team_cost(self):\n        return sum(r.pay() for r in self.reports)\n",
+      "explanation": "`super().__init__` lets `Employee` set up `name` and `salary` in one place; `Manager` only adds what is new. `pay` *extends* the parent's behaviour with `super().pay()` instead of duplicating the salary logic. The alternative constructor is a `@classmethod` receiving `cls`: calling `Manager.from_string(...)` passes `Manager`, so `cls(name, salary)` builds a Manager (bonus defaults to 0), while a `@staticmethod` hard-coding `Employee(...)` would always return the base class. `reports` is created in `__init__` so every manager gets its own list; a class-level list would be shared by all managers (the mutable class attribute trap). Common interview follow-up: what happens if you forget `super().__init__`? `self.salary` is never set, and `pay()` raises AttributeError."
+    },
+    "tests": [
+      { "program": "e = Employee.from_string('Bo:3000')\nresult = [e.name, e.salary, e.pay()]", "expected": ["Bo", 3000, 3000], "tags": ["instance-vs-class"], "note": "alternative constructor" },
+      { "program": "m = Manager('Ann', 5000, 800)\nresult = m.pay()", "expected": 5800, "tags": ["inheritance"], "note": "extends pay" },
+      { "program": "m = Manager.from_string('Ann:5000')\nresult = [type(m).__name__, m.pay()]", "expected": ["Manager", 5000], "tags": ["instance-vs-class"], "hidden": true,
+        "diagnosis": "from_string should be a @classmethod that builds `cls(...)`. Hard-coding Employee always returns the base class." },
+      { "program": "m = Manager('A', 1, 2)\nresult = [m.name, m.salary, m.bonus, isinstance(m, Employee)]", "expected": ["A", 1, 2, true], "tags": ["inheritance"], "hidden": true,
+        "diagnosis": "Manager.__init__ must call super().__init__(name, salary) so the parent sets its attributes." },
+      { "program": "a = Manager('A', 1000)\nb = Manager('B', 1000)\na.add_report(Employee('x', 10))\na.add_report(Manager('y', 20, 5))\nresult = [a.team_cost(), b.team_cost()]", "expected": [35, 0], "tags": ["instance-vs-class"], "hidden": true,
+        "diagnosis": "Each manager needs its own reports list: create it in __init__, not in the class body where all managers would share it." },
+      { "program": "m = Manager('Z', 100)\nresult = [m.pay(), m.team_cost()]", "expected": [100, 0], "tags": ["classes-objects"], "hidden": true,
+        "diagnosis": "A default bonus of 0 and an empty team should give plain salary and a team cost of 0." }
+    ]
+  },
+  {
+    "slug": "shape-hierarchy",
+    "title": "Abstract Shapes",
+    "difficulty": "medium",
+    "kind": "practice",
+    "concepts": ["polymorphism", "inheritance"],
+    "estimatedMinutes": 15,
+    "prompt": "Create an abstract base class and some shapes.\n\n* `Shape` is an abstract base class (use `abc`) with an abstract method `area()` and a concrete `describe()` that returns `\"<ClassName> with area <area to 2 decimals>\"`. `Shape()` itself, or a subclass that forgets `area`, cannot be instantiated.\n* `Circle(r)`: area `math.pi * r ** 2`.\n* `Rectangle(w, h)`: area `w * h`.\n* `Square(side)` is a `Rectangle` (reuse it with `super().__init__`).\n\n```python\nCircle(1).describe()    # 'Circle with area 3.14'\nSquare(3).describe()    # 'Square with area 9.00'\n```",
+    "entry": "Shape",
+    "starterCode": "import math\n\n\nclass Shape:\n    def area(self):\n        pass\n",
+    "hints": [
+      "Three ideas: forcing subclasses to implement `area`, sharing `describe` in the base, and reusing Rectangle for Square.",
+      "Inherit from `ABC` and decorate `area` with `@abstractmethod`. `describe` can call `self.area()` and `type(self).__name__`, and each subclass's own `area` runs.",
+      "`class Square(Rectangle): def __init__(self, side): super().__init__(side, side)`. Format the number with `f\"{self.area():.2f}\"`."
+    ],
+    "solution": {
+      "code": "import math\nfrom abc import ABC, abstractmethod\n\n\nclass Shape(ABC):\n    @abstractmethod\n    def area(self):\n        \"\"\"Return the area.\"\"\"\n\n    def describe(self):\n        return f\"{type(self).__name__} with area {self.area():.2f}\"\n\n\nclass Circle(Shape):\n    def __init__(self, r):\n        self.r = r\n\n    def area(self):\n        return math.pi * self.r ** 2\n\n\nclass Rectangle(Shape):\n    def __init__(self, w, h):\n        self.w = w\n        self.h = h\n\n    def area(self):\n        return self.w * self.h\n\n\nclass Square(Rectangle):\n    def __init__(self, side):\n        super().__init__(side, side)\n",
+      "explanation": "`Shape` declares the contract (`area`) with `@abstractmethod`, so Python refuses to instantiate it or any subclass that leaves `area` unimplemented, failing early with a clear TypeError. `describe` is a template method: it is written once in the base class, calls `self.area()`, and polymorphism picks the right implementation for each object, with no `isinstance` chains. `type(self).__name__` gives the concrete class name. `Square` is-a `Rectangle`, so it reuses the area logic by calling `super().__init__(side, side)`. Adding a Triangle later needs no change to existing code, which is the point of polymorphism."
+    },
+    "tests": [
+      { "program": "result = Rectangle(3, 4).area()", "expected": 12, "tags": ["inheritance"], "note": "concrete area" },
+      { "program": "result = Circle(1).describe()", "expected": "Circle with area 3.14", "tags": ["polymorphism"], "note": "template method" },
+      { "program": "try:\n    Shape()\n    result = 'created'\nexcept TypeError:\n    result = 'abstract'", "expected": "abstract", "tags": ["polymorphism"], "hidden": true,
+        "diagnosis": "Shape must inherit from ABC and mark area with @abstractmethod so it cannot be instantiated." },
+      { "program": "class Bad(Shape):\n    pass\ntry:\n    Bad()\n    result = 'created'\nexcept TypeError:\n    result = 'abstract'", "expected": "abstract", "tags": ["polymorphism"], "hidden": true,
+        "diagnosis": "A subclass that does not implement every abstract method must stay abstract: use @abstractmethod from abc on Shape.area." },
+      { "program": "result = [Square(3).describe(), isinstance(Square(2), Rectangle), isinstance(Square(2), Shape)]", "expected": ["Square with area 9.00", true, true], "tags": ["inheritance"], "hidden": true,
+        "diagnosis": "Square should subclass Rectangle and call super().__init__(side, side); describe uses the actual class name." },
+      { "program": "shapes = [Circle(1), Rectangle(2, 3), Square(2)]\nresult = round(sum(s.area() for s in shapes), 2)", "expected": 13.14, "tags": ["polymorphism"], "hidden": true,
+        "diagnosis": "Every shape must answer area() so they can be treated alike in a loop, with no type checks." }
+    ]
+  },
+  {
+    "slug": "vector-operators",
+    "title": "A Vector You Can Calculate With",
+    "difficulty": "hard",
+    "kind": "interview",
+    "concepts": ["dunder-methods", "classes-objects"],
+    "estimatedMinutes": 18,
+    "prompt": "Implement `Vector(x, y)` so that it behaves like a value type:\n\n* `repr(v)` is `\"Vector(x, y)\"`.\n* `v1 + v2`, `v1 - v2` return **new** vectors; `v * k` and `k * v` scale by a number.\n* `abs(v)` is the length (`float`).\n* `==` compares coordinates (comparing with a non-Vector is simply `False`), and equal vectors must work as members of a `set` / keys of a `dict`.\n* Operands are never modified.\n\n```python\nrepr(Vector(1, 2) + Vector(3, 4))   # 'Vector(4, 6)'\nrepr(2 * Vector(1, 2))              # 'Vector(2, 4)'\nabs(Vector(3, 4))                   # 5.0\nlen({Vector(1, 2), Vector(1, 2)})   # 1\n```",
+    "entry": "Vector",
+    "starterCode": "class Vector:\n    def __init__(self, x, y):\n        self.x = x\n        self.y = y\n",
+    "hints": [
+      "Each operator or built-in is a hook: `+` calls `__add__`, `repr()` calls `__repr__`, and so on. Which hooks does each requirement map to?",
+      "Return a new `Vector` from `__add__`, `__sub__` and `__mul__`. For `k * v`, Python tries `int.__mul__` first, fails, then calls the right operand's `__rmul__`. Defining `__eq__` also removes `__hash__`, so you must add it back.",
+      "`__hash__` should return `hash((self.x, self.y))`, matching `__eq__`. In `__eq__`, return `NotImplemented` when `other` is not a Vector. `__abs__` is `(x*x + y*y) ** 0.5` and `__rmul__ = __mul__`."
+    ],
+    "solution": {
+      "code": "class Vector:\n    def __init__(self, x, y):\n        self.x = x\n        self.y = y\n\n    def __repr__(self):\n        return f\"Vector({self.x}, {self.y})\"\n\n    def __add__(self, other):\n        return Vector(self.x + other.x, self.y + other.y)\n\n    def __sub__(self, other):\n        return Vector(self.x - other.x, self.y - other.y)\n\n    def __mul__(self, k):\n        return Vector(self.x * k, self.y * k)\n\n    __rmul__ = __mul__\n\n    def __abs__(self):\n        return (self.x ** 2 + self.y ** 2) ** 0.5\n\n    def __eq__(self, other):\n        if not isinstance(other, Vector):\n            return NotImplemented\n        return (self.x, self.y) == (other.x, other.y)\n\n    def __hash__(self):\n        return hash((self.x, self.y))\n",
+      "explanation": "Python syntax is sugar for method calls on the class: `a + b` is `type(a).__add__(a, b)`, `abs(a)` is `__abs__`, `repr(a)` is `__repr__`. Arithmetic returns new objects, as `1 + 2` does not change `1`. `3 * v` first tries `int.__mul__`, which returns NotImplemented, so Python falls back to `v.__rmul__(3)`. Returning `NotImplemented` from `__eq__` for foreign types lets Python answer `False` cleanly instead of raising. Defining `__eq__` sets `__hash__` to None, so `__hash__` is restored from the same fields; equal objects must hash equal, and the hash is only safe while the coordinates are not mutated. A `@dataclass(frozen=True)` would generate `__init__`, `__repr__`, `__eq__` and `__hash__` for you, but you would still write the arithmetic."
+    },
+    "tests": [
+      { "program": "result = repr(Vector(1, 2) + Vector(3, 4))", "expected": "Vector(4, 6)", "tags": ["dunder-methods"], "note": "add and repr" },
+      { "program": "result = [Vector(1, 2) == Vector(1, 2), Vector(1, 2) == Vector(2, 1)]", "expected": [true, false], "tags": ["dunder-methods"], "note": "equality" },
+      { "program": "result = [repr(2 * Vector(1, 2)), repr(Vector(1, 2) * 3)]", "expected": ["Vector(2, 4)", "Vector(3, 6)"], "tags": ["dunder-methods"], "hidden": true,
+        "diagnosis": "`k * v` needs __rmul__ (the reflected operand) in addition to __mul__ for `v * k`." },
+      { "program": "result = [repr(Vector(5, 5) - Vector(1, 2)), abs(Vector(3, 4))]", "expected": ["Vector(4, 3)", 5.0], "tags": ["dunder-methods"], "hidden": true,
+        "diagnosis": "Implement __sub__ returning a new Vector, and __abs__ as the square root of x*x + y*y." },
+      { "program": "result = len({Vector(1, 2), Vector(1, 2), Vector(2, 1)})", "expected": 2, "tags": ["dunder-methods"], "hidden": true,
+        "diagnosis": "Defining __eq__ removes the default __hash__. Add __hash__ based on the same fields so equal vectors collapse in a set." },
+      { "program": "a = Vector(1, 1)\nb = Vector(2, 2)\nc = a + b\nd = a * 5\nresult = [repr(a), repr(b), repr(c), repr(d)]", "expected": ["Vector(1, 1)", "Vector(2, 2)", "Vector(3, 3)", "Vector(5, 5)"], "tags": ["classes-objects"], "hidden": true,
+        "diagnosis": "Operators must return new objects and leave the operands unchanged; do not modify self inside __add__ or __mul__." },
+      { "program": "result = [Vector(1, 2) == (1, 2), Vector(1, 2) != 'v']", "expected": [false, true], "tags": ["dunder-methods"], "hidden": true,
+        "diagnosis": "Comparing with a non-Vector should not crash: check isinstance in __eq__ and return NotImplemented." }
+    ]
+  },
+  {
+    "slug": "playlist-container",
+    "title": "A Playlist That Acts Like a Sequence",
+    "difficulty": "hard",
+    "kind": "practice",
+    "concepts": ["dunder-methods", "classes-objects"],
+    "estimatedMinutes": 18,
+    "prompt": "Write `Playlist(songs)` that wraps a list of song titles (copy it; later changes to the original list must not affect the playlist) and supports:\n\n* `len(p)`, and `bool(p)` is `False` when empty\n* `p[i]` (negative indexes too) and slicing `p[1:]`, which returns a plain list\n* `for s in p` and `list(p)`\n* `\"title\" in p`\n* `p1 + p2` returns a **new** `Playlist`, operands unchanged\n* `repr(p)` is `\"Playlist(['a', 'b'])\"`\n* `p1 < p2` is true when `p1` has fewer songs, so playlists can be passed to `sorted`\n\n```python\np = Playlist([\"a\", \"b\", \"c\"])\nlen(p), p[-1], p[1:]    # (3, 'c', ['b', 'c'])\n\"b\" in p                # True\n```",
+    "entry": "Playlist",
+    "starterCode": "class Playlist:\n    def __init__(self, songs):\n        self._songs = songs\n",
+    "hints": [
+      "Python's built-ins call special methods on your class: `len`, indexing, `for`, `in`, `+`, `repr` and `<` each have one. List them before coding.",
+      "Store `list(songs)` (a copy). Many methods can simply delegate to the inner list: `__len__`, `__getitem__`, `__iter__`, `__contains__`. `__getitem__` receives a slice object too, and passing it on to the list handles slicing for free.",
+      "`__add__` should return `Playlist(self._songs + other._songs)`. `__lt__` compares `len(self) < len(other)`. `__repr__` can be `f\"Playlist({self._songs!r})\"`. If `__len__` exists, `bool(p)` is already False when empty."
+    ],
+    "solution": {
+      "code": "class Playlist:\n    def __init__(self, songs):\n        self._songs = list(songs)\n\n    def __len__(self):\n        return len(self._songs)\n\n    def __getitem__(self, index):\n        return self._songs[index]\n\n    def __iter__(self):\n        return iter(self._songs)\n\n    def __contains__(self, title):\n        return title in self._songs\n\n    def __add__(self, other):\n        return Playlist(self._songs + other._songs)\n\n    def __lt__(self, other):\n        return len(self) < len(other)\n\n    def __repr__(self):\n        return f\"Playlist({self._songs!r})\"\n",
+      "explanation": "Each built-in maps to a dunder: `len()` to `__len__`, `p[i]` and `p[a:b]` to `__getitem__` (slices arrive as slice objects, so delegating to the list handles them), `for` to `__iter__`, `in` to `__contains__`, `+` to `__add__`, `repr` to `__repr__`, and `sorted` only needs `__lt__`. Truthiness falls back to `__len__`, so an empty playlist is falsy with no extra code. Copying with `list(songs)` in `__init__` stops outside code mutating the playlist's internal state through the list it passed in (encapsulation). `__add__` builds a new object instead of modifying `self`. Delegating to the underlying list keeps every method one line; the cost of `in` is O(n) because it scans the list."
+    },
+    "tests": [
+      { "program": "p = Playlist(['a', 'b', 'c'])\nresult = [len(p), p[0], p[-1]]", "expected": [3, "a", "c"], "tags": ["dunder-methods"], "note": "len and indexing" },
+      { "program": "result = list(Playlist(['x', 'y']))", "expected": ["x", "y"], "tags": ["dunder-methods"], "note": "iteration" },
+      { "program": "p = Playlist(['a', 'b', 'c'])\nresult = [p[1:], 'b' in p, 'z' in p]", "expected": [["b", "c"], true, false], "tags": ["dunder-methods"], "hidden": true,
+        "diagnosis": "__getitem__ must accept slices (pass the index straight to the list) and __contains__ (or __iter__) must support `in`." },
+      { "program": "result = repr(Playlist(['a', 'b']))", "expected": "Playlist(['a', 'b'])", "tags": ["dunder-methods"], "hidden": true,
+        "diagnosis": "__repr__ must return a string like Playlist(['a', 'b']); use the list's repr, not str of each item, and return it rather than printing." },
+      { "program": "result = [bool(Playlist([])), bool(Playlist(['a']))]", "expected": [false, true], "tags": ["dunder-methods"], "hidden": true,
+        "diagnosis": "Truthiness falls back to __len__: an empty container is falsy once you define __len__ correctly." },
+      { "program": "a = Playlist(['a'])\nb = Playlist(['b'])\nc = a + b\nresult = [list(c), list(a), list(b)]", "expected": [["a", "b"], ["a"], ["b"]], "tags": ["dunder-methods"], "hidden": true,
+        "diagnosis": "__add__ must return a new Playlist and leave both operands unchanged." },
+      { "program": "ps = sorted([Playlist(['a', 'b']), Playlist(['a']), Playlist(['a', 'b', 'c'])])\nresult = [len(x) for x in ps]", "expected": [1, 2, 3], "tags": ["dunder-methods"], "hidden": true,
+        "diagnosis": "sorted() only needs __lt__; compare the lengths of the two playlists." },
+      { "program": "src = ['a']\np = Playlist(src)\nsrc.append('b')\nresult = len(p)", "expected": 1, "tags": ["classes-objects"], "hidden": true,
+        "diagnosis": "Store a copy (list(songs)) so later changes to the caller's list do not alter the playlist." }
+    ]
+  }
+]

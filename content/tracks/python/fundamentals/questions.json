@@ -1,0 +1,247 @@
+[
+  {
+    "slug": "fund-type-name",
+    "title": "What Type Is It?",
+    "difficulty": "easy",
+    "kind": "practice",
+    "concepts": ["variables-types"],
+    "estimatedMinutes": 4,
+    "prompt": "Write `type_name(value)` that returns the **name** of the value's type as a string, such as `\"int\"`, `\"str\"` or `\"float\"`.\n\nExamples:\n\n```python\ntype_name(42)      # 'int'\ntype_name(\"42\")    # 'str'\n```\n\nThe function must work for any value, including `True` and `None`.",
+    "entry": "type_name",
+    "starterCode": "def type_name(value):\n    # your code here\n    return \"int\"\n",
+    "hints": [
+      "Python can tell you the type of any value with a built-in function.",
+      "`type(5)` returns the class object `<class 'int'>`. A class has a `__name__` attribute holding its name.",
+      "Return `type(value).__name__`."
+    ],
+    "solution": {
+      "code": "def type_name(value):\n    return type(value).__name__\n",
+      "explanation": "Every value carries its own type, and `type(value)` returns that type as an object. A class object has a `__name__` attribute that holds its name as a string. Notice that the type belongs to the *value*, not to the variable name: the string `\"42\"` is a `str` even though it looks like a number, and `True` is a `bool` (a subclass of `int`, but its own type). The tempting mistake is to guess the type from how the value looks instead of asking Python."
+    },
+    "tests": [
+      { "args": [42], "expected": "int", "tags": ["variables-types"], "note": "integer" },
+      { "args": ["42"], "expected": "str", "tags": ["variables-types"], "note": "digits in quotes",
+        "diagnosis": "A value in quotes is a str no matter what it looks like. The type belongs to the value, not to its appearance." },
+      { "args": [4.0], "expected": "float", "tags": ["variables-types"], "hidden": true,
+        "diagnosis": "4.0 has a decimal point, so it is a float even though its value equals the integer 4." },
+      { "args": [true], "expected": "bool", "tags": ["variables-types"], "hidden": true,
+        "diagnosis": "True and False are of type bool. They behave like 1 and 0 in arithmetic, but type() reports bool." },
+      { "args": [null], "expected": "NoneType", "tags": ["variables-types"], "hidden": true,
+        "diagnosis": "None is a value too. Its type is NoneType." }
+    ]
+  },
+  {
+    "slug": "fund-celsius-fahrenheit",
+    "title": "Celsius to Fahrenheit",
+    "difficulty": "easy",
+    "kind": "practice",
+    "concepts": ["numeric-operators", "variables-types"],
+    "estimatedMinutes": 5,
+    "prompt": "Write `celsius_to_fahrenheit(c)` that converts a temperature using `F = C * 9/5 + 32` and returns it as a float.\n\n```python\ncelsius_to_fahrenheit(100)   # 212.0\ncelsius_to_fahrenheit(-40)   # -40.0\n```",
+    "entry": "celsius_to_fahrenheit",
+    "starterCode": "def celsius_to_fahrenheit(c):\n    # your code here\n    return c\n",
+    "hints": [
+      "Translate the formula directly. Think about which operator keeps fractions.",
+      "`9 // 5` is `1`, which throws away the fraction. Which division operator keeps it?",
+      "`return c * 9 / 5 + 32`. Multiplication and division bind tighter than `+`, so no parentheses are needed around `c * 9 / 5`."
+    ],
+    "solution": {
+      "code": "def celsius_to_fahrenheit(c):\n    return c * 9 / 5 + 32\n",
+      "explanation": "`/` is true division and always returns a float, so `c * 9 / 5` keeps the fractional part. Precedence does the rest: `*` and `/` are evaluated left to right before `+`, so the `+ 32` is applied last, exactly as in the formula. Two classic slips are `9 // 5` (which is `1`, silently dropping 0.8) and `(c + 32) * 9 / 5` (wrong grouping, so the 32 gets scaled too). Using `1.8 * c + 32` is an equivalent alternative."
+    },
+    "tests": [
+      { "args": [100], "expected": 212.0, "tags": ["numeric-operators"], "note": "boiling point" },
+      { "args": [0], "expected": 32.0, "tags": ["numeric-operators"], "note": "freezing point" },
+      { "args": [-40], "expected": -40.0, "tags": ["numeric-operators"], "hidden": true,
+        "diagnosis": "The +32 must be added after scaling. Check your grouping: (c + 32) * 9 / 5 is a different formula." },
+      { "args": [20], "expected": 68.0, "tags": ["numeric-operators"], "hidden": true,
+        "diagnosis": "If this is off, you may be using // (floor division) so 9 // 5 became 1. Use / to keep the fraction." },
+      { "args": [5], "expected": 41.0, "tags": ["numeric-operators", "variables-types"], "hidden": true,
+        "diagnosis": "Re-check precedence: * and / happen before +." }
+    ]
+  },
+  {
+    "slug": "fund-double-input",
+    "title": "Double the Number",
+    "difficulty": "easy",
+    "kind": "practice",
+    "concepts": ["type-conversion", "io-formatting"],
+    "estimatedMinutes": 5,
+    "prompt": "Write `double_input()` that reads **one line** with `input()` containing a whole number and **prints** twice that number.\n\nExample: if the user types `21`, print `42`.",
+    "entry": "double_input",
+    "starterCode": "def double_input():\n    n = input()\n    print(n)\n",
+    "hints": [
+      "What type does `input()` give you back, regardless of what the user typed?",
+      "`\"21\" * 2` is `\"2121\"`: a string repeated. You need an integer before multiplying.",
+      "`n = int(input())` then `print(n * 2)`."
+    ],
+    "solution": {
+      "code": "def double_input():\n    n = int(input())\n    print(n * 2)\n",
+      "explanation": "`input()` always returns a `str`, even when the user types digits. Multiplying a string by 2 repeats it (`'21' * 2 == '2121'`), so you must convert with `int()` first. After conversion `n * 2` is real arithmetic and `print` converts the result back to text for display. The pattern *read, convert, compute, print* is the backbone of every small console program."
+    },
+    "tests": [
+      { "args": [], "stdin": "21\n", "stdout": "42", "tags": ["type-conversion", "io-formatting"], "note": "basic" },
+      { "args": [], "stdin": "5\n", "stdout": "10", "tags": ["type-conversion"] },
+      { "args": [], "stdin": "0\n", "stdout": "0", "tags": ["type-conversion"], "hidden": true,
+        "diagnosis": "Printing 00 means you repeated the string instead of converting it to an int first." },
+      { "args": [], "stdin": "-4\n", "stdout": "-8", "tags": ["type-conversion"], "hidden": true,
+        "diagnosis": "input() returns text. Convert it with int() so the sign and arithmetic work." },
+      { "args": [], "stdin": "100\n", "stdout": "200", "tags": ["type-conversion", "io-formatting"], "hidden": true,
+        "diagnosis": "Print only the answer, with no extra words or spaces. Also make sure you convert with int()." }
+    ]
+  },
+  {
+    "slug": "fund-print-receipt",
+    "title": "Print a Receipt",
+    "difficulty": "medium",
+    "kind": "practice",
+    "concepts": ["io-formatting", "numeric-operators"],
+    "estimatedMinutes": 8,
+    "prompt": "Write `print_receipt(item, qty, unit_price)` that **prints** exactly two lines:\n\n```\nItem: notebook\n3 x 2.50 = 7.50\n```\n\nThe second line is `qty x unit_price = total`, where both the unit price and the total always show **two decimal places**. The quantity is shown as given.\n\n```python\nprint_receipt(\"tea\", 1, 4)   # Item: tea / 1 x 4.00 = 4.00\n```",
+    "entry": "print_receipt",
+    "starterCode": "def print_receipt(item, qty, unit_price):\n    print(\"Item:\", item)\n    print(qty, \"x\", unit_price, \"=\", qty * unit_price)\n",
+    "hints": [
+      "Two `print` calls, one per line. The second line mixes text and numbers: an f-string builds it nicely.",
+      "A format spec after a colon controls how a number is shown. `f\"{x:.2f}\"` shows two digits after the decimal point.",
+      "`print(f\"{qty} x {unit_price:.2f} = {qty * unit_price:.2f}\")`. You can put the multiplication right inside the braces."
+    ],
+    "solution": {
+      "code": "def print_receipt(item, qty, unit_price):\n    print(f\"Item: {item}\")\n    print(f\"{qty} x {unit_price:.2f} = {qty * unit_price:.2f}\")\n",
+      "explanation": "An f-string evaluates any expression inside `{}` and can attach a format spec after a colon. `:.2f` means *fixed-point with 2 decimals*, which also rounds, so `3 * 0.1` (which is really `0.30000000000000004`) prints as `0.30`, and the integer `4` prints as `4.00`. Computing the total inside the braces avoids an extra variable. The common mistake is passing several arguments to `print`, which separates them with spaces and shows raw floats such as `7.5` or `0.30000000000000004`."
+    },
+    "tests": [
+      { "args": ["notebook", 3, 2.5], "stdout": "Item: notebook\n3 x 2.50 = 7.50", "tags": ["io-formatting"], "note": "basic" },
+      { "args": ["tea", 1, 4], "stdout": "Item: tea\n1 x 4.00 = 4.00", "tags": ["io-formatting"], "note": "integer price" },
+      { "args": ["gum", 3, 0.1], "stdout": "Item: gum\n3 x 0.10 = 0.30", "tags": ["io-formatting"], "hidden": true,
+        "diagnosis": "Raw float output shows 0.30000000000000004. Format both numbers with :.2f." },
+      { "args": ["cable", 2, 19.99], "stdout": "Item: cable\n2 x 19.99 = 39.98", "tags": ["io-formatting", "numeric-operators"], "hidden": true,
+        "diagnosis": "The total must be qty * unit_price, formatted to two decimals." },
+      { "args": ["air", 0, 5], "stdout": "Item: air\n0 x 5.00 = 0.00", "tags": ["numeric-operators", "io-formatting"], "hidden": true,
+        "diagnosis": "A zero quantity still prints a total of 0.00 with two decimals, and the quantity stays unformatted." }
+    ]
+  },
+  {
+    "slug": "fund-seconds-to-hms",
+    "title": "Seconds to Hours, Minutes, Seconds",
+    "difficulty": "medium",
+    "kind": "practice",
+    "concepts": ["numeric-operators"],
+    "estimatedMinutes": 8,
+    "prompt": "Write `seconds_to_hms(total)` that splits a non-negative number of seconds into a list `[hours, minutes, seconds]`, with `0 <= minutes < 60` and `0 <= seconds < 60`. Hours do **not** wrap at 24.\n\n```python\nseconds_to_hms(3725)    # [1, 2, 5]\nseconds_to_hms(90061)   # [25, 1, 1]\n```",
+    "entry": "seconds_to_hms",
+    "starterCode": "def seconds_to_hms(total):\n    # your code here\n    return [total // 3600, total // 60, total]\n",
+    "hints": [
+      "Peel off the largest unit first, then deal with what is left over.",
+      "`//` gives how many whole units fit, `%` gives what remains after taking them out.",
+      "hours = total // 3600; rest = total % 3600; minutes = rest // 60; seconds = rest % 60. `divmod` can do each pair in one call."
+    ],
+    "solution": {
+      "code": "def seconds_to_hms(total):\n    hours, rest = divmod(total, 3600)\n    minutes, seconds = divmod(rest, 60)\n    return [hours, minutes, seconds]\n",
+      "explanation": "`//` and `%` are a pair: `divmod(a, b)` returns `(a // b, a % b)`, the whole units and the remainder. Splitting first by 3600 gives hours and the leftover seconds; splitting the leftover by 60 gives minutes and the final seconds. Each remainder is automatically smaller than its unit, so no range checks are needed. The usual mistake is computing `total // 60` for minutes without removing the full hours, which yields 62 minutes instead of 2."
+    },
+    "tests": [
+      { "args": [3725], "expected": [1, 2, 5], "tags": ["numeric-operators"], "note": "mixed" },
+      { "args": [59], "expected": [0, 0, 59], "tags": ["numeric-operators"], "note": "under a minute" },
+      { "args": [3600], "expected": [1, 0, 0], "tags": ["numeric-operators"], "hidden": true,
+        "diagnosis": "Minutes and seconds should reset to 0 at an exact hour. Use % to keep only the remainder." },
+      { "args": [0], "expected": [0, 0, 0], "tags": ["numeric-operators"], "hidden": true },
+      { "args": [90061], "expected": [25, 1, 1], "tags": ["numeric-operators"], "hidden": true,
+        "diagnosis": "Hours must not wrap at 24, so do not apply % 24 to the hours." },
+      { "args": [3599], "expected": [0, 59, 59], "tags": ["numeric-operators"], "hidden": true,
+        "diagnosis": "Minutes must be the remainder after hours are removed: (total % 3600) // 60." }
+    ]
+  },
+  {
+    "slug": "fund-fib-pair",
+    "title": "Fibonacci Pair",
+    "difficulty": "medium",
+    "kind": "practice",
+    "concepts": ["variables-types", "numeric-operators"],
+    "estimatedMinutes": 8,
+    "prompt": "The Fibonacci numbers start `F(0) = 0`, `F(1) = 1`, and each next one is the sum of the previous two.\n\nWrite `fib_pair(n)` that returns the list `[F(n), F(n + 1)]`. Use just two variables that you update `n` times with `for _ in range(n):`.\n\n```python\nfib_pair(0)   # [0, 1]\nfib_pair(5)   # [5, 8]\n```",
+    "entry": "fib_pair",
+    "starterCode": "def fib_pair(n):\n    a = 0\n    b = 1\n    for _ in range(n):\n        a = b\n        b = a + b\n    return [a, b]\n",
+    "hints": [
+      "Each step needs the OLD `a` and the OLD `b` to compute both new values.",
+      "After `a = b`, the old value of `a` is gone, so `b = a + b` adds the wrong thing. How can both names be updated from the old values?",
+      "Python evaluates the whole right side first: `a, b = b, a + b`."
+    ],
+    "solution": {
+      "code": "def fib_pair(n):\n    a, b = 0, 1\n    for _ in range(n):\n        a, b = b, a + b\n    return [a, b]\n",
+      "explanation": "A name is just a label pointing at a value. In `a = b; b = a + b` the first line re-points `a` at the value of `b`, so the second line adds `b` to itself instead of to the old `a`. Tuple assignment `a, b = b, a + b` first evaluates the entire right side using the old bindings, building the pair `(old_b, old_a + old_b)`, and only then rebinds both names. The same trick swaps two variables (`a, b = b, a`) with no temporary."
+    },
+    "tests": [
+      { "args": [0], "expected": [0, 1], "tags": ["variables-types"], "note": "no steps" },
+      { "args": [5], "expected": [5, 8], "tags": ["variables-types"], "note": "five steps" },
+      { "args": [1], "expected": [1, 1], "tags": ["variables-types"], "hidden": true,
+        "diagnosis": "After one step you should have (1, 1). If you wrote a = b then b = a + b, the new a was used too early. Update both names together with a, b = b, a + b." },
+      { "args": [10], "expected": [55, 89], "tags": ["variables-types", "numeric-operators"], "hidden": true,
+        "diagnosis": "Both names must be rebound from the OLD values on every step." },
+      { "args": [30], "expected": [832040, 1346269], "tags": ["numeric-operators"], "hidden": true }
+    ]
+  },
+  {
+    "slug": "fund-clock-after-minutes",
+    "title": "Clock After N Minutes",
+    "difficulty": "medium",
+    "kind": "interview",
+    "concepts": ["numeric-operators", "io-formatting"],
+    "estimatedMinutes": 10,
+    "prompt": "A scheduling tool stores times as a 24-hour clock. Write `time_after(hour, minute, add)` that returns the time `add` minutes after `hour:minute` as a string `\"HH:MM\"` with both parts zero-padded. The result wraps around midnight, and `add` can be larger than a day.\n\n```python\ntime_after(9, 30, 45)    # '10:15'\ntime_after(23, 50, 20)   # '00:10'\n```\n\nHint for the interview: be ready to explain why `%` is the right tool for wrapping.",
+    "entry": "time_after",
+    "starterCode": "def time_after(hour, minute, add):\n    # your code here\n    return f\"{hour}:{minute}\"\n",
+    "hints": [
+      "Convert the whole thing to one number (minutes since midnight), do the addition, then convert back.",
+      "A day has 1440 minutes. Which operator wraps a value back into the range 0..1439?",
+      "total = (hour * 60 + minute + add) % 1440, then hours = total // 60, minutes = total % 60, formatted with `:02d`."
+    ],
+    "solution": {
+      "code": "def time_after(hour, minute, add):\n    total = (hour * 60 + minute + add) % 1440\n    return f\"{total // 60:02d}:{total % 60:02d}\"\n",
+      "explanation": "Working in a single unit (minutes since midnight) removes all the carry logic: add, then `% 1440` wraps the result into one day, however many days `add` spans. Converting back uses the `//` and `%` pair, and the `:02d` format spec pads with a leading zero so `9:5` becomes `09:05`. An alternative is to carry minutes into hours manually, but that needs two wraps and is easy to get wrong. Complexity is O(1). Interviewers like this question because it checks that you know modulo wraps around and that you can format fixed-width numbers."
+    },
+    "tests": [
+      { "args": [9, 30, 45], "expected": "10:15", "tags": ["numeric-operators"], "note": "simple carry" },
+      { "args": [23, 50, 20], "expected": "00:10", "tags": ["numeric-operators"], "note": "midnight wrap" },
+      { "args": [8, 59, 1], "expected": "09:00", "tags": ["io-formatting"], "hidden": true,
+        "diagnosis": "Zero-pad hours and minutes to two digits using the :02d format spec." },
+      { "args": [0, 0, 0], "expected": "00:00", "tags": ["io-formatting"], "hidden": true,
+        "diagnosis": "Both parts need padding even when they are zero: f\"{x:02d}\"." },
+      { "args": [12, 5, 1440], "expected": "12:05", "tags": ["numeric-operators"], "hidden": true,
+        "diagnosis": "A full day later is the same time. Wrap the total minutes with % 1440." },
+      { "args": [23, 59, 2881], "expected": "00:00", "tags": ["numeric-operators"], "hidden": true,
+        "diagnosis": "add can span several days. Wrap the total once with % 1440 rather than only subtracting 24 hours." }
+    ]
+  },
+  {
+    "slug": "fund-money-to-cents",
+    "title": "Parse Money Without Float Errors",
+    "difficulty": "hard",
+    "kind": "interview",
+    "concepts": ["type-conversion", "numeric-operators", "variables-types"],
+    "estimatedMinutes": 15,
+    "prompt": "A payments service receives amounts as text such as `\"19.99\"`. Floats are a bad fit for money, so store **integer cents** instead.\n\nWrite `money_to_cents(text)` that converts a non-negative amount with **at most two decimal digits** (and possibly none) into an integer number of cents.\n\n```python\nmoney_to_cents(\"19.99\")   # 1999\nmoney_to_cents(\"5\")       # 500\nmoney_to_cents(\"5.5\")     # 550\nmoney_to_cents(\"0.29\")    # 29\n```\n\nFollow-up the interviewer will ask: why does `int(float(text) * 100)` fail for some inputs?",
+    "entry": "money_to_cents",
+    "starterCode": "def money_to_cents(text):\n    return int(float(text) * 100)\n",
+    "hints": [
+      "Try `float(\"0.29\") * 100` in your head, or better, think about whether 0.29 can be stored exactly in binary.",
+      "Avoid floats entirely: treat the part before the dot and the part after the dot as two separate integers.",
+      "Split with `text.partition(\".\")`, pad the cents part to two digits (`\"5\"` means 50 cents), then `int(dollars) * 100 + int(cents)`. Alternatively `round(float(text) * 100)` also fixes the truncation."
+    ],
+    "solution": {
+      "code": "def money_to_cents(text):\n    dollars, _, cents = text.partition(\".\")\n    cents = (cents + \"00\")[:2]\n    return int(dollars) * 100 + int(cents)\n",
+      "explanation": "Most decimals such as 0.29 have no exact binary representation, so `float(\"0.29\") * 100` is `28.999999999999996`, and `int()` truncates toward zero, producing 28. Splitting the text sidesteps floating point: the part before the dot is dollars and the part after is cents, both exact integers. Padding with `\"00\"` and slicing to two characters turns `\"5\"` into `\"50\"` (50 cents) and `\"\"` into `\"00\"`. `partition` always returns three parts, even when there is no dot, so no special case is needed. A shorter alternative is `round(float(text) * 100)`, which works because rounding repairs the tiny error. Complexity is O(length of text). Lesson: `int()` truncates, it does not round, and floats are approximations."
+    },
+    "tests": [
+      { "args": ["19.99"], "expected": 1999, "tags": ["type-conversion"], "note": "typical price" },
+      { "args": ["5"], "expected": 500, "tags": ["type-conversion", "numeric-operators"], "note": "no decimals" },
+      { "args": ["0.29"], "expected": 29, "tags": ["type-conversion"], "hidden": true,
+        "diagnosis": "int() truncates toward zero, and float(\"0.29\") * 100 is 28.999999999999996. Parse the two parts as integers or use round()." },
+      { "args": ["5.5"], "expected": 550, "tags": ["numeric-operators", "type-conversion"], "hidden": true,
+        "diagnosis": "A single cents digit means tens of cents: \"5.5\" is 550, not 505. Pad the cents part to two digits." },
+      { "args": ["0.07"], "expected": 7, "tags": ["type-conversion"], "hidden": true,
+        "diagnosis": "Leading zeros in the cents part are fine for int(\"07\"), but make sure you do not drop them when padding." },
+      { "args": ["1234.50"], "expected": 123450, "tags": ["variables-types", "type-conversion"], "hidden": true,
+        "diagnosis": "Convert each part with int() separately, then combine: dollars * 100 + cents." }
+    ]
+  }
+]

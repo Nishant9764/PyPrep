@@ -1,0 +1,319 @@
+[
+  {
+    "slug": "count-calls-decorator",
+    "title": "Count Calls Decorator",
+    "difficulty": "easy",
+    "kind": "practice",
+    "concepts": ["decorators"],
+    "estimatedMinutes": 8,
+    "prompt": "Write a decorator `count_calls(func)`. The decorated function must behave exactly like the original (same arguments, same return value, same `__name__` and `__doc__`) but also expose an attribute `calls` holding how many times it has been called so far. `calls` starts at `0` for every decorated function.\n\n```python\n@count_calls\ndef add(a, b=0):\n    return a + b\n\nadd(1, 2)\nadd(3, b=4)\nprint(add.calls)   # 2\n```",
+    "entry": "count_calls",
+    "starterCode": "def count_calls(func):\n    # build and return a wrapper function\n    pass\n",
+    "hints": [
+      "A decorator takes a function and returns a new function. The new function has to call the original one.",
+      "The wrapper should accept `*args, **kwargs`, forward them, and return the original result. Functions are objects, so you can set an attribute such as `wrapper.calls = 0` after defining the wrapper.",
+      "Inside the wrapper do `wrapper.calls += 1` before calling `func(*args, **kwargs)`, and put `@functools.wraps(func)` above the wrapper so the name and docstring survive."
+    ],
+    "solution": {
+      "code": "import functools\n\ndef count_calls(func):\n    @functools.wraps(func)\n    def wrapper(*args, **kwargs):\n        wrapper.calls += 1\n        return func(*args, **kwargs)\n    wrapper.calls = 0\n    return wrapper\n",
+      "explanation": "`@count_calls` means `add = count_calls(add)`, so the name `add` ends up pointing at `wrapper`. The wrapper closes over `func`, forwards every argument with `*args, **kwargs`, and returns the original result, which makes it transparent to callers.\n\nFunctions are ordinary objects, so the counter can live as an attribute on the wrapper itself. Because `count_calls` runs once per decorated function, each function gets its own independent `calls` attribute. An alternative is a `nonlocal` counter plus a getter function, but the attribute is simpler to read.\n\n`functools.wraps(func)` copies `__name__` and `__doc__` so debugging and documentation still show the original function. Forgetting it is the classic mistake, along with forgetting to `return` the result."
+    },
+    "tests": [
+      { "program": "@count_calls\ndef add(a, b=0):\n    return a + b\nadd(1, 2)\nadd(3, b=4)\nresult = add.calls", "expected": 2, "tags": ["decorators"], "note": "counts two calls" },
+      { "program": "@count_calls\ndef add(a, b=0):\n    return a + b\nresult = add(2, b=5)", "expected": 7, "tags": ["decorators"], "note": "forwards args and returns the result",
+        "diagnosis": "The wrapper must forward its arguments and `return` the original function's result; otherwise the decorated function returns None." },
+      { "program": "@count_calls\ndef greet():\n    \"hi doc\"\n    return 1\nresult = [greet.__name__, greet.__doc__]", "expected": ["greet", "hi doc"], "tags": ["decorators"], "hidden": true,
+        "diagnosis": "The decorated function reports the wrapper's name and docstring. Apply `functools.wraps(func)` to the wrapper to keep the original metadata." },
+      { "program": "@count_calls\ndef f():\n    return 0\n@count_calls\ndef g():\n    return 0\nf()\nf()\ng()\nresult = [f.calls, g.calls]", "expected": [2, 1], "tags": ["decorators"], "hidden": true,
+        "diagnosis": "Each decorated function needs its own counter. Create the counter per decorated function, not as one shared global." },
+      { "program": "@count_calls\ndef f():\n    return 0\nresult = f.calls", "expected": 0, "tags": ["decorators"], "hidden": true,
+        "diagnosis": "`calls` must exist and start at 0 before the first call, so set the attribute when the decorator runs, not inside the wrapper." }
+    ]
+  },
+  {
+    "slug": "run-test-cases",
+    "title": "Mini Test Runner",
+    "difficulty": "easy",
+    "kind": "practice",
+    "concepts": ["modules-testing", "exceptions"],
+    "estimatedMinutes": 10,
+    "prompt": "Write `run_cases(func, cases)`, a tiny test runner. `cases` is a list of `(args, expected)` pairs where `args` is a tuple of positional arguments. Call `func(*args)` for each case and return the **list of indexes** of the cases that failed. A case fails if the result differs from `expected` **or** if `func` raises any exception. The runner itself must never crash.\n\n```python\ndef double(x):\n    return x * 2\n\nrun_cases(double, [((2,), 4), ((3,), 7), ((0,), 0)])   # [1]\n```",
+    "entry": "run_cases",
+    "starterCode": "def run_cases(func, cases):\n    failures = []\n    # check every case and record the index of failures\n    return failures\n",
+    "hints": [
+      "You need the index of each case, so loop with `enumerate(cases)` and unpack each case into `args` and `expected`.",
+      "A failing check and a crashing function should be treated the same way. `assert` raises `AssertionError` when its condition is false, and a `try/except` can catch that along with errors raised by `func`.",
+      "Inside `try:` write `assert func(*args) == expected`; in `except Exception:` append the index to `failures`."
+    ],
+    "solution": {
+      "code": "def run_cases(func, cases):\n    failures = []\n    for i, (args, expected) in enumerate(cases):\n        try:\n            assert func(*args) == expected\n        except Exception:\n            failures.append(i)\n    return failures\n",
+      "explanation": "This is how test frameworks work in miniature. `assert` raises `AssertionError` when the comparison is false, and any other exception raised by `func` is also an `Exception`, so one `except Exception` clause turns both kinds of failure into a recorded index. The loop keeps going after a failure, so you get a full report rather than stopping at the first problem.\n\nA more explicit alternative is `if func(*args) != expected` inside the `try`, which does not depend on `assert`. That is actually more robust: Python run with `-O` strips `assert` statements, which is why `assert` belongs in tests and not in production validation. We catch `Exception` rather than a bare `except:` so Ctrl-C (`KeyboardInterrupt`) still stops the run."
+    },
+    "tests": [
+      { "program": "def double(x):\n    return x * 2\nresult = run_cases(double, [((2,), 4), ((3,), 7), ((0,), 0)])", "expected": [1], "tags": ["modules-testing"], "note": "one failing case" },
+      { "program": "def add(a, b):\n    return a + b\nresult = run_cases(add, [((1, 2), 3), ((0, 0), 0)])", "expected": [], "tags": ["modules-testing"], "note": "all pass" },
+      { "program": "def inv(x):\n    return 10 // x\nresult = run_cases(inv, [((2,), 5), ((0,), 0), ((5,), 2)])", "expected": [1], "tags": ["exceptions"], "hidden": true,
+        "diagnosis": "When the function under test raises, that case should count as failed and the runner should continue. Wrap the call in try/except Exception." },
+      { "program": "def ident(x):\n    return x\nresult = run_cases(ident, [((1,), 2), ((2,), 2), ((3,), 4), ((4,), 4)])", "expected": [0, 2], "tags": ["modules-testing"], "hidden": true,
+        "diagnosis": "Report every failing index, in order, and keep running after a failure instead of stopping at the first one." },
+      { "program": "result = run_cases(len, [])", "expected": [], "tags": ["modules-testing"], "hidden": true,
+        "diagnosis": "No cases means no failures; return an empty list." }
+    ]
+  },
+  {
+    "slug": "missing-annotations",
+    "title": "Find Missing Type Hints",
+    "difficulty": "easy",
+    "kind": "practice",
+    "concepts": ["type-hints"],
+    "estimatedMinutes": 10,
+    "prompt": "Type hints are stored on every function in its `__annotations__` dictionary. Write `unannotated(func)` that returns a list of the parameter names of `func` that have **no** annotation, in the order they are declared. If the function has no return annotation, append the string `\"return\"` at the end. (`*args` and `**kwargs` count as parameters named `args` and `kwargs`.)\n\n```python\ndef f(a: int, b, c: str = \"x\"):\n    return 1\n\nunannotated(f)   # ['b', 'return']\n```\n\nHint: `inspect.signature(func).parameters` lists the parameter names in order.",
+    "entry": "unannotated",
+    "starterCode": "import inspect\n\ndef unannotated(func):\n    missing = []\n    # inspect func.__annotations__ and the signature\n    return missing\n",
+    "hints": [
+      "`inspect.signature(func).parameters` is an ordered mapping of parameter names. `func.__annotations__` is a dict of the hints that exist.",
+      "A parameter is unannotated when its name is not a key in `func.__annotations__`. The return hint is stored under the key `\"return\"`.",
+      "Build the list with a comprehension over the signature's parameters, then append `\"return\"` if that key is missing from the annotations."
+    ],
+    "solution": {
+      "code": "import inspect\n\ndef unannotated(func):\n    hints = func.__annotations__\n    missing = [name for name in inspect.signature(func).parameters if name not in hints]\n    if \"return\" not in hints:\n        missing.append(\"return\")\n    return missing\n",
+      "explanation": "Annotations are just data attached to the function: a dict mapping each annotated parameter name to its hint, with the special key `\"return\"` for the result. Python never enforces them, which is exactly why a tool can read them. `inspect.signature` gives the parameters in declaration order (including `*args` and `**kwargs`), so a membership check against the dict finds the gaps.\n\nNote the difference between a missing hint and a hint of `None`: `-> None` creates the key `\"return\"` with value `None`, so the key test is correct, while `hints.get(\"return\")` would wrongly report it as missing."
+    },
+    "tests": [
+      { "program": "def f(a: int, b, c: str = \"x\"):\n    return 1\nresult = unannotated(f)", "expected": ["b", "return"], "tags": ["type-hints"], "note": "mixed" },
+      { "program": "def g(x: int) -> int:\n    return x\nresult = unannotated(g)", "expected": [], "tags": ["type-hints"], "note": "fully annotated" },
+      { "program": "def h(*args, **kw) -> None:\n    pass\nresult = unannotated(h)", "expected": ["args", "kw"], "tags": ["type-hints"], "hidden": true,
+        "diagnosis": "`*args` and `**kwargs` are parameters too; read them from the signature, not only from the positional-argument names." },
+      { "program": "def k(a, b: list[int] | None = None) -> bool:\n    return True\nresult = unannotated(k)", "expected": ["a"], "tags": ["type-hints"], "hidden": true,
+        "diagnosis": "Check whether the name is a key in `__annotations__`; do not inspect the hint's value. A union type or a default does not change that." },
+      { "program": "def n():\n    pass\nresult = unannotated(n)", "expected": ["return"], "tags": ["type-hints"], "hidden": true,
+        "diagnosis": "A function with no parameters and no return hint is still missing its return annotation." },
+      { "program": "def m() -> None:\n    pass\nresult = unannotated(m)", "expected": [], "tags": ["type-hints"], "hidden": true,
+        "diagnosis": "`-> None` is a real annotation. Test for the key \"return\" being present, not for the value being truthy." }
+    ]
+  },
+  {
+    "slug": "two-sum-indices",
+    "title": "Two Sum",
+    "difficulty": "medium",
+    "kind": "interview",
+    "concepts": ["hash-map-patterns", "complexity"],
+    "estimatedMinutes": 15,
+    "prompt": "**Interview framing:** a payments team wants to find two transactions whose amounts add up to a refund total.\n\nWrite `two_sum(nums, target)`. `nums` is an unsorted list of integers (may include negatives and duplicate values). Exactly one pair of **different positions** `i < j` satisfies `nums[i] + nums[j] == target`. Return `[i, j]`.\n\n```python\ntwo_sum([2, 7, 11, 15], 9)   # [0, 1]\ntwo_sum([3, 3], 6)           # [0, 1]\n```\n\nConstraint: `nums` can hold tens of thousands of values, so aim for better than O(n^2). Be ready to state the time and space complexity.",
+    "entry": "two_sum",
+    "starterCode": "def two_sum(nums, target):\n    # brute force is fine to start, but can you do it in one pass?\n    pass\n",
+    "hints": [
+      "For each number `x`, the partner you need is `target - x`. Scanning for it every time is what makes brute force slow.",
+      "If you remember the numbers you have already passed (together with their positions), you can ask 'have I seen the partner?' in O(1). Which built-in gives O(1) lookups?",
+      "Keep a dict `seen` mapping value to index. For each `i, x`: if `target - x` is in `seen` return `[seen[target - x], i]`; otherwise store `seen[x] = i` (after the check)."
+    ],
+    "solution": {
+      "code": "def two_sum(nums, target):\n    seen = {}\n    for i, x in enumerate(nums):\n        need = target - x\n        if need in seen:\n            return [seen[need], i]\n        seen[x] = i\n    return []\n",
+      "explanation": "**Brute force:** check every pair with two nested loops: O(n^2) time, O(1) space. On 40,000 numbers that is about 800 million comparisons, far too slow.\n\n**Idea:** the inner loop only exists to find `target - x`. A dict from value to index answers that question in O(1). Walk the list once; for each element, look up its complement among the elements *before* it, then record the element itself.\n\n**Why check before store:** if you stored first, an element could pair with itself (`[5, 1, 9]`, target 10 would wrongly match 5 with 5). Checking first only ever pairs an element with an earlier one, which also gives `i < j` for free and handles duplicates like `[3, 3]`.\n\n**Complexity:** O(n) time, O(n) space. This is the classic trade of memory for speed. Alternative: sort and use two pointers (O(n log n) time, O(1) extra space), but you lose the original indices unless you carry them along."
+    },
+    "tests": [
+      { "args": [[2, 7, 11, 15], 9], "expected": [0, 1], "tags": ["hash-map-patterns"], "note": "basic" },
+      { "args": [[3, 2, 4], 6], "expected": [1, 2], "tags": ["hash-map-patterns"], "note": "not the first element" },
+      { "args": [[3, 3], 6], "expected": [0, 1], "tags": ["hash-map-patterns"], "hidden": true,
+        "diagnosis": "Duplicate values are allowed as long as they are at different positions. Store each value after checking for its complement." },
+      { "args": [[5, 1, 9], 10], "expected": [1, 2], "tags": ["hash-map-patterns"], "hidden": true,
+        "diagnosis": "An element cannot be paired with itself. Check the dict for the complement before inserting the current number." },
+      { "args": [[-1, -2, -3, -4, -5], -8], "expected": [2, 4], "tags": ["hash-map-patterns"], "hidden": true,
+        "diagnosis": "Negative numbers are fine for a dict-based solution; do not assume values are positive or sorted." },
+      { "program": "nums = list(range(40000))\nresult = two_sum(nums, 39999 + 39998)", "expected": [39998, 39999], "tags": ["complexity"], "hidden": true,
+        "diagnosis": "This input has 40,000 numbers; checking all pairs is about 800 million steps. Use a dict to look up the complement in O(1) so the whole thing is O(n)." }
+    ]
+  },
+  {
+    "slug": "shortest-subarray-at-least",
+    "title": "Shortest Subarray With Enough Sum",
+    "difficulty": "medium",
+    "kind": "interview",
+    "concepts": ["sliding-window", "complexity"],
+    "estimatedMinutes": 18,
+    "prompt": "**Interview framing:** given daily download counts, find the shortest run of consecutive days whose total reaches a quota.\n\nWrite `min_subarray_len(target, nums)`. `nums` is a list of **positive** integers. Return the length of the shortest contiguous subarray whose sum is **at least** `target`, or `0` if no such subarray exists.\n\n```python\nmin_subarray_len(7, [2, 3, 1, 2, 4, 3])   # 2   ([4, 3])\nmin_subarray_len(11, [1, 1, 1, 1])        # 0\n```\n\nThe list can have 100,000 items. Explain your complexity.",
+    "entry": "min_subarray_len",
+    "starterCode": "def min_subarray_len(target, nums):\n    # try every start and end first, then think about a window\n    pass\n",
+    "hints": [
+      "Brute force tries every start and every end, recomputing sums: O(n^2) or worse. Because all numbers are positive, adding an element can only increase a sum and removing one can only decrease it.",
+      "Keep a window `[left, right]` and its running sum. Expand `right` one element at a time. Once the sum reaches `target`, try to shrink from the left to make the window as short as possible.",
+      "For each `right`: add `nums[right]` to the sum; `while total >= target:` record `right - left + 1` as a candidate, subtract `nums[left]`, and do `left += 1`. Return the best length, or 0 if none was recorded."
+    ],
+    "solution": {
+      "code": "def min_subarray_len(target, nums):\n    best = 0\n    left = 0\n    total = 0\n    for right, x in enumerate(nums):\n        total += x\n        while total >= target:\n            width = right - left + 1\n            if best == 0 or width < best:\n                best = width\n            total -= nums[left]\n            left += 1\n    return best\n",
+      "explanation": "**Brute force:** for every start index, extend the end until the sum reaches the target: O(n^2) time. With 100,000 items that is billions of steps.\n\n**Sliding window:** positivity is what makes the window valid. Expand `right` until the sum is big enough, then shrink `left` as far as the sum still meets the target, recording the width each time. The shrinking uses `while`, not `if`, because after removing one element the window may still be large enough to shrink again.\n\nThe width is `right - left + 1` because both ends are inclusive. Each index is added once and removed at most once, so the loops do about 2n steps in total: **O(n) time, O(1) space**.\n\nWhy it fails with negative numbers: removing a negative from the left would *increase* the sum, so the window logic breaks. You would then need prefix sums plus a monotonic deque."
+    },
+    "tests": [
+      { "args": [7, [2, 3, 1, 2, 4, 3]], "expected": 2, "tags": ["sliding-window"], "note": "classic" },
+      { "args": [11, [1, 1, 1, 1]], "expected": 0, "tags": ["sliding-window"], "note": "impossible" },
+      { "args": [4, [1, 4, 4]], "expected": 1, "tags": ["sliding-window"], "hidden": true,
+        "diagnosis": "A single element can already reach the target, so a window of width 1 must be possible. Check the width as `right - left + 1`." },
+      { "args": [15, [1, 2, 3, 4, 5]], "expected": 5, "tags": ["sliding-window"], "hidden": true,
+        "diagnosis": "The whole list may be the only valid window; make sure the last window is evaluated before the loop ends." },
+      { "args": [3, []], "expected": 0, "tags": ["sliding-window"], "hidden": true,
+        "diagnosis": "An empty list has no subarrays, so the answer is 0." },
+      { "args": [6, [10, 1, 1, 1, 1, 1, 1]], "expected": 1, "tags": ["sliding-window"], "hidden": true,
+        "diagnosis": "After the window becomes valid, keep shrinking with `while` until it is no longer valid, so you find the shortest window." },
+      { "program": "nums = [1] * 100000\nresult = min_subarray_len(50000, nums)", "expected": 50000, "tags": ["complexity"], "hidden": true,
+        "diagnosis": "100,000 items: trying every start/end pair is O(n^2) and times out. Maintain a running sum with a sliding window so each element is processed a constant number of times." }
+    ]
+  },
+  {
+    "slug": "transaction-rollback",
+    "title": "Rollback on Error",
+    "difficulty": "medium",
+    "kind": "practice",
+    "concepts": ["context-managers", "exceptions"],
+    "estimatedMinutes": 15,
+    "prompt": "Write a context manager `transaction(items)` for a list. Inside the `with` block the list may be changed freely. If the block finishes normally the changes stay. If the block raises **any** exception, restore the list **in place** to exactly what it contained when the block was entered, and let the exception continue to propagate (do not swallow it). The value bound by `as` should be the list itself.\n\n```python\ndata = [1, 2]\ntry:\n    with transaction(data):\n        data.append(3)\n        raise ValueError(\"boom\")\nexcept ValueError:\n    pass\nprint(data)   # [1, 2]\n```",
+    "entry": "transaction",
+    "starterCode": "def transaction(items):\n    # make this usable in a `with` statement\n    pass\n",
+    "hints": [
+      "You can write a context manager as a generator function decorated with `contextlib.contextmanager`. Code before `yield` runs on entry, and the `yield` marks the body of the `with`.",
+      "Take a snapshot copy before the `yield`. If the body raises, the exception is re-raised at the `yield` line, so wrap the `yield` in `try/except`.",
+      "In `except BaseException:` do `items[:] = snapshot` (slice assignment mutates the same list object, so other references see the rollback) and then `raise` to re-raise. Yield `items` so `as` works."
+    ],
+    "solution": {
+      "code": "from contextlib import contextmanager\n\n@contextmanager\ndef transaction(items):\n    snapshot = list(items)\n    try:\n        yield items\n    except BaseException:\n        items[:] = snapshot\n        raise\n",
+      "explanation": "`@contextmanager` turns a generator into an object with `__enter__` and `__exit__`. Everything before `yield` is the setup, the value yielded is what `as` receives, and if the `with` body raises, the exception is thrown back into the generator at the `yield` line, where our `try/except` can react.\n\nThe rollback uses `items[:] = snapshot`. Writing `items = snapshot` would only rebind a local name and the caller's list would stay modified; slice assignment replaces the contents of the same list object, so every alias sees the restored data (a mutation-versus-rebinding distinction).\n\nA bare `raise` re-raises the original exception with its traceback. If you swallowed it, the caller would never know the operation failed. Catching `BaseException` also rolls back on `KeyboardInterrupt`. A class with `__enter__` and `__exit__` works equally well: `__exit__` receives the exception info and returns a falsy value to let it propagate."
+    },
+    "tests": [
+      { "program": "data = [1, 2]\ntry:\n    with transaction(data):\n        data.append(3)\n        data.append(4)\n        raise ValueError('boom')\nexcept ValueError:\n    pass\nresult = data", "expected": [1, 2], "tags": ["context-managers"], "note": "rollback" },
+      { "program": "data = [1]\nwith transaction(data):\n    data.append(2)\nresult = data", "expected": [1, 2], "tags": ["context-managers"], "note": "commit" },
+      { "program": "data = []\ntry:\n    with transaction(data):\n        raise KeyError('k')\nexcept KeyError:\n    result = 'propagated'\nelse:\n    result = 'swallowed'", "expected": "propagated", "tags": ["exceptions"], "hidden": true,
+        "diagnosis": "After restoring the list you must re-raise the exception with a bare `raise`; otherwise the error is silently swallowed." },
+      { "program": "data = [1]\nalias = data\ntry:\n    with transaction(data):\n        data.append(2)\n        raise RuntimeError\nexcept RuntimeError:\n    pass\nresult = [alias, data is alias]", "expected": [[1], true], "tags": ["context-managers"], "hidden": true,
+        "diagnosis": "Restore with slice assignment `items[:] = snapshot` so the same list object is changed. `items = snapshot` only rebinds a local name." },
+      { "program": "data = [5]\nwith transaction(data) as d:\n    result = d is data", "expected": true, "tags": ["context-managers"], "hidden": true,
+        "diagnosis": "The `as` target is whatever you `yield`. Yield the list itself." }
+    ]
+  },
+  {
+    "slug": "lazy-chunks",
+    "title": "Lazy Chunks",
+    "difficulty": "medium",
+    "kind": "practice",
+    "concepts": ["generators", "iterators"],
+    "estimatedMinutes": 15,
+    "prompt": "Write a generator function `chunks(iterable, size)` that yields successive **lists** of up to `size` items from `iterable`. The last chunk may be shorter. It must be lazy and work for any iterable, including one-shot iterators and infinite ones: never build the whole input in memory first.\n\n```python\nlist(chunks([1, 2, 3, 4, 5], 2))   # [[1, 2], [3, 4], [5]]\n\nimport itertools\nit = chunks(itertools.count(1), 3)\nnext(it)   # [1, 2, 3]\nnext(it)   # [4, 5, 6]\n```\n\n`size` is always at least 1.",
+    "entry": "chunks",
+    "starterCode": "def chunks(iterable, size):\n    # yield lists of up to `size` items\n    pass\n",
+    "hints": [
+      "A function containing `yield` is a generator: it produces values one at a time and pauses between them. Slicing like `iterable[i:i+size]` fails for iterators, which cannot be indexed.",
+      "Turn the input into an iterator with `iter(iterable)`. Then repeatedly take the next `size` items from that same iterator. `itertools.islice(it, size)` does exactly that.",
+      "Loop with `while True:`; `chunk = list(islice(it, size))`; if the chunk is empty, `return`; otherwise `yield chunk`."
+    ],
+    "solution": {
+      "code": "from itertools import islice\n\ndef chunks(iterable, size):\n    it = iter(iterable)\n    while True:\n        chunk = list(islice(it, size))\n        if not chunk:\n            return\n        yield chunk\n",
+      "explanation": "Calling `iter()` once gives a single iterator whose position is remembered. Each `islice(it, size)` consumes the next `size` items from that same iterator, so successive chunks continue where the previous one stopped. When the iterator is exhausted, `islice` produces nothing, the list is empty, and the generator returns (which raises `StopIteration` for the consumer).\n\nBecause only one chunk is ever held in memory, this works on infinite iterators like `itertools.count()` and on one-shot iterators such as files or other generators. The tempting alternative `list(iterable)` followed by slicing is simpler, but it hangs on an infinite input and uses O(n) memory instead of O(size).\n\nMistakes to avoid: calling `iter()` inside the loop on a *list* would restart from the beginning each time, and forgetting the `if not chunk` check would loop forever on empty chunks."
+    },
+    "tests": [
+      { "program": "result = list(chunks([1, 2, 3, 4, 5], 2))", "expected": [[1, 2], [3, 4], [5]], "tags": ["generators"], "note": "last chunk shorter" },
+      { "program": "result = list(chunks('abc', 5))", "expected": [["a", "b", "c"]], "tags": ["generators"], "note": "size larger than input" },
+      { "program": "result = list(chunks([], 3))", "expected": [], "tags": ["generators"], "hidden": true,
+        "diagnosis": "An empty input should produce no chunks at all, not one empty list." },
+      { "program": "import itertools\nit = chunks(itertools.count(1), 3)\nresult = [next(it), next(it)]", "expected": [[1, 2, 3], [4, 5, 6]], "tags": ["generators"], "hidden": true,
+        "diagnosis": "Do not convert the input with `list(iterable)`: infinite iterators never finish. Pull items lazily, one chunk at a time." },
+      { "program": "it = iter(range(7))\nresult = list(chunks(it, 3))", "expected": [[0, 1, 2], [3, 4, 5], [6]], "tags": ["iterators"], "hidden": true,
+        "diagnosis": "A one-shot iterator cannot be sliced or indexed. Call `iter()` once and keep consuming that same iterator." },
+      { "program": "g = chunks([1, 2, 3], 2)\nresult = [iter(g) is g, next(g)]", "expected": [true, [1, 2]], "tags": ["iterators"], "hidden": true,
+        "diagnosis": "The return value must be a real generator (an iterator): `yield` inside the function, rather than returning a finished list." }
+    ]
+  },
+  {
+    "slug": "memoize-decorator",
+    "title": "Write Your Own Memoize",
+    "difficulty": "hard",
+    "kind": "interview",
+    "concepts": ["decorators", "complexity"],
+    "estimatedMinutes": 20,
+    "prompt": "**Interview framing:** 'Implement `functools.lru_cache` without the library, then use it to make a recursive function fast.'\n\nWrite a decorator `memoize(func)` that caches results by the **positional arguments** of each call (all arguments are hashable; you do not need to support keyword arguments). A repeated call with the same arguments must return the stored result without calling `func` again, including when the stored result is `None`, `0` or another falsy value. Preserve the function's `__name__`.\n\n```python\n@memoize\ndef fib(n):\n    return n if n < 2 else fib(n - 1) + fib(n - 2)\n\nfib(60)   # 1548008755920, instantly\n```\n\nBe ready to explain the complexity of the plain recursion versus the memoized one.",
+    "entry": "memoize",
+    "starterCode": "def memoize(func):\n    # return a wrapper that remembers results\n    pass\n",
+    "hints": [
+      "A cache is a dictionary from the arguments of a call to the result of that call. The wrapper checks it before calling `func`.",
+      "`*args` is a tuple, and tuples of hashable values are hashable, so `args` itself can be the dictionary key. The dict must live outside the wrapper, otherwise it would reset on every call.",
+      "Create `cache = {}` in the decorator body. In the wrapper, `if args not in cache: cache[args] = func(*args)`, then `return cache[args]`. Using `in` (not truthiness) keeps falsy results cached. Add `@functools.wraps(func)`."
+    ],
+    "solution": {
+      "code": "import functools\n\ndef memoize(func):\n    cache = {}\n    @functools.wraps(func)\n    def wrapper(*args):\n        if args not in cache:\n            cache[args] = func(*args)\n        return cache[args]\n    return wrapper\n",
+      "explanation": "The decorator body runs once per decorated function, so `cache` is created once and shared by every call through the closure. The wrapper uses the argument tuple as the key, which is why arguments must be hashable (the same restriction `lru_cache` has).\n\n**Why it matters:** plain recursive Fibonacci recomputes the same subproblems and makes about 2^n calls, which is exponential: `fib(60)` would take centuries. Because the recursive calls inside `fib` refer to the global name `fib`, which is now the memoized wrapper, each distinct `n` is computed exactly once: **O(n) time and O(n) space** (cache plus recursion depth).\n\n**Typical mistakes:** testing `if cache.get(args):` re-runs the function for results like `0` or `None`; creating the dict inside `wrapper` gives no caching at all; forgetting `return` gives `None`. In real code use `functools.lru_cache(maxsize=None)` (or `functools.cache`), which also supports keyword arguments and a size limit."
+    },
+    "tests": [
+      { "program": "calls = []\n@memoize\ndef sq(x):\n    calls.append(x)\n    return x * x\nsq(3)\nsq(3)\nsq(4)\nresult = calls", "expected": [3, 4], "tags": ["decorators"], "note": "cache hit skips the call" },
+      { "program": "@memoize\ndef add(a, b):\n    return a + b\nresult = [add(1, 2), add(2, 1), add(1, 2)]", "expected": [3, 3, 3], "tags": ["decorators"], "note": "different argument tuples" },
+      { "program": "calls = []\n@memoize\ndef f(x):\n    calls.append(x)\n    return None if x else 0\nf(1)\nf(1)\nf(0)\nf(0)\nresult = calls", "expected": [1, 0], "tags": ["decorators"], "hidden": true,
+        "diagnosis": "Falsy results (0, None) must be cached too. Test `args in cache` rather than the truthiness of a looked-up value." },
+      { "program": "@memoize\ndef fib(n):\n    \"nth fib\"\n    return n if n < 2 else fib(n - 1) + fib(n - 2)\nresult = [fib.__name__, fib.__doc__]", "expected": ["fib", "nth fib"], "tags": ["decorators"], "hidden": true,
+        "diagnosis": "Apply `functools.wraps(func)` to the wrapper so the decorated function keeps its name and docstring." },
+      { "program": "@memoize\ndef fib(n):\n    return n if n < 2 else fib(n - 1) + fib(n - 2)\nresult = fib(60)", "expected": 1548008755920, "tags": ["complexity"], "hidden": true,
+        "diagnosis": "Plain recursion makes an exponential number of calls. The cache dictionary must be created once, outside the wrapper, so each n is computed only once." }
+    ]
+  },
+  {
+    "slug": "count-triples-below",
+    "title": "Count Triples Below a Target",
+    "difficulty": "hard",
+    "kind": "interview",
+    "concepts": ["two-pointers", "complexity"],
+    "estimatedMinutes": 25,
+    "prompt": "**Interview framing:** 'Count how many ways to pick three different items whose combined price stays under a budget.'\n\nWrite `three_sum_smaller(nums, target)`. Count the index triples `i < j < k` with `nums[i] + nums[j] + nums[k] < target`. `nums` is unsorted and may contain duplicates and negatives. Return the count.\n\n```python\nthree_sum_smaller([-2, 0, 1, 3], 2)   # 2   (-2+0+1 and -2+0+3)\nthree_sum_smaller([1, 1, 1, 1], 4)    # 4\n```\n\n`nums` can have around 1,500 items, so O(n^3) is too slow. Aim for O(n^2) and explain how you get there.",
+    "entry": "three_sum_smaller",
+    "starterCode": "def three_sum_smaller(nums, target):\n    # brute force is three nested loops; what does sorting buy you?\n    pass\n",
+    "hints": [
+      "The answer only depends on which numbers are chosen, not their order, so sorting is allowed. Sorting makes the sum of a pair move predictably when you move an index.",
+      "Fix the first number `nums[i]` and look for pairs in the rest of the sorted list: that is the two-pointer pair-sum problem with `left = i + 1` and `right = n - 1`.",
+      "If `s[i] + s[left] + s[right] < target`, then `right` can be paired with every index from `left + 1` to `right`... so add `right - left` to the count and move `left` up. Otherwise move `right` down."
+    ],
+    "solution": {
+      "code": "def three_sum_smaller(nums, target):\n    s = sorted(nums)\n    count = 0\n    for i in range(len(s) - 2):\n        left, right = i + 1, len(s) - 1\n        while left < right:\n            if s[i] + s[left] + s[right] < target:\n                count += right - left\n                left += 1\n            else:\n                right -= 1\n    return count\n",
+      "explanation": "**Brute force:** three nested loops over all triples is O(n^3). For 1,500 items that is over 500 million triples.\n\n**Idea:** sort first (the count depends only on the multiset of values). Fix the smallest element `s[i]` and solve a pair problem on the remaining sorted suffix with two pointers. When `s[i] + s[left] + s[right] < target`, the sum is also below the target for every partner between `left + 1` and `right`, because those values are no larger than `s[right]`. That is `right - left` triples counted in one step, and then `left` moves on. When the sum is too large, only moving `right` down can help.\n\nEach inner scan moves the two pointers toward each other at most n times in total, so the cost is **O(n^2) time** (plus O(n log n) for sorting) and O(n) space for the sorted copy (O(1) if you sort in place).\n\nTypical mistakes: adding 1 instead of `right - left` (this makes it correct but only O(n^3) in the worst case if you then loop), and forgetting to sort, which makes the pointer moves meaningless."
+    },
+    "tests": [
+      { "args": [[-2, 0, 1, 3], 2], "expected": 2, "tags": ["two-pointers"], "note": "classic" },
+      { "args": [[3, 1, 0, -2], 4], "expected": 3, "tags": ["two-pointers"], "note": "unsorted input" },
+      { "args": [[], 0], "expected": 0, "tags": ["two-pointers"], "hidden": true,
+        "diagnosis": "Fewer than three items means no triples; make sure your loop bounds do not fail on short input." },
+      { "args": [[0], 0], "expected": 0, "tags": ["two-pointers"], "hidden": true,
+        "diagnosis": "A single element cannot form a triple. Loop `i` only up to `len(nums) - 3`." },
+      { "args": [[1, 1, 1, 1], 4], "expected": 4, "tags": ["two-pointers"], "hidden": true,
+        "diagnosis": "Duplicates count separately because triples are chosen by index. Do not skip equal values." },
+      { "program": "nums = list(range(1500))\nresult = three_sum_smaller(nums, 1500)", "expected": 93656125, "tags": ["complexity"], "hidden": true,
+        "diagnosis": "With 1,500 items, three nested loops make hundreds of millions of steps. Sort, fix one index, and use two pointers for the other two for O(n^2)." }
+    ]
+  },
+  {
+    "slug": "longest-k-distinct",
+    "title": "Longest Substring With At Most K Distinct Characters",
+    "difficulty": "hard",
+    "kind": "interview",
+    "concepts": ["sliding-window", "hash-map-patterns"],
+    "estimatedMinutes": 25,
+    "prompt": "**Interview framing:** 'A cache can hold at most `k` different item types at once. Given a stream of item codes as a string, what is the longest stretch that fits?'\n\nWrite `longest_k_distinct(s, k)` returning the length of the longest **contiguous substring** of `s` that contains **at most `k` distinct characters**. Return `0` if `s` is empty or `k` is 0.\n\n```python\nlongest_k_distinct(\"eceba\", 2)    # 3   (\"ece\")\nlongest_k_distinct(\"aabbcc\", 2)   # 4   (\"aabb\")\n```\n\n`s` may have 100,000 characters. State your time and space complexity.",
+    "entry": "longest_k_distinct",
+    "starterCode": "def longest_k_distinct(s, k):\n    # check every substring first, then find the waste\n    pass\n",
+    "hints": [
+      "Checking every substring is O(n^2) substrings times the cost of counting distinct characters. Contiguous ranges with a rule like 'at most k distinct' suggest a window that grows and shrinks.",
+      "Expand `right` and track how many times each character occurs inside the window with a dict. The window is invalid when the dict has more than `k` keys.",
+      "Add `s[right]` to the counts; `while len(counts) > k:` decrement `counts[s[left]]`, delete the key when it reaches 0, and do `left += 1`. After shrinking, update `best = max(best, right - left + 1)`."
+    ],
+    "solution": {
+      "code": "def longest_k_distinct(s, k):\n    counts = {}\n    left = 0\n    best = 0\n    for right, ch in enumerate(s):\n        counts[ch] = counts.get(ch, 0) + 1\n        while len(counts) > k:\n            out = s[left]\n            counts[out] -= 1\n            if counts[out] == 0:\n                del counts[out]\n            left += 1\n        best = max(best, right - left + 1)\n    return best\n",
+      "explanation": "**Brute force:** for every start and end, count distinct characters: O(n^2) substrings, each needing O(n) to check, so O(n^3) naively (O(n^2) with an incremental set). Far too slow for 100,000 characters.\n\n**Sliding window + hash map:** keep a window `[left, right]` and a dict of character counts inside it. The number of distinct characters is `len(counts)`. Expand `right` by one; if the window now has more than `k` distinct characters, shrink from `left` until it is legal again. The shrink must use `while`, since removing one character may not drop a distinct key.\n\nA count of zero must be **deleted** from the dict, otherwise `len(counts)` keeps counting characters that are no longer in the window. The width is `right - left + 1`. With `k = 0` the window is emptied every step and `best` stays 0.\n\n**Complexity:** each index enters and leaves the window once, so O(n) time; the dict holds at most `k + 1` keys, so O(k) space (O(min(n, alphabet)) in general)."
+    },
+    "tests": [
+      { "args": ["eceba", 2], "expected": 3, "tags": ["sliding-window"], "note": "classic" },
+      { "args": ["aabbcc", 2], "expected": 4, "tags": ["sliding-window", "hash-map-patterns"], "note": "counts matter" },
+      { "args": ["", 3], "expected": 0, "tags": ["sliding-window"], "hidden": true,
+        "diagnosis": "An empty string has no substrings; the answer is 0." },
+      { "args": ["abc", 0], "expected": 0, "tags": ["sliding-window"], "hidden": true,
+        "diagnosis": "With k = 0 no non-empty substring qualifies. The window must be shrunk until it is empty." },
+      { "args": ["aa", 1], "expected": 2, "tags": ["hash-map-patterns"], "hidden": true,
+        "diagnosis": "Repeated characters count once as distinct. Track distinct characters with a dict or set, not by window length." },
+      { "args": ["abaccc", 2], "expected": 4, "tags": ["hash-map-patterns"], "hidden": true,
+        "diagnosis": "When a character leaves the window, decrement its count and delete the key only when the count reaches zero; removing it outright loses copies that are still inside." },
+      { "program": "s = 'ab' * 30000 + 'c' * 30000\nresult = longest_k_distinct(s, 2)", "expected": 60000, "tags": ["sliding-window"], "hidden": true,
+        "diagnosis": "60,000 characters: checking every substring is quadratic or worse. Slide a window and update the character counts incrementally so each index is handled a constant number of times." }
+    ]
+  }
+]

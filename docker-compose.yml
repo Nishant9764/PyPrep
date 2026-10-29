@@ -1,0 +1,87 @@
+# PyPrep: full stack.   docker compose up --build
+# Copy .env.example to .env and fill in the secrets first.
+name: pyprep
+
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    volumes:
+      - mongo-data:/data/db
+    networks: [backend]
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  # The code runner is the dangerous part, so it is the most locked-down container:
+  #   * network_mode none  : learner code has no network at all, not even to other containers.
+  #                          The API reaches it through a unix socket on a shared volume instead.
+  #   * read_only + tmpfs  : nothing persists, nothing can be written except a tiny noexec /tmp.
+  #   * cap_drop ALL       : only SETUID/SETGID (to run code as an unprivileged uid) and CHOWN
+  #                          (to give the socket to the API's group) are added back.
+  #   * pids/mem/cpu limits: a fork bomb or memory bomb hits the container ceiling, not the host.
+  # On top of that, every execution runs as its own uid with CPU, memory, process and file-size
+  # rlimits and a wall-clock kill (see runner/src/adapters/python.ts).
+  runner:
+    build: ./runner
+    restart: unless-stopped
+    network_mode: none
+    read_only: true
+    environment:
+      RUNNER_SECRET: ${RUNNER_SECRET:?set RUNNER_SECRET in .env}
+    cap_drop: [ALL]
+    cap_add: [SETUID, SETGID, CHOWN]
+    security_opt: ["no-new-privileges:true"]
+    pids_limit: 256
+    mem_limit: 1g
+    cpus: 2
+    tmpfs:
+      - /tmp:size=8m,noexec,nosuid,nodev
+    volumes:
+      - runner-socket:/run/runner
+
+  api:
+    build: ./server
+    restart: unless-stopped
+    depends_on:
+      mongo:
+        condition: service_healthy
+      runner:
+        condition: service_started
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      MONGODB_URI: mongodb://mongo:27017/pyprep
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in .env}
+      CLIENT_ORIGIN: ${CLIENT_ORIGIN:-http://localhost:8080}
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      TRUST_PROXY: 1
+      ADMIN_EMAIL: ${ADMIN_EMAIL:?set ADMIN_EMAIL in .env}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?set ADMIN_PASSWORD in .env}
+      RUNNER_SECRET: ${RUNNER_SECRET}
+      RUNNER_SOCKET: /run/runner/runner.sock
+    group_add: ["2000"] # may talk to the runner socket (root:2000, mode 0660)
+    volumes:
+      - runner-socket:/run/runner
+      - ./content:/app/content:ro
+    networks: [backend, frontend]
+
+  web:
+    build: ./client
+    restart: unless-stopped
+    depends_on: [api]
+    ports:
+      - "${WEB_PORT:-8080}:80"
+    networks: [frontend]
+
+networks:
+  backend:
+    internal: true # mongo and the API cannot reach the internet or be reached from outside
+  frontend: {}
+
+volumes:
+  mongo-data:
+  runner-socket:

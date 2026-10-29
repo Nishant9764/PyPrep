@@ -1,0 +1,21 @@
+{
+  "name": "pyprep",
+  "version": "1.0.0",
+  "private": true,
+  "description": "PyPrep: a full-stack learning and interview-prep platform. Python is the first track.",
+  "scripts": {
+    "setup": "bash scripts/setup.sh",
+    "dev": "concurrently -k -n runner,api,web -c yellow,cyan,magenta \"npm --prefix runner run dev\" \"npm --prefix server run dev\" \"npm --prefix client run dev\"",
+    "seed": "npm --prefix server run seed",
+    "validate:content": "python3 content/validate.py",
+    "test": "bash scripts/check-all.sh",
+    "test:unit": "npm --prefix server test",
+    "test:runner": "npm --prefix runner test",
+    "test:e2e": "npm --prefix server run e2e",
+    "build": "npm --prefix runner run build && npm --prefix server run build && npm --prefix client run build"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  },
+  "engines": { "node": ">=20" }
+}

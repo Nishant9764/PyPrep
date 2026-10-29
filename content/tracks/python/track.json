@@ -1,0 +1,91 @@
+{
+  "slug": "python",
+  "title": "Python",
+  "language": "python",
+  "description": "From your first print() to decorators, generators and interview patterns. Every lesson explains the mental model first, then the syntax, then the traps. Every practice question is tagged to the concepts it tests, so PyPrep can tell *why* you are stuck, not just that you are.",
+  "topics": [
+    {
+      "slug": "fundamentals",
+      "title": "Fundamentals",
+      "icon": "🧱",
+      "description": "Values, variables, types, operators, and talking to the user. The vocabulary everything else is built on.",
+      "lessons": [
+        { "slug": "variables-and-types", "title": "Variables, Values and Types" },
+        { "slug": "numbers-and-operators", "title": "Numbers and Operators" },
+        { "slug": "input-output-and-conversion", "title": "Input, Output and Type Conversion" }
+      ]
+    },
+    {
+      "slug": "control-flow",
+      "title": "Control Flow",
+      "icon": "🔀",
+      "description": "Decisions and repetition: if/elif/else, for and while loops, range, and the loop patterns that show up everywhere.",
+      "lessons": [
+        { "slug": "conditionals", "title": "Conditionals and Boolean Logic" },
+        { "slug": "for-loops-and-range", "title": "for Loops, range() and Direction" },
+        { "slug": "while-loops-and-loop-control", "title": "while Loops, break, continue and Nesting" }
+      ]
+    },
+    {
+      "slug": "strings",
+      "title": "Strings",
+      "icon": "🔤",
+      "description": "Indexing, slicing (including the step), string methods, formatting and text-processing patterns.",
+      "lessons": [
+        { "slug": "indexing-and-slicing", "title": "Indexing and Slicing" },
+        { "slug": "string-methods", "title": "String Methods, Immutability and Formatting" },
+        { "slug": "text-processing", "title": "Text Processing Patterns" }
+      ]
+    },
+    {
+      "slug": "collections",
+      "title": "Collections",
+      "icon": "🗂️",
+      "description": "Lists, tuples, sets and dictionaries, plus comprehensions and sorting.",
+      "lessons": [
+        { "slug": "lists", "title": "Lists, Mutability and Aliasing" },
+        { "slug": "tuples-and-sets", "title": "Tuples and Sets" },
+        { "slug": "dictionaries", "title": "Dictionaries and the Counting Pattern" },
+        { "slug": "comprehensions-and-sorting", "title": "Comprehensions and Sorting" }
+      ]
+    },
+    {
+      "slug": "functions",
+      "title": "Functions",
+      "icon": "⚙️",
+      "description": "Defining functions, parameters, scope, closures, recursion and higher-order functions.",
+      "lessons": [
+        { "slug": "defining-functions", "title": "Defining Functions and Return Values" },
+        { "slug": "parameters-args-kwargs", "title": "Parameters, *args, **kwargs and Mutable Defaults" },
+        { "slug": "scope-and-closures", "title": "Scope and Closures" },
+        { "slug": "recursion-and-higher-order", "title": "Recursion and Higher-Order Functions" }
+      ]
+    },
+    {
+      "slug": "oop",
+      "title": "Object-Oriented Python",
+      "icon": "🧩",
+      "description": "Classes, encapsulation, inheritance, polymorphism, special methods and dataclasses.",
+      "lessons": [
+        { "slug": "classes-and-objects", "title": "Classes, Objects and Attributes" },
+        { "slug": "encapsulation-and-properties", "title": "Encapsulation and Properties" },
+        { "slug": "inheritance-and-polymorphism", "title": "Inheritance and Polymorphism" },
+        { "slug": "special-methods-and-dataclasses", "title": "Special Methods and Dataclasses" }
+      ]
+    },
+    {
+      "slug": "advanced",
+      "title": "Advanced Python",
+      "icon": "🚀",
+      "description": "Exceptions, context managers, iterators, generators, decorators, complexity, interview patterns, typing and testing.",
+      "lessons": [
+        { "slug": "exceptions-and-context-managers", "title": "Exceptions and Context Managers" },
+        { "slug": "iterators-and-generators", "title": "Iterators and Generators" },
+        { "slug": "decorators-and-functools", "title": "Decorators and functools" },
+        { "slug": "complexity-and-interview-patterns", "title": "Complexity and Interview Patterns" },
+        { "slug": "type-hints-modules-and-testing", "title": "Type Hints, Modules and Testing" },
+        { "slug": "memory-management", "title": "Memory Management and Python Internals" }
+      ]
+    }
+  ]
+}

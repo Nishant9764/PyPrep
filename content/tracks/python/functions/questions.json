@@ -1,0 +1,244 @@
+[
+  {
+    "slug": "rectangle-stats",
+    "title": "Rectangle Area and Perimeter",
+    "difficulty": "easy",
+    "kind": "practice",
+    "concepts": ["function-basics", "return-values"],
+    "estimatedMinutes": 5,
+    "prompt": "Write `rectangle_stats(width, height)` that **returns** both the area and the perimeter of a rectangle, as the pair `(area, perimeter)`.\n\nThe function must hand the values back to the caller; printing them is not enough.\n\n```python\nrectangle_stats(3, 4)   # (12, 14)\n```",
+    "entry": "rectangle_stats",
+    "starterCode": "def rectangle_stats(width, height):\n    area = width * height\n    perimeter = 2 * (width + height)\n    print(area, perimeter)\n",
+    "hints": [
+      "Look at what the caller receives. What does a function return when it has no return statement?",
+      "print shows text on the screen, but the test inspects the value that comes back from the call.",
+      "Replace the print with `return area, perimeter`; Python packs the two values into a tuple."
+    ],
+    "solution": {
+      "code": "def rectangle_stats(width, height):\n    area = width * height\n    perimeter = 2 * (width + height)\n    return area, perimeter\n",
+      "explanation": "`return area, perimeter` builds the tuple `(area, perimeter)` and hands it to the caller, who can unpack it with `a, p = rectangle_stats(3, 4)`. The starter computed the right numbers but only *printed* them, so the call evaluated to `None`. Printing is for humans; return values are for other code. Alternative: return a dict or a small class if there were many values, but a tuple is idiomatic for two."
+    },
+    "tests": [
+      { "args": [3, 4], "expected": [12, 14], "tags": ["return-values"], "note": "basic" },
+      { "args": [5, 5], "expected": [25, 20], "tags": ["return-values"], "note": "square" },
+      { "args": [0, 7], "expected": [0, 14], "tags": ["function-basics"], "hidden": true,
+        "diagnosis": "A zero side still has a perimeter: check the formula 2 * (width + height) and that you compute both values." },
+      { "args": [1, 1], "expected": [1, 4], "tags": ["function-basics"], "hidden": true,
+        "diagnosis": "Re-check the area and perimeter formulas for the smallest rectangle and that both are returned in the order (area, perimeter)." }
+    ]
+  },
+  {
+    "slug": "greet-with-defaults",
+    "title": "Flexible Greeting",
+    "difficulty": "easy",
+    "kind": "practice",
+    "concepts": ["parameters", "function-basics"],
+    "estimatedMinutes": 6,
+    "prompt": "Write `greet(name, greeting=\"Hello\", punctuation=\"!\")` that returns the string `\"<greeting>, <name><punctuation>\"`.\n\nCallers may override either default by position or by keyword.\n\n```python\ngreet(\"Ada\")                          # 'Hello, Ada!'\ngreet(\"Ada\", punctuation=\".\")          # 'Hello, Ada.'\ngreet(\"Ada\", \"Hi\")                     # 'Hi, Ada!'\n```",
+    "entry": "greet",
+    "starterCode": "def greet(name):\n    return \"Hello, \" + name + \"!\"\n",
+    "hints": [
+      "The starter accepts only one parameter, so extra arguments raise TypeError. What can you give a parameter so callers may omit it?",
+      "Add `greeting` and `punctuation` to the parameter list with default values `\"Hello\"` and `\"!\"`.",
+      "Build the result with an f-string: `f\"{greeting}, {name}{punctuation}\"`."
+    ],
+    "solution": {
+      "code": "def greet(name, greeting=\"Hello\", punctuation=\"!\"):\n    return f\"{greeting}, {name}{punctuation}\"\n",
+      "explanation": "A parameter with a default value becomes optional, and Python lets callers fill parameters by position or by name. Because `punctuation` is a separate parameter, `greet(\"Ada\", punctuation=\".\")` overrides only that one while `greeting` keeps its default. Defaults go after required parameters. Alternative: `*`-separated keyword-only parameters if you want to force callers to name the optional ones. The immutable string defaults are safe; a mutable default would not be (see the next lessons)."
+    },
+    "tests": [
+      { "args": ["Ada"], "expected": "Hello, Ada!", "tags": ["function-basics"], "note": "defaults" },
+      { "args": ["Ada"], "kwargs": {"greeting": "Hi"}, "expected": "Hi, Ada!", "tags": ["parameters"], "note": "keyword override" },
+      { "args": ["Ada", "Hey"], "expected": "Hey, Ada!", "tags": ["parameters"], "hidden": true,
+        "diagnosis": "The second positional argument should fill `greeting`: check the order of your parameters." },
+      { "args": ["Bob"], "kwargs": {"punctuation": "?"}, "expected": "Hello, Bob?", "tags": ["parameters"], "hidden": true,
+        "diagnosis": "Overriding only `punctuation` must leave `greeting` at its default; each parameter needs its own default." },
+      { "args": ["Cy"], "kwargs": {"punctuation": ".", "greeting": "Yo"}, "expected": "Yo, Cy.", "tags": ["parameters"], "hidden": true,
+        "diagnosis": "Keyword arguments can arrive in any order; they match by name, not position." }
+    ]
+  },
+  {
+    "slug": "longest-first",
+    "title": "Longest Words First",
+    "difficulty": "easy",
+    "kind": "practice",
+    "concepts": ["higher-order", "return-values"],
+    "estimatedMinutes": 6,
+    "prompt": "Write `longest_first(words)` that **returns a new list** of the words sorted by length, longest first. Words with equal length keep their original relative order. The input list must not be modified.\n\n```python\nlongest_first([\"a\", \"ccc\", \"bb\"])    # ['ccc', 'bb', 'a']\nlongest_first([\"bb\", \"aa\", \"c\"])     # ['bb', 'aa', 'c']\n```",
+    "entry": "longest_first",
+    "starterCode": "def longest_first(words):\n    # your code here\n    return words\n",
+    "hints": [
+      "Sorting by something other than the value itself needs a function that tells sorting what to compare.",
+      "`sorted` accepts `key=` (a function applied to each item) and `reverse=True`. `sorted` returns a new list, `list.sort` changes the old one.",
+      "`sorted(words, key=len, reverse=True)`. Python's sort is stable, and `reverse=True` keeps equal items in their original order."
+    ],
+    "solution": {
+      "code": "def longest_first(words):\n    return sorted(words, key=len, reverse=True)\n",
+      "explanation": "`len` is passed as a value (no parentheses) to `sorted`, which calls it on every word to get the sort key. That is a higher-order function: one function receiving another. `sorted` builds a new list, leaving the input untouched, whereas `words.sort(...)` would mutate the caller's list and return `None`. Sorting is stable, so ties keep their input order, even with `reverse=True`. Complexity is O(n log n). Common mistake: `sorted(words, key=len())` raises TypeError because `len()` is called immediately."
+    },
+    "tests": [
+      { "args": [["a", "ccc", "bb"]], "expected": ["ccc", "bb", "a"], "tags": ["higher-order"], "note": "basic" },
+      { "args": [["bb", "aa", "c"]], "expected": ["bb", "aa", "c"], "tags": ["higher-order"], "note": "ties keep order" },
+      { "args": [[]], "expected": [], "tags": ["return-values"], "hidden": true,
+        "diagnosis": "An empty list should come back as an empty list, not None." },
+      { "program": "words = ['b', 'aaa', 'cc']\nout = longest_first(words)\nresult = [out, words]", "expected": [["aaa", "cc", "b"], ["b", "aaa", "cc"]], "tags": ["return-values"], "hidden": true,
+        "diagnosis": "You changed the caller's list (or returned None). `sorted` returns a new list; `list.sort()` sorts in place and returns None." },
+      { "args": [["xx", "y", "zz", "wwww", "v"]], "expected": ["wwww", "xx", "zz", "y", "v"], "tags": ["higher-order"], "hidden": true,
+        "diagnosis": "Sort by length with key=len and keep equal lengths in input order; reversing the finished list would flip ties." }
+    ]
+  },
+  {
+    "slug": "collect-into-bucket",
+    "title": "Collect Into a Bucket",
+    "difficulty": "medium",
+    "kind": "interview",
+    "concepts": ["mutable-defaults", "parameters"],
+    "estimatedMinutes": 10,
+    "prompt": "A teammate wrote `collect(item, bucket=[])` and now results leak between unrelated calls. Fix it.\n\n`collect(item, bucket=None)` appends `item` to `bucket` and returns the bucket.\n\n* If the caller passes a list, append to **that same list** (it is mutated and returned).\n* If no list is passed, start with a brand-new empty list on **every call**.\n* A list that the caller passes in that happens to be empty is still the caller's list.\n\n```python\ncollect(1)            # [1]\ncollect(2)            # [2]   (not [1, 2])\nmine = []\ncollect(5, mine)      # returns mine, which is now [5]\n```",
+    "entry": "collect",
+    "starterCode": "def collect(item, bucket=[]):\n    bucket.append(item)\n    return bucket\n",
+    "hints": [
+      "When is the default value `[]` created: each time the function is called, or once? Think about what that means for later calls.",
+      "Use `None` as the default and create the list inside the function body when nothing was passed.",
+      "Test with `if bucket is None:` (not `if not bucket:`, which would also replace an empty list the caller passed) and set `bucket = []`."
+    ],
+    "solution": {
+      "code": "def collect(item, bucket=None):\n    if bucket is None:\n        bucket = []\n    bucket.append(item)\n    return bucket\n",
+      "explanation": "Default values are evaluated **once**, when the `def` statement runs, so `bucket=[]` creates one list that every call without an argument shares. Each call mutates it, which is why results leak. The idiom is the *None sentinel*: default to `None` and build a fresh list inside the body, which runs on every call. Use `is None`, not truthiness: an empty list passed by the caller is falsy, and `if not bucket` would silently replace it, breaking the 'append to the caller's list' contract. Alternative: avoid mutation and return `[*bucket, item]`, but then the caller's list is not updated."
+    },
+    "tests": [
+      { "program": "result = collect(1, [5])", "expected": [5, 1], "tags": ["parameters"], "note": "explicit list" },
+      { "program": "collect('a')\nresult = collect('b')", "expected": ["b"], "tags": ["mutable-defaults"], "note": "second call is independent" },
+      { "program": "mine = []\ncollect(1, mine)\ncollect(2, mine)\nresult = mine", "expected": [1, 2], "tags": ["parameters"], "hidden": true,
+        "diagnosis": "When the caller passes a list you must append to that very list (mutate it), not to a copy." },
+      { "program": "a = collect(1)\nb = collect(2)\nresult = [a, b, a is b]", "expected": [[1], [2], false], "tags": ["mutable-defaults"], "hidden": true,
+        "diagnosis": "Both calls returned the same list object: the default list was created once at definition time and shared." },
+      { "program": "e = []\nr = collect(9, e)\nresult = [r is e, e]", "expected": [true, [9]], "tags": ["mutable-defaults"], "hidden": true,
+        "diagnosis": "An empty list passed by the caller is falsy. Check `bucket is None`, not `not bucket`, or you replace the caller's list." }
+    ]
+  },
+  {
+    "slug": "make-counter",
+    "title": "Counter Factory",
+    "difficulty": "medium",
+    "kind": "practice",
+    "concepts": ["closures", "scope"],
+    "estimatedMinutes": 10,
+    "prompt": "Write `make_counter(start=0, step=1)` that returns a function. Each call of the returned function adds `step` to a running total (beginning at `start`) and returns the new total. Every counter keeps its own total, and no module-level variable may be used.\n\n```python\nc = make_counter()\nc(); c(); c()          # 1, 2, 3\nd = make_counter(10, 5)\nd(); d()               # 15, 20\n```",
+    "entry": "make_counter",
+    "starterCode": "def make_counter(start=0, step=1):\n    total = start\n    def counter():\n        total = total + step\n        return total\n    return counter\n",
+    "hints": [
+      "Running the starter raises UnboundLocalError. Python decides at compile time that `total` is a local of `counter` because it is assigned there.",
+      "`counter` needs to rebind the variable that lives in `make_counter`, the enclosing scope. Which keyword does that (not `global`)?",
+      "Add `nonlocal total` as the first line inside `counter`. Each call to `make_counter` creates a fresh `total`, so counters stay independent."
+    ],
+    "solution": {
+      "code": "def make_counter(start=0, step=1):\n    total = start\n    def counter():\n        nonlocal total\n        total += step\n        return total\n    return counter\n",
+      "explanation": "`counter` is a closure: it remembers `total` from the enclosing call of `make_counter` even after that call has finished. Because `total += step` *assigns*, Python would treat `total` as local to `counter` and fail with `UnboundLocalError`; `nonlocal total` tells it to rebind the enclosing variable instead. Every call to `make_counter` creates its own `total`, so counters are independent, and nothing leaks into the module scope (which `global` would do). Alternative: a class with an attribute, or a mutable one-element list; `nonlocal` is the cleanest."
+    },
+    "tests": [
+      { "program": "c = make_counter()\nresult = [c(), c(), c()]", "expected": [1, 2, 3], "tags": ["closures"], "note": "default counter" },
+      { "program": "d = make_counter(10, 5)\nresult = [d(), d()]", "expected": [15, 20], "tags": ["closures"], "note": "start and step" },
+      { "program": "a = make_counter()\nb = make_counter()\na()\na()\nresult = [a(), b()]", "expected": [3, 1], "tags": ["closures"], "hidden": true,
+        "diagnosis": "Counters must not share state. Create the running total inside make_counter so each call gets its own variable." },
+      { "program": "n = 99\nc = make_counter()\nc()\nresult = [c(), n]", "expected": [2, 99], "tags": ["scope"], "hidden": true,
+        "diagnosis": "The counter should rebind the enclosing variable with `nonlocal`, without touching module-level names." },
+      { "program": "c = make_counter(5, -1)\nresult = [c(), c()]", "expected": [4, 3], "tags": ["scope"], "hidden": true,
+        "diagnosis": "A negative step is just adding a negative number; make sure the step parameter is used on every call." }
+    ]
+  },
+  {
+    "slug": "flatten-nested",
+    "title": "Flatten a Nested List",
+    "difficulty": "medium",
+    "kind": "interview",
+    "concepts": ["recursion", "return-values"],
+    "estimatedMinutes": 12,
+    "prompt": "Write `flatten(nested)` that takes a list which may contain other lists nested to any depth and **returns** a flat list of all the non-list items, in left-to-right order.\n\nOnly `list` objects are containers; strings and numbers are leaves.\n\n```python\nflatten([1, [2, 3], [[4]], 5])   # [1, 2, 3, 4, 5]\nflatten([[], [[]]])              # []\nflatten([\"ab\", [\"c\"]])          # ['ab', 'c']\n```",
+    "entry": "flatten",
+    "starterCode": "def flatten(nested):\n    # your code here\n    pass\n",
+    "hints": [
+      "You cannot know the depth in advance, so a fixed number of nested loops will not work. What problem shape repeats inside each sublist?",
+      "For each item: if it is a list, its flat version should be added to the result; otherwise the item itself is added. The base case is an item that is not a list.",
+      "Loop over `nested`; `if isinstance(item, list): result.extend(flatten(item))` else `result.append(item)`. Remember to `return result`, and do not test with `hasattr(item, '__iter__')`, since strings are iterable."
+    ],
+    "solution": {
+      "code": "def flatten(nested):\n    result = []\n    for item in nested:\n        if isinstance(item, list):\n            result.extend(flatten(item))   # recursive case\n        else:\n            result.append(item)            # base case: a leaf\n    return result\n",
+      "explanation": "Nested data is self-similar: a list of lists is a list whose items may again be lists. The function solves one level and trusts itself for the deeper levels. The base case is an item that is not a list (just append it); the recursive case is a list, whose flattened form is added with `extend`. Recursion depth equals nesting depth, so it is fine for realistic data (Python allows about 1000 frames); an explicit stack avoids that limit. Typical mistakes: forgetting to return the recursive result, using `append` instead of `extend` (which keeps the nesting), and treating strings as containers because they are iterable. Time is O(total items)."
+    },
+    "tests": [
+      { "args": [[1, [2, 3], [[4]], 5]], "expected": [1, 2, 3, 4, 5], "tags": ["recursion"], "note": "mixed depth" },
+      { "args": [[1, 2, 3]], "expected": [1, 2, 3], "tags": ["return-values"], "note": "already flat" },
+      { "args": [[[], [[]]]], "expected": [], "tags": ["recursion"], "hidden": true,
+        "diagnosis": "Empty sublists contribute nothing. Make sure the base case does not append the empty list itself." },
+      { "args": [["ab", ["c"]]], "expected": ["ab", "c"], "tags": ["recursion"], "hidden": true,
+        "diagnosis": "Strings are iterable but they are leaves here. Check `isinstance(item, list)` instead of whether the item can be looped over." },
+      { "program": "x = 0\nfor _ in range(300):\n    x = [x]\nresult = flatten(x)", "expected": [0], "tags": ["recursion"], "hidden": true,
+        "diagnosis": "Deeply nested input needs the function to keep recursing until it reaches a non-list; each level must return its flat result upward." },
+      { "args": [[[1, [2]], [], [3, [[4, 5]]]]], "expected": [1, 2, 3, 4, 5], "tags": ["return-values"], "hidden": true,
+        "diagnosis": "Each recursive call returns a list; combine it into the result with extend and finally return the result." }
+    ]
+  },
+  {
+    "slug": "make-multipliers",
+    "title": "Multiplier Factory (Late Binding)",
+    "difficulty": "hard",
+    "kind": "interview",
+    "concepts": ["closures", "higher-order", "scope"],
+    "estimatedMinutes": 12,
+    "prompt": "Write `make_multipliers(n)` that returns a list of `n` functions. The function at index `i` takes one number `x` and returns `x * i`.\n\n```python\nfs = make_multipliers(3)\n[f(10) for f in fs]     # [0, 10, 20]\n```\n\nA popular first attempt, `[lambda x: x * i for i in range(n)]`, returns `[20, 20, 20]`. Your version must give each function its own `i`, even if a global `i` exists.",
+    "entry": "make_multipliers",
+    "starterCode": "def make_multipliers(n):\n    return [lambda x: x * i for i in range(n)]\n",
+    "hints": [
+      "All the lambdas look up `i` when they are *called*, not when they are created. What value does `i` have by then?",
+      "You need each function to capture its own value at creation time: either a helper function that takes `i` as a parameter, or a default argument.",
+      "Write a helper `def make(i): return lambda x: x * i` and return `[make(i) for i in range(n)]`. (`lambda x, i=i: x * i` also works.)"
+    ],
+    "solution": {
+      "code": "def make_multipliers(n):\n    def make(i):\n        return lambda x: x * i\n    return [make(i) for i in range(n)]\n",
+      "explanation": "A closure remembers the *variable*, not its value at the time of creation (late binding). In the buggy version all lambdas share the comprehension's single `i`, which ends at `n - 1`, so every function multiplies by the last value. Calling the helper `make(i)` creates a new enclosing scope per iteration, so each lambda captures its own `i`. The alternative `lambda x, i=i: x * i` freezes the current value as a default argument, at the cost of a function that silently accepts an extra argument. Because each closure uses its enclosing `i`, a global named `i` cannot interfere, which the hidden scope test checks."
+    },
+    "tests": [
+      { "program": "result = [f(10) for f in make_multipliers(3)]", "expected": [0, 10, 20], "tags": ["closures"], "note": "late binding trap" },
+      { "program": "result = len(make_multipliers(0))", "expected": 0, "tags": ["higher-order"], "note": "no functions" },
+      { "program": "fs = make_multipliers(4)\nresult = [fs[3](2), fs[1](2), fs[0](9)]", "expected": [6, 2, 0], "tags": ["closures"], "hidden": true,
+        "diagnosis": "Each function must remember its own index. All of yours see the final loop value: late binding in a closure." },
+      { "program": "result = [callable(f) for f in make_multipliers(2)]", "expected": [true, true], "tags": ["higher-order"], "hidden": true,
+        "diagnosis": "The list must contain functions (not the results of calling them): functions are values you can store and return." },
+      { "program": "i = 99\nfs = make_multipliers(3)\nresult = [f(1) for f in fs]", "expected": [0, 1, 2], "tags": ["scope"], "hidden": true,
+        "diagnosis": "The functions must use their enclosed `i`, not a global one; check which scope each name is looked up in (LEGB)." }
+    ]
+  },
+  {
+    "slug": "fibonacci-memo",
+    "title": "Fast Fibonacci with Memo",
+    "difficulty": "hard",
+    "kind": "practice",
+    "concepts": ["recursion", "mutable-defaults"],
+    "estimatedMinutes": 15,
+    "prompt": "Write a recursive `fib(n, memo=None)` returning the n-th Fibonacci number (`fib(0) = 0`, `fib(1) = 1`). It must handle `n` up to 90 quickly, so plain double recursion is too slow.\n\nIf the caller passes a dict as `memo`, store computed results in that dict (`memo[k] = fib(k)`); if no dict is passed, use a new one for the call. Do not share state between top-level calls through a default argument.\n\n```python\nfib(10)      # 55\nm = {}\nfib(10, m)   # 55, and m[10] == 55\n```",
+    "entry": "fib",
+    "starterCode": "def fib(n, memo=None):\n    # your code here\n    pass\n",
+    "hints": [
+      "The naive version recomputes the same fib(k) values exponentially many times. What could you store to avoid recomputing?",
+      "Keep a dictionary of results keyed by n. Check it before recursing and store the result before returning. Pass it down through the recursive calls.",
+      "Use `memo=None` and `if memo is None: memo = {}` (not `memo={}` in the signature). Base cases: `n < 2` returns `n`. Then `memo[n] = fib(n - 1, memo) + fib(n - 2, memo)`."
+    ],
+    "solution": {
+      "code": "def fib(n, memo=None):\n    if memo is None:\n        memo = {}\n    if n < 2:\n        return n\n    if n not in memo:\n        memo[n] = fib(n - 1, memo) + fib(n - 2, memo)\n    return memo[n]\n",
+      "explanation": "Plain recursion makes about 1.6^n calls because the same subproblems recur. Memoisation stores each answer the first time, reducing the work to O(n). The memo must travel down the recursion, so it is a parameter. Its default is `None`, replaced inside the body, because a `{}` default would be created once and shared by every call (the mutable-default trap): harmless here for correctness but a hidden global and a bug if the function's behaviour depended on it. Base cases (`n < 2`) end the recursion. Alternatives: `functools.lru_cache`, or an iterative loop with two variables in O(1) space."
+    },
+    "tests": [
+      { "args": [0], "expected": 0, "tags": ["recursion"], "note": "base case 0" },
+      { "args": [10], "expected": 55, "tags": ["recursion"], "note": "small" },
+      { "args": [1], "expected": 1, "tags": ["recursion"], "hidden": true,
+        "diagnosis": "fib(1) is a base case and must return 1 without recursing to fib(-1)." },
+      { "args": [90], "expected": 2880067194370816120, "tags": ["recursion"], "hidden": true,
+        "diagnosis": "Too slow: without caching, plain recursion recomputes the same values exponentially often. Memoise results in a dict." },
+      { "program": "m = {}\nfib(10, m)\nresult = m.get(10)", "expected": 55, "tags": ["mutable-defaults"], "hidden": true,
+        "diagnosis": "When the caller passes a dict it should be filled in; use the parameter instead of a private cache, and create a new dict only when it is None." },
+      { "program": "fib(20)\nm = {}\nfib(5, m)\nresult = sorted(m)", "expected": [2, 3, 4, 5], "tags": ["mutable-defaults"], "hidden": true,
+        "diagnosis": "A fresh call with a fresh dict must not see leftovers from earlier calls: avoid a shared default dict or global cache." }
+    ]
+  }
+]

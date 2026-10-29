@@ -1,0 +1,713 @@
+[
+  {
+    "slug": "first-and-last-char",
+    "title": "First and Last Character",
+    "difficulty": "easy",
+    "kind": "practice",
+    "concepts": [
+      "string-indexing"
+    ],
+    "estimatedMinutes": 4,
+    "prompt": "Write `first_and_last(s)` that returns a string made of the first and last characters of `s`.\n\nIf `s` has exactly one character, return that character twice. You may assume `s` is not empty.\n\n```python\nfirst_and_last(\"python\")  # \"pn\"\nfirst_and_last(\"a\")       # \"aa\"\n```",
+    "entry": "first_and_last",
+    "starterCode": "def first_and_last(s):\n    # use indexing\n    pass\n",
+    "hints": [
+      "Each character of a string has a position number. Which position is the first character?",
+      "Python lets you count from the end with negative numbers. Which negative index is the last character?",
+      "`s[0] + s[-1]` works for every length, including one: index 0 and index -1 are the same character."
+    ],
+    "solution": {
+      "code": "def first_and_last(s):\n    return s[0] + s[-1]\n",
+      "explanation": "Indexing starts at 0, so `s[0]` is the first character. Negative indexes count from the end, so `s[-1]` is the last one without needing `len(s) - 1`. For a one-character string both indexes point at the same character, which is exactly the required behaviour, so no special case is needed. The common mistake is `s[len(s)]`, which is one past the end and raises `IndexError`."
+    },
+    "tests": [
+      {
+        "args": [
+          "python"
+        ],
+        "expected": "pn",
+        "tags": [
+          "string-indexing"
+        ],
+        "note": "basic"
+      },
+      {
+        "args": [
+          "ab"
+        ],
+        "expected": "ab",
+        "tags": [
+          "string-indexing"
+        ]
+      },
+      {
+        "args": [
+          "a"
+        ],
+        "expected": "aa",
+        "tags": [
+          "string-indexing"
+        ],
+        "hidden": true,
+        "diagnosis": "With one character, index 0 and index -1 are the same character, so no special case is needed."
+      },
+      {
+        "args": [
+          "racecar!"
+        ],
+        "expected": "r!",
+        "tags": [
+          "string-indexing"
+        ],
+        "hidden": true,
+        "diagnosis": "The last character is s[-1]. s[len(s)] is one past the end and raises IndexError."
+      }
+    ]
+  },
+  {
+    "slug": "every-other-char",
+    "title": "Every Other Character",
+    "difficulty": "easy",
+    "kind": "practice",
+    "concepts": [
+      "slicing",
+      "slice-step"
+    ],
+    "estimatedMinutes": 5,
+    "prompt": "Write `every_other(s)` that returns the characters at positions 0, 2, 4, ... of `s`.\n\n```python\nevery_other(\"abcdef\")   # \"ace\"\nevery_other(\"abcde\")    # \"ace\"\n```",
+    "entry": "every_other",
+    "starterCode": "def every_other(s):\n    pass\n",
+    "hints": [
+      "You want to skip one character each time. Is there a way to tell a slice how far to move?",
+      "A slice has three parts: `s[start:stop:step]`. What step moves two positions at a time?",
+      "`s[::2]` starts at the beginning, goes to the end, and steps by 2."
+    ],
+    "solution": {
+      "code": "def every_other(s):\n    return s[::2]\n",
+      "explanation": "The third slice value is the step. `s[::2]` keeps the defaults for start and stop (the whole string) and moves two positions at a time. A loop with `range(0, len(s), 2)` is equivalent and also correct; the slice is just shorter. Using `s[1::2]` would give the *other* half, starting at position 1."
+    },
+    "tests": [
+      {
+        "args": [
+          "abcdef"
+        ],
+        "expected": "ace",
+        "tags": [
+          "slice-step"
+        ]
+      },
+      {
+        "args": [
+          "abcde"
+        ],
+        "expected": "ace",
+        "tags": [
+          "slice-step"
+        ]
+      },
+      {
+        "args": [
+          ""
+        ],
+        "expected": "",
+        "tags": [
+          "slicing"
+        ],
+        "hidden": true,
+        "diagnosis": "An empty string should give an empty string; slices never raise errors for empty input."
+      },
+      {
+        "args": [
+          "x"
+        ],
+        "expected": "x",
+        "tags": [
+          "slice-step"
+        ],
+        "hidden": true,
+        "diagnosis": "Position 0 is always included, so a one-character string returns itself."
+      }
+    ]
+  },
+  {
+    "slug": "reverse-string",
+    "title": "Reverse a String",
+    "difficulty": "easy",
+    "kind": "practice",
+    "concepts": [
+      "slice-step",
+      "iteration-direction",
+      "slicing"
+    ],
+    "estimatedMinutes": 5,
+    "prompt": "Write `reverse_string(s)` that returns `s` reversed.\n\n```python\nreverse_string(\"abc\")    # \"cba\"\nreverse_string(\"hello\")  # \"olleh\"\n```",
+    "entry": "reverse_string",
+    "starterCode": "def reverse_string(s):\n    pass\n",
+    "hints": [
+      "Think about which end you need to start from, and which way you move.",
+      "Both a loop that walks backwards and a slice can do this. Which direction does a negative step move?",
+      "`s[::-1]` reads the whole string with a step of -1, or loop over `range(len(s) - 1, -1, -1)`."
+    ],
+    "solution": {
+      "code": "def reverse_string(s):\n    return s[::-1]\n",
+      "explanation": "A negative step makes the slice walk backwards, and it also flips the defaults: omitted start means the last character and omitted stop means 'before the first character'. So `s[::-1]` covers the whole string from the end to the beginning. The loop version is `range(len(s) - 1, -1, -1)`: start at the last index, stop *before* -1 (so that 0 is included), step -1. Alternative: `''.join(reversed(s))`."
+    },
+    "tests": [
+      {
+        "args": [
+          "abc"
+        ],
+        "expected": "cba",
+        "tags": [
+          "slice-step"
+        ]
+      },
+      {
+        "args": [
+          "hello"
+        ],
+        "expected": "olleh",
+        "tags": [
+          "iteration-direction"
+        ],
+        "diagnosis": "Walk from the last character to the first. A forward loop builds the string in the original order."
+      },
+      {
+        "args": [
+          ""
+        ],
+        "expected": "",
+        "tags": [
+          "slicing"
+        ],
+        "hidden": true,
+        "diagnosis": "Reversing an empty string gives an empty string."
+      },
+      {
+        "args": [
+          "ab"
+        ],
+        "expected": "ba",
+        "tags": [
+          "off-by-one"
+        ],
+        "hidden": true,
+        "diagnosis": "Make sure the first character is included: stopping at index 1 instead of 0 drops it."
+      },
+      {
+        "args": [
+          "a man a plan"
+        ],
+        "expected": "nalp a nam a",
+        "tags": [
+          "slice-step"
+        ],
+        "hidden": true
+      }
+    ]
+  },
+  {
+    "slug": "clean-username",
+    "title": "Clean a Username",
+    "difficulty": "easy",
+    "kind": "practice",
+    "concepts": [
+      "string-methods",
+      "string-immutability"
+    ],
+    "estimatedMinutes": 5,
+    "prompt": "Write `clean_username(name)` that removes spaces from both ends of `name`, converts it to lower case, and replaces each inner space with an underscore.\n\n```python\nclean_username(\"  Ada Lovelace \")  # \"ada_lovelace\"\n```",
+    "entry": "clean_username",
+    "starterCode": "def clean_username(name):\n    name.strip()\n    name.lower()\n    name.replace(\" \", \"_\")\n    return name\n",
+    "hints": [
+      "Look closely at the starter code. Run it and see what comes back. Does `name.strip()` change `name`?",
+      "String methods never change the original string; they return a new one. You must keep the result.",
+      "Chain them: `name.strip().lower().replace(' ', '_')`, or reassign `name = name.strip()` step by step."
+    ],
+    "solution": {
+      "code": "def clean_username(name):\n    return name.strip().lower().replace(\" \", \"_\")\n",
+      "explanation": "Strings are immutable, so every method returns a new string and leaves the original untouched. Calling `name.strip()` without using the result throws the answer away. Chaining the calls feeds each result into the next. Order matters a little: strip first so the leading and trailing spaces never become underscores."
+    },
+    "tests": [
+      {
+        "args": [
+          "  Ada Lovelace "
+        ],
+        "expected": "ada_lovelace",
+        "tags": [
+          "string-immutability"
+        ],
+        "diagnosis": "Methods like strip() and lower() return new strings. Assign or chain the result; the original is never modified."
+      },
+      {
+        "args": [
+          "BOB"
+        ],
+        "expected": "bob",
+        "tags": [
+          "string-methods"
+        ]
+      },
+      {
+        "args": [
+          "a b c"
+        ],
+        "expected": "a_b_c",
+        "tags": [
+          "string-methods"
+        ],
+        "hidden": true
+      },
+      {
+        "args": [
+          "   "
+        ],
+        "expected": "",
+        "tags": [
+          "string-methods"
+        ],
+        "hidden": true,
+        "diagnosis": "strip() before replacing, otherwise the spaces turn into underscores instead of disappearing."
+      }
+    ]
+  },
+  {
+    "slug": "format-receipt-line",
+    "title": "Format a Receipt Line",
+    "difficulty": "medium",
+    "kind": "practice",
+    "concepts": [
+      "string-formatting"
+    ],
+    "estimatedMinutes": 8,
+    "prompt": "Write `receipt_line(item, qty, price)` that returns a string with the item name left-aligned in a field of width 10, then the quantity right-aligned in width 3, then the total price (`qty * price`) right-aligned in width 9 with exactly two decimals and a thousands separator. Separate the three fields with a single space.\n\n```python\nreceipt_line(\"Pen\", 3, 12.5)\n# \"Pen          3     37.50\"\nreceipt_line(\"Laptop\", 2, 1499.99)\n# \"Laptop       2  2,999.98\"\n```",
+    "entry": "receipt_line",
+    "starterCode": "def receipt_line(item, qty, price):\n    return f\"{item} {qty} {qty * price}\"\n",
+    "hints": [
+      "Inside an f-string, a colon after the value starts a format spec, like `{value:spec}`.",
+      "`<10` left-aligns in width 10, `>3` right-aligns in width 3, and `,.2f` gives a thousands separator with two decimals.",
+      "`f\"{item:<10} {qty:>3} {qty * price:>9,.2f}\"`"
+    ],
+    "solution": {
+      "code": "def receipt_line(item, qty, price):\n    return f\"{item:<10} {qty:>3} {qty * price:>9,.2f}\"\n",
+      "explanation": "A format spec has the shape `[align][width][,][.precision][type]`. `<` pads on the right, `>` pads on the left, `,` inserts thousands separators and `.2f` fixes two decimals. Computing `qty * price` directly inside the braces keeps the line compact. Alignment characters come before the width, and `,` comes before `.2f`."
+    },
+    "tests": [
+      {
+        "args": [
+          "Pen",
+          3,
+          12.5
+        ],
+        "expected": "Pen          3     37.50",
+        "tags": [
+          "string-formatting"
+        ]
+      },
+      {
+        "args": [
+          "Laptop",
+          2,
+          1499.99
+        ],
+        "expected": "Laptop       2  2,999.98",
+        "tags": [
+          "string-formatting"
+        ]
+      },
+      {
+        "args": [
+          "Tea",
+          10,
+          0.1
+        ],
+        "expected": "Tea         10      1.00",
+        "tags": [
+          "string-formatting"
+        ],
+        "hidden": true,
+        "diagnosis": "Use .2f so 1.0 prints as 1.00; check the width of each field."
+      },
+      {
+        "args": [
+          "X",
+          1,
+          1234567.891
+        ],
+        "expected": "X            1 1,234,567.89",
+        "tags": [
+          "string-formatting"
+        ],
+        "hidden": true,
+        "diagnosis": "Wide numbers still need the thousands separator, and the width is a minimum, not a maximum."
+      }
+    ]
+  },
+  {
+    "slug": "last-char-every-other",
+    "title": "Every Other Character, From the End",
+    "difficulty": "medium",
+    "kind": "practice",
+    "concepts": [
+      "string-indexing",
+      "slice-step",
+      "iteration-direction"
+    ],
+    "estimatedMinutes": 8,
+    "prompt": "Write `every_other_from_end(s)` that returns every second character of `s`, **starting from the last character** and moving toward the front, in that order.\n\n```python\nevery_other_from_end(\"abcdef\")  # \"fdb\"\nevery_other_from_end(\"abcde\")   # \"eca\"\n```",
+    "entry": "every_other_from_end",
+    "starterCode": "def every_other_from_end(s):\n    return s[::2]\n",
+    "hints": [
+      "The result starts with the *last* character and runs toward the front. Which direction is that?",
+      "A negative step walks backwards, and with a negative step the default start is the last character.",
+      "`s[::-2]` starts at the end and moves two characters back each time."
+    ],
+    "solution": {
+      "code": "def every_other_from_end(s):\n    return s[::-2]\n",
+      "explanation": "With a negative step, Python flips the defaults: start becomes the last index and stop becomes 'before index 0'. `s[::-2]` therefore starts at `s[-1]` and moves two positions backwards. For `\"abcdef\"` the positions visited are 5, 3, 1, giving `\"fdb\"`. The equivalent loop is `range(len(s) - 1, -1, -2)`."
+    },
+    "tests": [
+      {
+        "args": [
+          "abcdef"
+        ],
+        "expected": "fdb",
+        "tags": [
+          "iteration-direction"
+        ],
+        "diagnosis": "Your result moves forward. You need a negative step so the walk goes from the end to the front."
+      },
+      {
+        "args": [
+          "abcde"
+        ],
+        "expected": "eca",
+        "tags": [
+          "slice-step"
+        ],
+        "diagnosis": "Start with the last character, then skip one each time. For odd lengths this includes index 0."
+      },
+      {
+        "args": [
+          "a"
+        ],
+        "expected": "a",
+        "tags": [
+          "string-indexing"
+        ],
+        "hidden": true
+      },
+      {
+        "args": [
+          ""
+        ],
+        "expected": "",
+        "tags": [
+          "slicing"
+        ],
+        "hidden": true,
+        "diagnosis": "Empty input should give an empty string."
+      },
+      {
+        "args": [
+          "abcdefgh"
+        ],
+        "expected": "hfdb",
+        "tags": [
+          "slice-step"
+        ],
+        "hidden": true
+      }
+    ]
+  },
+  {
+    "slug": "is-palindrome",
+    "title": "Palindrome Checker",
+    "difficulty": "medium",
+    "kind": "interview",
+    "concepts": [
+      "text-processing",
+      "slice-step",
+      "string-methods"
+    ],
+    "estimatedMinutes": 10,
+    "prompt": "Write `is_palindrome(s)` that returns `True` if `s` reads the same forwards and backwards, **ignoring case, spaces and punctuation** (only letters and digits count).\n\n```python\nis_palindrome(\"A man, a plan, a canal: Panama\")  # True\nis_palindrome(\"race a car\")                        # False\nis_palindrome(\"\")                                  # True\n```\n\nAn interviewer will usually ask next: can you do it without building a reversed copy?",
+    "entry": "is_palindrome",
+    "starterCode": "def is_palindrome(s):\n    return s == s[::-1]\n",
+    "hints": [
+      "The plain comparison fails on spaces, punctuation and capital letters. First produce a cleaned version of the string.",
+      "Keep only characters where `c.isalnum()` is true, and lower-case them. Then compare the cleaned string with its reverse.",
+      "`t = ''.join(c.lower() for c in s if c.isalnum())` then `return t == t[::-1]`. For O(1) extra space use two indices moving inward."
+    ],
+    "solution": {
+      "code": "def is_palindrome(s):\n    t = ''.join(c.lower() for c in s if c.isalnum())\n    return t == t[::-1]\n",
+      "explanation": "Clean first, compare second. The generator expression keeps only letters and digits and normalises case, then `t[::-1]` gives the reversed text for comparison. That is O(n) time and O(n) extra space. The follow-up answer is two pointers: `i` from the left and `j` from the right, skipping non-alphanumeric characters and comparing lower-cased characters until they meet. That keeps extra space at O(1)."
+    },
+    "tests": [
+      {
+        "args": [
+          "A man, a plan, a canal: Panama"
+        ],
+        "expected": true,
+        "tags": [
+          "text-processing"
+        ],
+        "diagnosis": "Remove everything that is not a letter or digit and lower-case before comparing."
+      },
+      {
+        "args": [
+          "race a car"
+        ],
+        "expected": false,
+        "tags": [
+          "slice-step"
+        ]
+      },
+      {
+        "args": [
+          ""
+        ],
+        "expected": true,
+        "tags": [
+          "text-processing"
+        ],
+        "hidden": true
+      },
+      {
+        "args": [
+          "No 'x' in Nixon"
+        ],
+        "expected": true,
+        "tags": [
+          "string-methods"
+        ],
+        "hidden": true,
+        "diagnosis": "Case must be ignored: compare lower-cased characters."
+      },
+      {
+        "args": [
+          "0P"
+        ],
+        "expected": false,
+        "tags": [
+          "string-methods"
+        ],
+        "hidden": true,
+        "diagnosis": "Digits count as characters. Only drop punctuation and spaces, not digits."
+      }
+    ]
+  },
+  {
+    "slug": "reverse-each-word",
+    "title": "Reverse Each Word",
+    "difficulty": "medium",
+    "kind": "practice",
+    "concepts": [
+      "text-processing",
+      "slice-step",
+      "string-methods"
+    ],
+    "estimatedMinutes": 8,
+    "prompt": "Write `reverse_words(sentence)` that reverses the letters of every word but keeps the word order. Words are separated by single spaces.\n\n```python\nreverse_words(\"hello world\")  # \"olleh dlrow\"\n```",
+    "entry": "reverse_words",
+    "starterCode": "def reverse_words(sentence):\n    return sentence[::-1]\n",
+    "hints": [
+      "Reversing the whole sentence also reverses the word order. You need to reverse each word separately.",
+      "Break the sentence into words with `split()`, transform each word, then join them back together.",
+      "`' '.join(w[::-1] for w in sentence.split(' '))`"
+    ],
+    "solution": {
+      "code": "def reverse_words(sentence):\n    return ' '.join(w[::-1] for w in sentence.split(' '))\n",
+      "explanation": "Split into words, reverse each with a slice, and join with a single space. Reversing the whole sentence is the classic wrong turn: it reverses the *order* of the words too, because the slice walks the entire string. Splitting on `' '` (not `split()`) preserves empty fields if there are repeated spaces."
+    },
+    "tests": [
+      {
+        "args": [
+          "hello world"
+        ],
+        "expected": "olleh dlrow",
+        "tags": [
+          "text-processing"
+        ],
+        "diagnosis": "Reverse inside each word only. Reversing the whole string also swaps the order of the words."
+      },
+      {
+        "args": [
+          "a bc def"
+        ],
+        "expected": "a cb fed",
+        "tags": [
+          "slice-step"
+        ]
+      },
+      {
+        "args": [
+          ""
+        ],
+        "expected": "",
+        "tags": [
+          "string-methods"
+        ],
+        "hidden": true
+      },
+      {
+        "args": [
+          "python"
+        ],
+        "expected": "nohtyp",
+        "tags": [
+          "slice-step"
+        ],
+        "hidden": true
+      }
+    ]
+  },
+  {
+    "slug": "mask-card-number",
+    "title": "Mask a Card Number",
+    "difficulty": "easy",
+    "kind": "practice",
+    "concepts": [
+      "string-immutability",
+      "slicing",
+      "string-formatting"
+    ],
+    "estimatedMinutes": 6,
+    "prompt": "Write `mask_card(number)` that takes a card number as a string of digits (spaces allowed) and returns it with every digit except the last four replaced by `*`, spaces removed.\n\n```python\nmask_card(\"1234 5678 9012 3456\")  # \"************3456\"\n```\n\nStrings cannot be changed in place, so you must build a new one.",
+    "entry": "mask_card",
+    "starterCode": "def mask_card(number):\n    digits = number.replace(\" \", \"\")\n    digits[:-4] = \"*\" * (len(digits) - 4)\n    return digits\n",
+    "hints": [
+      "Run the starter code. What error do you get when you assign into a slice of a string?",
+      "A string cannot be modified; build a new one from pieces instead.",
+      "`\"*\" * (len(digits) - 4) + digits[-4:]`"
+    ],
+    "solution": {
+      "code": "def mask_card(number):\n    digits = number.replace(\" \", \"\")\n    return \"*\" * (len(digits) - 4) + digits[-4:]\n",
+      "explanation": "Strings are immutable, so assigning into `digits[:-4]` raises a TypeError. Instead create a new string: a run of stars (string repetition with `*`) followed by the slice `digits[-4:]`, which takes the last four characters. A negative start in a slice counts from the end, and the slice never raises even if the string is short."
+    },
+    "tests": [
+      {
+        "args": [
+          "1234 5678 9012 3456"
+        ],
+        "expected": "************3456",
+        "tags": [
+          "string-immutability"
+        ],
+        "diagnosis": "You cannot assign into a string. Build a new string from a star run plus the last four digits."
+      },
+      {
+        "args": [
+          "1111222233334444"
+        ],
+        "expected": "************4444",
+        "tags": [
+          "slicing"
+        ]
+      },
+      {
+        "args": [
+          "1234"
+        ],
+        "expected": "1234",
+        "tags": [
+          "slicing"
+        ],
+        "hidden": true,
+        "diagnosis": "With exactly four digits nothing is masked: the star count is 0."
+      },
+      {
+        "args": [
+          "12 34 56 78 9"
+        ],
+        "expected": "*****6789",
+        "tags": [
+          "string-formatting"
+        ],
+        "hidden": true
+      }
+    ]
+  },
+  {
+    "slug": "are-anagrams",
+    "title": "Valid Anagram",
+    "difficulty": "medium",
+    "kind": "interview",
+    "concepts": [
+      "text-processing",
+      "string-methods",
+      "string-immutability"
+    ],
+    "estimatedMinutes": 8,
+    "prompt": "Write `are_anagrams(a, b)` returning `True` if `b` is a rearrangement of the letters of `a`, ignoring case and spaces.\n\n```python\nare_anagrams(\"Listen\", \"Silent\")      # True\nare_anagrams(\"Dormitory\", \"dirty room\") # True\nare_anagrams(\"abc\", \"abd\")            # False\n```\n\nBe ready to discuss the O(n log n) sorting solution and the O(n) counting solution.",
+    "entry": "are_anagrams",
+    "starterCode": "def are_anagrams(a, b):\n    return a == b\n",
+    "hints": [
+      "Anagrams contain exactly the same letters with the same counts, just in a different order.",
+      "Normalise both strings first: lower-case and remove spaces. Then find a representation that ignores order.",
+      "`sorted(x) == sorted(y)` after normalising, or compare `collections.Counter` of both."
+    ],
+    "solution": {
+      "code": "def are_anagrams(a, b):\n    clean = lambda s: sorted(s.replace(' ', '').lower())\n    return clean(a) == clean(b)\n",
+      "explanation": "Normalise (lower-case, drop spaces) then compare sorted letters: anagrams have identical sorted forms. Sorting is O(n log n). The O(n) alternative counts letters with a dictionary or `Counter` and compares the counts. A common bug is forgetting that `str.lower()` returns a new string and discarding the result."
+    },
+    "tests": [
+      {
+        "args": [
+          "Listen",
+          "Silent"
+        ],
+        "expected": true,
+        "tags": [
+          "string-methods"
+        ],
+        "diagnosis": "Lower-case both strings before comparing: 'L' and 'l' are different characters."
+      },
+      {
+        "args": [
+          "abc",
+          "abd"
+        ],
+        "expected": false,
+        "tags": [
+          "text-processing"
+        ]
+      },
+      {
+        "args": [
+          "Dormitory",
+          "dirty room"
+        ],
+        "expected": true,
+        "tags": [
+          "text-processing"
+        ],
+        "hidden": true,
+        "diagnosis": "Spaces must be removed from both strings before comparing."
+      },
+      {
+        "args": [
+          "aab",
+          "abb"
+        ],
+        "expected": false,
+        "tags": [
+          "text-processing"
+        ],
+        "hidden": true,
+        "diagnosis": "Same letters is not enough: the counts must match too. A set comparison would wrongly say True."
+      },
+      {
+        "args": [
+          "",
+          ""
+        ],
+        "expected": true,
+        "tags": [
+          "string-immutability"
+        ],
+        "hidden": true
+      }
+    ]
+  }
+]

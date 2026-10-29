@@ -1,0 +1,223 @@
+[
+  {
+    "slug": "squares-of-evens",
+    "title": "Squares of the Even Numbers",
+    "difficulty": "easy",
+    "kind": "practice",
+    "concepts": ["comprehensions", "list-basics"],
+    "estimatedMinutes": 5,
+    "prompt": "Write `squares_of_evens(nums)` that returns a **new list** containing the square of every even number in `nums`, keeping the original order. Odd numbers are skipped. Zero counts as even.\n\nTry it with a list comprehension.\n\n```python\nsquares_of_evens([1, 2, 3, 4])   # -> [4, 16]\nsquares_of_evens([5, 7])         # -> []\n```",
+    "entry": "squares_of_evens",
+    "starterCode": "def squares_of_evens(nums):\n    # your code here\n    pass\n",
+    "hints": [
+      "You need two things for each number: a test (is it even?) and a transformation (square it).",
+      "A list comprehension has the shape [value for item in iterable if condition]. Which part is the value and which is the condition?",
+      "[n * n for n in nums if n % 2 == 0] keeps only the even numbers and squares each one."
+    ],
+    "solution": {
+      "code": "def squares_of_evens(nums):\n    return [n * n for n in nums if n % 2 == 0]\n",
+      "explanation": "A comprehension is a loop that collects results. The trailing `if n % 2 == 0` is a **filter** that drops odd numbers, and `n * n` is the value collected for each survivor. The equivalent loop creates an empty list, tests each number and appends the square. The comprehension is the same O(n) work in one readable line. A typical mistake is putting the condition at the front (`n*n if ... else ...`), which chooses between two values instead of filtering. Negative evens work because `-2 % 2` is `0` in Python."
+    },
+    "tests": [
+      { "args": [[1, 2, 3, 4]], "expected": [4, 16], "tags": ["comprehensions"], "note": "mixed" },
+      { "args": [[2, 4, 6]], "expected": [4, 16, 36], "tags": ["comprehensions"], "note": "all even" },
+      { "args": [[1, 3, 5]], "expected": [], "tags": ["comprehensions"], "hidden": true, "diagnosis": "When nothing passes the filter the result must be an empty list. A filter belongs at the END of the comprehension (`if cond`), not in an if/else at the front." },
+      { "args": [[]], "expected": [], "tags": ["list-basics"], "hidden": true, "diagnosis": "An empty input should give an empty list; make sure you return a list, not None." },
+      { "args": [[0, -2, 7]], "expected": [0, 4], "tags": ["comprehensions"], "hidden": true, "diagnosis": "Zero and negative even numbers are even too; `n % 2 == 0` handles them, while tests like `n > 0` would drop them." }
+    ]
+  },
+  {
+    "slug": "word-counts",
+    "title": "Word Frequency Table",
+    "difficulty": "easy",
+    "kind": "practice",
+    "concepts": ["dict-counting", "dict-basics"],
+    "estimatedMinutes": 8,
+    "prompt": "Write `word_counts(text)` that returns a dictionary mapping each word in `text` to the number of times it appears. Words are separated by whitespace and the comparison is **case-insensitive**: store every word in lower case.\n\n```python\nword_counts(\"the cat the hat\")   # -> {'the': 2, 'cat': 1, 'hat': 1}\nword_counts(\"Go go GO\")          # -> {'go': 3}\n```\n\nDo it with a plain dict first (`.get` or an `if` check); `Counter` is optional.",
+    "entry": "word_counts",
+    "starterCode": "def word_counts(text):\n    # your code here\n    pass\n",
+    "hints": [
+      "Start with an empty dict and walk through the words one by one, lower-casing each.",
+      "For every word you either start its count at 1 (first time seen) or add 1 to the existing count. `d.get(word, 0)` gives you 0 for a missing key.",
+      "counts[word] = counts.get(word, 0) + 1 inside a `for word in text.lower().split():` loop."
+    ],
+    "solution": {
+      "code": "def word_counts(text):\n    counts = {}\n    for word in text.lower().split():\n        counts[word] = counts.get(word, 0) + 1\n    return counts\n",
+      "explanation": "This is the **frequency-counting pattern**. `text.lower().split()` normalises case and splits on any run of whitespace. For each word, `counts.get(word, 0)` reads the current count (0 if the word is new) and we store that plus one. Writing `counts[word] += 1` directly would raise `KeyError` on the first sighting, because a plain dict does not default to 0. The same result comes from `collections.Counter(text.lower().split())` or a `defaultdict(int)`. It runs in O(n) time because each dict operation is about constant time."
+    },
+    "tests": [
+      { "args": ["the cat the hat"], "expected": {"the": 2, "cat": 1, "hat": 1}, "tags": ["dict-counting"], "note": "basic" },
+      { "args": ["x"], "expected": {"x": 1}, "tags": ["dict-basics"], "note": "single word" },
+      { "args": ["Go go GO"], "expected": {"go": 3}, "tags": ["dict-counting"], "hidden": true, "diagnosis": "Counting is case-insensitive, so lower-case the text before counting; otherwise 'Go' and 'go' become separate keys." },
+      { "args": [""], "expected": {}, "tags": ["dict-basics"], "hidden": true, "diagnosis": "No words means an empty dict. Make sure you start from {} and return it even when the loop never runs." },
+      { "args": ["  a   b a  "], "expected": {"a": 2, "b": 1}, "tags": ["dict-counting"], "hidden": true, "diagnosis": "Use split() with no argument so repeated spaces do not create empty-string words." }
+    ]
+  },
+  {
+    "slug": "add-item-copy",
+    "title": "Add Without Changing the Original",
+    "difficulty": "easy",
+    "kind": "practice",
+    "concepts": ["mutability-aliasing", "list-basics"],
+    "estimatedMinutes": 5,
+    "prompt": "Write `with_item(lst, x)` that returns a **new** list equal to `lst` followed by `x`. The list passed in must **not** be modified, and the returned list must be a different object.\n\n```python\na = [1, 2]\nb = with_item(a, 3)\nprint(a)   # -> [1, 2]\nprint(b)   # -> [1, 2, 3]\n```",
+    "entry": "with_item",
+    "starterCode": "def with_item(lst, x):\n    # your code here\n    pass\n",
+    "hints": [
+      "If you call lst.append(x) you change the caller's list, because both names refer to the same object.",
+      "You need an independent copy first. Slicing, list(...) and .copy() all make one, and `+` builds a new list as well.",
+      "return lst + [x]   (or: new = list(lst); new.append(x); return new)"
+    ],
+    "solution": {
+      "code": "def with_item(lst, x):\n    return lst + [x]\n",
+      "explanation": "Function parameters are **aliases** for the caller's objects: `lst` and the caller's `a` name the very same list, so `lst.append(x)` would change both. The `+` operator builds a brand-new list, leaving the original untouched. `list(lst)` or `lst.copy()` followed by `append` is the alternative. These are *shallow* copies, which is fine here because we only add an item; nested lists inside would still be shared. Returning a new value instead of mutating makes a function easier to reason about."
+    },
+    "tests": [
+      { "args": [[1, 2], 3], "expected": [1, 2, 3], "tags": ["list-basics"], "note": "basic" },
+      { "program": "a = [1, 2]\nb = with_item(a, 3)\nresult = a", "expected": [1, 2], "tags": ["mutability-aliasing"], "note": "original unchanged", "diagnosis": "The original list was modified. append() works in place on the same object the caller holds; build a new list instead (lst + [x] or a copy)." },
+      { "args": [[], "x"], "expected": ["x"], "tags": ["list-basics"], "hidden": true, "diagnosis": "Adding to an empty list should give a one-item list." },
+      { "program": "a = [1]\nb = with_item(a, 2)\nresult = a is b", "expected": false, "tags": ["mutability-aliasing"], "hidden": true, "diagnosis": "You returned the same list object. `b = a` or returning the parameter does not copy; create a new list." },
+      { "program": "a = [[1], [2]]\nb = with_item(a, [3])\nresult = [a, b]", "expected": [[[1], [2]], [[1], [2], [3]]], "tags": ["mutability-aliasing"], "hidden": true, "diagnosis": "The input list changed. Make sure you do not append to the parameter itself." }
+    ]
+  },
+  {
+    "slug": "remove-negatives-in-place",
+    "title": "Remove Negatives In Place",
+    "difficulty": "medium",
+    "kind": "practice",
+    "concepts": ["mutability-aliasing", "list-basics"],
+    "estimatedMinutes": 10,
+    "prompt": "Write `remove_negatives(nums)` that removes every negative number from the list **in place**. It should modify the list the caller passed in and return nothing. Zero is not negative, and the order of the remaining items must not change.\n\n```python\nvalues = [3, -1, -2, 5, 0]\nremove_negatives(values)\nprint(values)   # -> [3, 5, 0]\n```\n\nCareful: a caller who holds another name for the same list must see the change too.",
+    "entry": "remove_negatives",
+    "starterCode": "def remove_negatives(nums):\n    # modify nums itself; do not return a new list\n    pass\n",
+    "hints": [
+      "Calling `nums = [...]` inside the function only rebinds the local name; the caller's list is unchanged.",
+      "Removing items from a list while a `for` loop walks the same list skips elements. Either loop backwards over indexes or build the kept items first.",
+      "Slice assignment replaces the contents of the same object: nums[:] = [n for n in nums if n >= 0]."
+    ],
+    "solution": {
+      "code": "def remove_negatives(nums):\n    nums[:] = [n for n in nums if n >= 0]\n",
+      "explanation": "`nums[:] = ...` is slice assignment: it overwrites the *contents* of the existing list object, so every alias sees the change. Plain `nums = [...]` would only rebind the local name and leave the caller's list alone. The other common pitfall is `for n in nums: if n < 0: nums.remove(n)`: deleting shifts later items left and the loop skips the item after each removal, so `[-1, -2, -3]` keeps `-2`. Alternatives are looping from the end with `del nums[i]` (O(n^2) in the worst case because of shifting) or `nums.clear()` followed by `extend`. The slice-assignment version is O(n)."
+    },
+    "tests": [
+      { "args": [[3, -1, -2, 5, 0]], "inPlace": true, "expected": [3, 5, 0], "tags": ["list-basics"], "note": "mixed" },
+      { "args": [[1, 2, 3]], "inPlace": true, "expected": [1, 2, 3], "tags": ["list-basics"], "note": "nothing to remove" },
+      { "args": [[-1, -2, -3, 4]], "inPlace": true, "expected": [4], "tags": ["mutability-aliasing"], "hidden": true, "diagnosis": "Consecutive negatives survived. Removing from a list while looping over it skips the item that slides into the removed slot." },
+      { "args": [[]], "inPlace": true, "expected": [], "tags": ["list-basics"], "hidden": true, "diagnosis": "An empty list should stay empty and the function should not raise." },
+      { "program": "a = [1, -1, 2]\nb = a\nremove_negatives(a)\nresult = b", "expected": [1, 2], "tags": ["mutability-aliasing"], "hidden": true, "diagnosis": "The caller's list was not changed. Assigning `nums = [...]` creates a new local list; modify the existing object with nums[:] = ... or del/remove." }
+    ]
+  },
+  {
+    "slug": "common-elements",
+    "title": "Common Elements of Two Lists",
+    "difficulty": "medium",
+    "kind": "practice",
+    "concepts": ["tuples-sets"],
+    "estimatedMinutes": 8,
+    "prompt": "Write `common_elements(a, b)` that returns a **sorted list of the distinct values** that appear in both lists. Each value should appear once in the result, however often it occurs in the inputs.\n\n```python\ncommon_elements([1, 2, 2, 3], [2, 3, 3, 4])   # -> [2, 3]\ncommon_elements([1], [2])                      # -> []\n```",
+    "entry": "common_elements",
+    "starterCode": "def common_elements(a, b):\n    # your code here\n    pass\n",
+    "hints": [
+      "You want each value once, so a container that ignores duplicates will help.",
+      "Turning each list into a set lets you use set algebra instead of nested loops.",
+      "sorted(set(a) & set(b)) gives the sorted intersection as a list."
+    ],
+    "solution": {
+      "code": "def common_elements(a, b):\n    return sorted(set(a) & set(b))\n",
+      "explanation": "A **set** stores each value once and supports algebra: `&` is intersection (items in both). Converting both lists removes duplicates automatically, and the intersection is found with fast hash lookups, so the whole thing is about O(n + m) instead of the O(n * m) of a nested loop with `in` on lists. A set has no order, so we wrap the result in `sorted(...)`, which also returns a list as required. `set(a).intersection(b)` is an equivalent spelling."
+    },
+    "tests": [
+      { "args": [[1, 2, 2, 3], [2, 3, 3, 4]], "expected": [2, 3], "tags": ["tuples-sets"], "note": "duplicates" },
+      { "args": [[1], [2]], "expected": [], "tags": ["tuples-sets"], "note": "nothing in common" },
+      { "args": [[3, 1, 2], [2, 1, 3]], "expected": [1, 2, 3], "tags": ["tuples-sets"], "hidden": true, "diagnosis": "Return the result sorted; a set has no guaranteed order, so call sorted() on it." },
+      { "args": [["b", "a"], ["a", "c", "a"]], "expected": ["a"], "tags": ["tuples-sets"], "hidden": true, "diagnosis": "Each shared value must appear once even if it is repeated in an input; sets remove repeats." },
+      { "args": [[], [1, 2]], "expected": [], "tags": ["tuples-sets"], "hidden": true, "diagnosis": "An empty input has nothing in common with anything; return an empty list." },
+      { "args": [[5, 5, 5], [5]], "expected": [5], "tags": ["tuples-sets"], "hidden": true, "diagnosis": "Repeats in the first list must not be repeated in the answer; convert to a set before comparing." }
+    ]
+  },
+  {
+    "slug": "rank-players",
+    "title": "Leaderboard with Tie-Breaks",
+    "difficulty": "medium",
+    "kind": "practice",
+    "concepts": ["sorting", "comprehensions"],
+    "estimatedMinutes": 12,
+    "prompt": "`players` is a list of `[name, score]` pairs. Write `rank_players(players, min_score)` that returns a list of the **names** of players whose score is **at least** `min_score`, ordered by score from highest to lowest. Players with equal scores are ordered alphabetically by name.\n\n```python\nrank_players([[\"ann\", 5], [\"bob\", 9], [\"cy\", 5], [\"di\", 1]], 3)\n# -> ['bob', 'ann', 'cy']\n```",
+    "entry": "rank_players",
+    "starterCode": "def rank_players(players, min_score):\n    # your code here\n    pass\n",
+    "hints": [
+      "There are two jobs: drop players below the minimum, and sort the rest by two rules.",
+      "A key function can return a tuple. Python compares tuples left to right, so the second item only matters on ties. How can you make a higher score sort first?",
+      "Sort with key=lambda p: (-p[1], p[0]), then build the names with a comprehension that filters `score >= min_score`."
+    ],
+    "solution": {
+      "code": "def rank_players(players, min_score):\n    ordered = sorted(players, key=lambda p: (-p[1], p[0]))\n    return [name for name, score in ordered if score >= min_score]\n",
+      "explanation": "`sorted` with a **tuple key** handles multi-level ordering: `(-score, name)` sorts by score descending (negating flips the order for numbers) and falls back to the name ascending only when scores tie. A list comprehension then unpacks each `[name, score]` pair, filters with `score >= min_score` and collects just the names. Using `reverse=True` would wrongly put tied names in reverse alphabetical order, which is the usual trap. Sorting is O(n log n) and the filter is O(n). Because filtering keeps relative order, you could equally filter first and sort second."
+    },
+    "tests": [
+      { "args": [[["ann", 5], ["bob", 9], ["cy", 5], ["di", 1]], 3], "expected": ["bob", "ann", "cy"], "tags": ["sorting"], "note": "basic" },
+      { "args": [[["a", 1], ["b", 7]], 5], "expected": ["b"], "tags": ["comprehensions"], "note": "filter" },
+      { "args": [[["zed", 4], ["amy", 4]], 0], "expected": ["amy", "zed"], "tags": ["sorting"], "hidden": true, "diagnosis": "Equal scores must be ordered alphabetically. With reverse=True the ties come out Z to A; use a tuple key such as (-score, name) instead." },
+      { "args": [[["a", 5]], 5], "expected": ["a"], "tags": ["comprehensions"], "hidden": true, "diagnosis": "'At least' means >=, so a score equal to min_score must be kept." },
+      { "args": [[["a", 1], ["b", 2]], 10], "expected": [], "tags": ["comprehensions"], "hidden": true, "diagnosis": "If nobody qualifies return an empty list." },
+      { "args": [[], 0], "expected": [], "tags": ["sorting"], "hidden": true, "diagnosis": "An empty player list should give an empty result." }
+    ]
+  },
+  {
+    "slug": "top-k-frequent",
+    "title": "Top K Frequent Words",
+    "difficulty": "hard",
+    "kind": "interview",
+    "concepts": ["dict-counting", "sorting", "dict-basics"],
+    "estimatedMinutes": 15,
+    "prompt": "You are analysing a search log. Given a list of `words` and an integer `k`, return the `k` most frequent words as a list, ordered from most to least frequent. Words with the same frequency are ordered alphabetically. If there are fewer than `k` distinct words, return all of them.\n\n```python\ntop_k_frequent([\"a\", \"b\", \"a\", \"c\", \"b\", \"a\"], 2)   # -> ['a', 'b']\ntop_k_frequent([\"b\", \"a\", \"c\"], 2)                   # -> ['a', 'b']  (all tie, alphabetical)\n```\n\nThe log can be large, so repeatedly calling `words.count(w)` for each word is too slow.",
+    "entry": "top_k_frequent",
+    "starterCode": "def top_k_frequent(words, k):\n    # your code here\n    pass\n",
+    "hints": [
+      "First build a frequency table in a single pass over the list.",
+      "Sort the distinct words with a tuple key: highest count first, then alphabetical order.",
+      "counts = {} filled with counts[w] = counts.get(w, 0) + 1, then sorted(counts, key=lambda w: (-counts[w], w))[:k]."
+    ],
+    "solution": {
+      "code": "def top_k_frequent(words, k):\n    counts = {}\n    for w in words:\n        counts[w] = counts.get(w, 0) + 1\n    ranked = sorted(counts, key=lambda w: (-counts[w], w))\n    return ranked[:k]\n",
+      "explanation": "Two ideas combine. **Counting**: one pass with `counts[w] = counts.get(w, 0) + 1` builds a frequency table in O(n); calling `words.count(w)` per word would be O(n * d) and time out on big logs. **Ordering**: sorting the distinct words with the key `(-count, word)` puts bigger counts first and breaks ties alphabetically, then slicing `[:k]` takes the top k (a slice never raises when k is larger than the list). Total cost is O(n + d log d) for d distinct words. `collections.Counter(words)` does the counting for you, but note that `most_common(k)` breaks ties by first-seen order, not alphabetically, so you still need the explicit key. A heap (`heapq.nsmallest`) gives O(n log k) if k is tiny."
+    },
+    "tests": [
+      { "args": [["a", "b", "a", "c", "b", "a"], 2], "expected": ["a", "b"], "tags": ["dict-counting"], "note": "basic" },
+      { "args": [["b", "a", "c"], 2], "expected": ["a", "b"], "tags": ["sorting"], "note": "ties alphabetical" },
+      { "args": [["x"], 5], "expected": ["x"], "tags": ["dict-basics"], "hidden": true, "diagnosis": "When k exceeds the number of distinct words return them all; slicing handles this, indexing up to k does not." },
+      { "args": [[], 3], "expected": [], "tags": ["dict-basics"], "hidden": true, "diagnosis": "An empty log gives an empty list." },
+      { "args": [["z", "z", "y", "y", "x"], 2], "expected": ["y", "z"], "tags": ["sorting"], "hidden": true, "diagnosis": "Equal counts must be broken alphabetically, not by first appearance or reverse order." },
+      { "program": "words = ['a'] * 5000 + ['b'] * 3000 + ['c'] * 1000 + ['d%d' % i for i in range(20000)]\nresult = top_k_frequent(words, 3)", "expected": ["a", "b", "c"], "tags": ["dict-counting"], "hidden": true, "diagnosis": "Too slow: counting each word with list.count() rescans the whole list every time. Build a frequency dict in a single pass." }
+    ]
+  },
+  {
+    "slug": "longest-consecutive-run",
+    "title": "Longest Run of Consecutive Numbers",
+    "difficulty": "hard",
+    "kind": "interview",
+    "concepts": ["tuples-sets", "list-basics"],
+    "estimatedMinutes": 18,
+    "prompt": "Given an unsorted list of integers `nums` (duplicates allowed), return the length of the longest sequence of consecutive integers that can be formed from its values, such as 3, 4, 5, 6. The numbers do not have to be adjacent in the list. Return 0 for an empty list.\n\n```python\nlongest_run([100, 4, 200, 1, 3, 2])   # -> 4   (1, 2, 3, 4)\nlongest_run([1, 2, 2, 3])             # -> 3\n```\n\nAim for roughly O(n) time: the input may have tens of thousands of values.",
+    "entry": "longest_run",
+    "starterCode": "def longest_run(nums):\n    # your code here\n    pass\n",
+    "hints": [
+      "Fast membership testing is the key tool here. Which container makes `x in container` fast?",
+      "Put all numbers in a set. A number starts a run only if `n - 1` is NOT in the set.",
+      "For each run start, count upward while n + length is in the set, and keep the best length."
+    ],
+    "solution": {
+      "code": "def longest_run(nums):\n    values = set(nums)\n    best = 0\n    for n in values:\n        if n - 1 not in values:\n            length = 1\n            while n + length in values:\n                length += 1\n            best = max(best, length)\n    return best\n",
+      "explanation": "Sorting would give O(n log n); a **set** gives O(n). Converting to a set removes duplicates and makes `x in values` about constant time. The trick is to only start counting from a number that has no predecessor (`n - 1 not in values`): that number is the true beginning of a run, so each run is walked exactly once and the total work is O(n) even though there is a `while` inside the `for`. Checking `in` on a *list* instead would turn every test into a scan and the large hidden test would time out. The sort-and-scan alternative is simpler to write but must skip duplicates carefully."
+    },
+    "tests": [
+      { "args": [[100, 4, 200, 1, 3, 2]], "expected": 4, "tags": ["tuples-sets"], "note": "basic" },
+      { "args": [[1, 2, 2, 3]], "expected": 3, "tags": ["tuples-sets"], "note": "duplicates" },
+      { "args": [[]], "expected": 0, "tags": ["list-basics"], "hidden": true, "diagnosis": "An empty list has no run; return 0 instead of failing on max() of nothing." },
+      { "args": [[5]], "expected": 1, "tags": ["list-basics"], "hidden": true, "diagnosis": "A single number is a run of length 1." },
+      { "args": [[-1, 0, 1, 10, 11]], "expected": 3, "tags": ["tuples-sets"], "hidden": true, "diagnosis": "Runs can include negatives and zero; compare against n - 1 rather than assuming positive values." },
+      { "args": [[9, 1, 4, 7, 3, -1, 0, 5, 8, -1, 6]], "expected": 7, "tags": ["tuples-sets"], "hidden": true, "diagnosis": "Numbers need not be adjacent in the list; use a set so the order of the input does not matter." },
+      { "program": "nums = list(range(40000, 0, -1))\nresult = longest_run(nums)", "expected": 40000, "tags": ["tuples-sets"], "hidden": true, "diagnosis": "Too slow: testing `x in list` scans the list each time. Use a set for O(1) membership and only start counting at run beginnings." }
+    ]
+  }
+]
