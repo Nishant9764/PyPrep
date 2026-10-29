@@ -29,6 +29,7 @@ export function TestResults({ tests, entry }: { tests: TestResult[]; entry: stri
             </summary>
             <div className="kv">
               {!t.hidden && t.note && <Row label="About">{t.note}</Row>}
+              {!t.hidden && t.ms !== undefined && <Row label="Runtime">{t.ms} ms</Row>}
               {!t.hidden && t.stdin !== undefined && <Row label="Input"><pre>{t.stdin}</pre></Row>}
               {!t.hidden && t.expectedStdout !== undefined && <Row label="Expected output"><pre>{t.expectedStdout}</pre></Row>}
               {!t.hidden && t.expected !== undefined && <Row label="Expected"><code>{pyRepr(t.expected)}</code></Row>}

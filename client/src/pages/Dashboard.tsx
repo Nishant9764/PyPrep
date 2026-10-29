@@ -20,7 +20,7 @@ export function Dashboard() {
           <p>
             {s.totals.solved === 0
               ? 'Start with a lesson or jump straight into a problem. Everything you do is saved to your account.'
-              : `You have solved ${s.totals.solved} of ${s.totals.questions} questions and finished ${s.totals.lessonsDone} of ${s.totals.lessons} lessons.`}
+              : `You have solved ${s.totals.solved} of ${s.totals.questions} questions, completed ${s.totals.lessonsDone} lessons, and mastered ${s.totals.lessonsMastered}.`}
           </p>
         )}
       </PageHead>
@@ -32,6 +32,7 @@ export function Dashboard() {
         <section className="panel" aria-label="At a glance">
           <div className="facts">
             <div className="fact"><b>{s.totals.solved}</b><span>questions solved</span></div>
+            <div className="fact"><b>{s.totals.lessonsMastered}/{s.totals.lessons}</b><span>lessons mastered</span></div>
             <div className="fact"><b>{s.totals.solvedIndependently}</b><span>solved without the solution</span></div>
             <div className="fact"><b>{s.streak.current}</b><span>day streak (best {s.streak.longest})</span></div>
             <div className="fact"><b>{s.totals.submissions}</b><span>submissions</span></div>

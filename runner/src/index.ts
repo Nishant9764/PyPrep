@@ -70,7 +70,7 @@ app.post('/run', auth, async (req, res) => {
   }
   try {
     const result = await pool.withSlot((slot) => adapter.run(parsed.data, slot));
-    res.json(result);
+    res.json({ ...result, limits: { wallSeconds: config.wallLimitSeconds, cpuSeconds: config.cpuLimitSeconds, memoryMb: config.memoryLimitMb } });
   } catch (err) {
     if (err instanceof Error && err.message === 'busy') {
       res.status(503).json({ error: 'The code runner is busy. Please try again in a few seconds.' });

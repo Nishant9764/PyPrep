@@ -16,6 +16,7 @@ export interface RunnerResponse {
   status: 'ok' | 'timeout' | 'crashed' | 'output_limit';
   results: RunnerTestResult[];
   message?: string;
+  limits?: { wallSeconds: number; cpuSeconds: number; memoryMb: number };
 }
 
 /**

@@ -3,17 +3,16 @@ import { Link, useParams } from 'react-router-dom';
 import { api } from '../api';
 import { CodeEditor } from '../components/CodeEditor';
 import { PageHead } from '../components/ui';
-import { conversationPrompts, mockCodingPrompts, predictionPrompts } from '../data/mockInterviewData';
+import { conversationPrompts, createCodingRound, createPredictionRound, shuffledDeck, type MockCodingPrompt } from '../data/mockInterviewData';
 
 type Mode = 'coding' | 'predict' | 'conversation';
 interface RunResult { status: string; stdout: string; error?: string; message?: string }
 const ROUND_LENGTH = 20 * 60;
-const choose = <T,>(items: T[], count: number): T[] => [...items].sort(() => Math.random() - 0.5).slice(0, count);
 
 export function MockInterview() {
   const { track = 'python' } = useParams();
   const [mode, setMode] = useState<Mode>('coding');
-  const [round, setRound] = useState<typeof mockCodingPrompts>([]);
+  const [round, setRound] = useState<MockCodingPrompt[]>([]);
   const [index, setIndex] = useState(0);
   const [started, setStarted] = useState(false);
   const [finished, setFinished] = useState(false);
@@ -29,10 +28,16 @@ export function MockInterview() {
   const [prediction, setPrediction] = useState('');
   const [revealed, setRevealed] = useState(false);
   const [conversationIndex, setConversationIndex] = useState(0);
+  const [conversationDeck, setConversationDeck] = useState(() => shuffledDeck(conversationPrompts));
+  const [predictionDeck, setPredictionDeck] = useState(() => createPredictionRound());
   const [conversationNotes, setConversationNotes] = useState<Record<number, string>>({});
+  const [followUpLevel, setFollowUpLevel] = useState(0);
+  const [followUpFeedback, setFollowUpFeedback] = useState('');
+  const [followUpAnswer, setFollowUpAnswer] = useState('');
+  const [followUpPrompt, setFollowUpPrompt] = useState('');
   const current = round[index];
-  const currentPrediction = predictionPrompts[predictionIndex];
-  const currentConversation = conversationPrompts[conversationIndex];
+  const currentPrediction = predictionDeck[predictionIndex];
+  const currentConversation = conversationDeck[conversationIndex];
 
   useEffect(() => {
     if (!started || finished) return;
@@ -45,9 +50,41 @@ export function MockInterview() {
   }, [started, seconds, finished]);
 
   function startRound() {
-    const chosen = choose(mockCodingPrompts, 5);
+    const chosen = createCodingRound(5);
     setRound(chosen); setIndex(0); setCode(chosen[0]?.starter ?? ''); setDrafts(chosen[0] ? { [chosen[0].id]: chosen[0].starter } : {}); setSeconds(ROUND_LENGTH);
     setRun(null); setRunError(''); setNotes({}); setFinished(false); setTimeExpired(false); setStarted(true);
+  }
+
+  function reviewAnswer(answer: string, level: number) {
+    const text = answer.trim();
+    const checks = [
+      { label: 'a concrete example', test: /\b(example|project|once|when|built|bug|feature)\b/i },
+      { label: 'your specific actions', test: /\b(I|my|implemented|tested|measured|changed|debugged|chose)\b/i },
+      { label: 'the outcome or evidence', test: /\b(result|impact|improved|reduced|increased|because|learned|trade-?off)\b/i },
+    ];
+    const missing = checks.filter((check) => !check.test.test(text)).map((check) => check.label);
+    const feedback = text.length < 45
+      ? 'Add a little more detail so the interviewer can evaluate your reasoning.'
+      : missing.length
+        ? `Good start. Strengthen it with ${missing.join(' and ')}.`
+        : 'Good coverage. Be ready to defend the choices with evidence and a specific edge case.';
+    setFollowUpFeedback(feedback);
+    setFollowUpLevel(level + 1);
+    setFollowUpAnswer('');
+    const anchor = text.split(/[.!?\n]/)[0].split(/\s+/).slice(0, 10).join(' ');
+    const context = anchor ? `You mentioned “${anchor}…”. ` : '';
+    const adaptive = level === 0 && missing.includes('a concrete example')
+      ? 'What is one specific project moment that shows this?'
+      : level === 0 && missing.includes('your specific actions')
+        ? 'What did you personally do, step by step, and what was owned by the rest of the team?'
+        : level === 0 && missing.includes('the outcome or evidence')
+          ? 'What changed as a result, and what evidence supports that outcome?'
+          : level <= 1
+            ? 'What evidence would convince a skeptical teammate that this was the right choice?'
+            : level === 2
+              ? 'What alternative did you consider, and which trade-off made you choose this approach?'
+              : 'If the constraints doubled or changed, what would you change first and how would you limit the risk?';
+    setFollowUpPrompt(`${context}${adaptive}`);
   }
 
   async function runCode() {
@@ -97,20 +134,22 @@ export function MockInterview() {
     </>}
 
     {mode === 'predict' && currentPrediction && <section className="panel mock-card">
-      <div className="row between"><div><span className="eyebrow">OUTPUT PREDICTION · {predictionIndex + 1} OF {predictionPrompts.length}</span><h2>{currentPrediction.title}</h2></div><span className="chip">Trace before revealing</span></div>
+      <div className="row between"><div><span className="eyebrow">OUTPUT PREDICTION · {predictionIndex + 1} OF {predictionDeck.length}</span><h2>{currentPrediction.title}</h2></div><span className="chip">Fresh values each round</span></div>
       <pre className="glance-code"><code>{currentPrediction.code}</code></pre>
       <label className="field"><span>Your predicted output</span><textarea className="input scratch-input" value={prediction} onChange={(event) => setPrediction(event.target.value)} placeholder="Write each printed line in order…" /></label>
       {!revealed ? <button className="btn primary" onClick={() => setRevealed(true)}>Reveal and compare</button> : <div className="alert info"><strong>{prediction.trimEnd().replace(/\r\n/g, '\n') === currentPrediction.output.trimEnd() ? 'Your prediction matches' : 'Compare your prediction'}</strong><pre className="glance-output">{currentPrediction.output}</pre><p>{currentPrediction.explanation}</p></div>}
-      <button className="btn" onClick={() => { setPredictionIndex((i) => (i + 1) % predictionPrompts.length); setPrediction(''); setRevealed(false); }}>Next prediction</button>
+      <button className="btn" onClick={() => { if (predictionIndex + 1 >= predictionDeck.length) { setPredictionDeck(createPredictionRound()); setPredictionIndex(0); } else setPredictionIndex((i) => i + 1); setPrediction(''); setRevealed(false); }}>Next fresh prediction</button>
     </section>}
 
     {mode === 'conversation' && currentConversation && <section className="panel mock-card">
-      <div className="row between"><div><span className="eyebrow">PROJECT &amp; BEHAVIORAL · {conversationIndex + 1} OF {conversationPrompts.length}</span><h2>Answer in your own words</h2></div><span className="chip">Use a real example</span></div>
+      <div className="row between"><div><span className="eyebrow">PROJECT &amp; BEHAVIORAL · {conversationIndex + 1} OF {conversationDeck.length}</span><h2>Answer in your own words</h2></div><span className="chip">Adaptive follow-up · level {followUpLevel + 1}</span></div>
       <h3>{currentConversation.question}</h3>
       <p className="small muted">Try a spoken answer first. Use the text box to jot down the main points, not a memorized script.</p>
       <label className="field"><span>Your notes</span><textarea className="input mock-notes" value={conversationNotes[conversationIndex] ?? ''} onChange={(event) => setConversationNotes((current) => ({ ...current, [conversationIndex]: event.target.value }))} placeholder="Situation, your role, actions, result, lesson…" /></label>
+      <button className="btn" onClick={() => reviewAnswer(conversationNotes[conversationIndex] ?? '', 0)}>Get a tailored follow-up</button>
+      {followUpLevel > 0 && <div className="panel followup-panel"><span className="eyebrow">FOLLOW-UP {followUpLevel} · ADAPTIVE</span><h3>{followUpPrompt}</h3><label className="field"><span>Your follow-up answer</span><textarea className="input mock-notes" value={followUpAnswer} onChange={(event) => setFollowUpAnswer(event.target.value)} placeholder="Answer with evidence, trade-offs, and specifics…" /></label><button className="btn primary" onClick={() => reviewAnswer(followUpAnswer, followUpLevel)}>Probe deeper</button>{followUpFeedback && <p className="small" role="status">{followUpFeedback}</p>}</div>}
       <details><summary>What a strong answer should cover</summary><p>{currentConversation.framework}</p></details>
-      <div className="row"><button className="btn" disabled={conversationIndex === 0} onClick={() => setConversationIndex((i) => i - 1)}>Previous</button><button className="btn" onClick={() => setConversationIndex((i) => (i + 1) % conversationPrompts.length)}>Next prompt</button></div>
+      <div className="row"><button className="btn" disabled={conversationIndex === 0} onClick={() => setConversationIndex((i) => i - 1)}>Previous</button><button className="btn" onClick={() => { if (conversationIndex + 1 >= conversationDeck.length) { setConversationDeck(shuffledDeck(conversationPrompts)); setConversationIndex(0); } else setConversationIndex((i) => i + 1); setFollowUpLevel(0); setFollowUpFeedback(''); setFollowUpPrompt(''); }}>Next prompt</button></div>
     </section>}
   </div>;
 }

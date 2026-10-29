@@ -34,6 +34,9 @@ export interface DiagnosisResult {
 }
 
 const ERROR_HINTS: Array<{ pattern: RegExp; concepts: string[]; note: string }> = [
+  { pattern: /SyntaxError/, concepts: [], note: 'Syntax issue: Python could not parse the code. Check punctuation, brackets, quotes, colons, and operator placement before reasoning about the algorithm.' },
+  { pattern: /IndentationError|TabError/, concepts: [], note: 'Indentation issue: Python uses indentation to define code blocks. Align statements in the same block and avoid mixing tabs with spaces.' },
+  { pattern: /NameError/, concepts: ['scope'], note: 'Name-resolution issue: this name is not defined where it is used. Check spelling, assignment order, imports, and scope.' },
   { pattern: /IndexError/, concepts: ['off-by-one', 'string-indexing', 'list-basics'], note: 'IndexError: you asked for a position that does not exist. Check the first and last valid index (0 and len-1).' },
   { pattern: /KeyError/, concepts: ['dict-basics'], note: 'KeyError: that key is not in the dictionary yet. Use .get() or check with `in` first.' },
   { pattern: /UnboundLocalError/, concepts: ['scope'], note: 'UnboundLocalError: assigning to a name inside a function makes it local for the whole function.' },

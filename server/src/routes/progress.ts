@@ -75,6 +75,7 @@ progressRouter.get(
         solved: tq.filter((q) => solved.some((p) => p.question === q.slug)).length,
         lessonsTotal: t.lessons.length,
         lessonsDone: lp.filter((l) => l.topic === t.slug && l.completed).length,
+        lessonsMastered: lp.filter((l) => l.topic === t.slug && !!l.masteredAt).length,
         // Average mastery over concepts with evidence; null = "not enough data yet".
         mastery: ms.length ? round(ms.reduce((a, m) => a + score(m), 0) / ms.length) : null,
         weakConcepts: ms.filter((m) => isWeak(m)).length,
@@ -123,6 +124,7 @@ progressRouter.get(
         solvedIndependently: solved.filter((p) => p.solvedIndependently).length,
         lessons: lessons.length,
         lessonsDone: lp.filter((l) => l.completed).length,
+        lessonsMastered: lp.filter((l) => !!l.masteredAt).length,
         bookmarks: qp.filter((p) => p.bookmarked).length + lp.filter((l) => l.bookmarked).length + interviewProgress.filter((p) => p.bookmarked).length,
         submissions: activity.reduce((a, d) => a + d.submissions, 0),
         activeDays: dates.length,
@@ -273,7 +275,7 @@ progressRouter.put(
   }),
 );
 
-const lessonBody = z.object({ completed: z.boolean().optional(), bookmarked: z.boolean().optional() });
+const lessonBody = z.object({ completed: z.boolean().optional(), bookmarked: z.boolean().optional(), masteryScore: z.number().int().min(0).max(100).optional() });
 
 progressRouter.put(
   '/:track/lessons/:topic/:lesson/state',
@@ -284,11 +286,20 @@ progressRouter.put(
     const body = lessonBody.parse(req.body);
     const user = req.user!._id;
     const current = await LessonProgress.findOne({ user, track, topic, lesson });
+    const score = body.masteryScore ?? current?.masteryScore ?? 0;
+    if (body.completed === true && !current?.completed && score < 80) {
+      throw new HttpError(400, 'Pass the lesson mastery check before marking it complete.', 'MASTERY_CHECK_REQUIRED');
+    }
     const set: Record<string, unknown> = {};
     if (body.completed !== undefined) {
       set.completed = body.completed;
       set.completedAt = body.completed ? new Date() : undefined;
       if (body.completed) set.everCompleted = true;
+    }
+    if (body.masteryScore !== undefined) {
+      set.masteryScore = body.masteryScore;
+      if (body.masteryScore >= 80) set.masteredAt = new Date();
+      else set.masteredAt = undefined;
     }
     if (body.bookmarked !== undefined) {
       set.bookmarked = body.bookmarked;
@@ -297,6 +308,6 @@ progressRouter.put(
     const doc = await LessonProgress.findOneAndUpdate({ user, track, topic, lesson }, { $set: set }, { upsert: true, new: true });
     // Activity only the first time a lesson is ever completed, so toggling cannot inflate the graph.
     if (body.completed && !current?.everCompleted) await bumpActivity(user, track, localDate(req), { lessons: 1 });
-    res.json({ completed: !!doc.completed, bookmarked: !!doc.bookmarked });
+    res.json({ completed: !!doc.completed, bookmarked: !!doc.bookmarked, mastered: !!doc.masteredAt, masteryScore: doc.masteryScore ?? null });
   }),
 );

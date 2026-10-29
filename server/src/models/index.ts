@@ -153,6 +153,8 @@ const lessonProgressSchema = new Schema(
     topic: { type: String, required: true },
     lesson: { type: String, required: true },
     completed: { type: Boolean, default: false },
+    masteryScore: { type: Number, min: 0, max: 100, default: null },
+    masteredAt: Date,
     /** Never reset: activity credit for a lesson is given once, however often it is toggled. */
     everCompleted: { type: Boolean, default: false },
     completedAt: Date,
@@ -187,6 +189,7 @@ const attemptSchema = new Schema({
   passedCount: Number,
   total: Number,
   hintsUsed: Number,
+  timeSpentMs: { type: Number, min: 0, max: 21_600_000 },
   suspects: [{ _id: false, concept: String, confidence: Number }],
   createdAt: { type: Date, default: Date.now },
 });

@@ -25,6 +25,7 @@ export interface LessonRef {
   minutes?: number;
   completed: boolean;
   bookmarked: boolean;
+  mastered: boolean;
 }
 
 export interface TopicOverview {
@@ -49,7 +50,7 @@ export interface LessonPayload {
   practice: { slug: string; title: string; difficulty: Difficulty; kind: string; solved: boolean }[];
   prev: { topic: string; slug: string; title: string } | null;
   next: { topic: string; slug: string; title: string } | null;
-  progress: { completed: boolean; bookmarked: boolean };
+  progress: { completed: boolean; bookmarked: boolean; mastered: boolean; masteryScore: number | null };
 }
 
 export interface QuestionRow {
@@ -107,6 +108,7 @@ export interface QuestionPayload {
 
 export interface TestResult {
   index: number;
+  ms?: number;
   hidden?: boolean;
   passed: boolean;
   skipped?: boolean;
@@ -141,6 +143,7 @@ export interface RunResult {
   tests: TestResult[];
   passedCount: number;
   total: number;
+  limits?: { wallSeconds: number; cpuSeconds: number; memoryMb: number };
 }
 
 export interface SubmitResult extends RunResult {
@@ -170,6 +173,7 @@ export interface Summary {
     solvedIndependently: number;
     lessons: number;
     lessonsDone: number;
+    lessonsMastered: number;
     bookmarks: number;
     submissions: number;
     activeDays: number;
@@ -184,6 +188,7 @@ export interface Summary {
     solved: number;
     lessonsTotal: number;
     lessonsDone: number;
+    lessonsMastered: number;
     mastery: number | null;
     weakConcepts: number;
   }[];

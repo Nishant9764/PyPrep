@@ -18,7 +18,9 @@ interface Attempt {
   total: number;
   createdAt: string;
   hintsUsed: number;
+  timeSpentMs?: number;
 }
+interface ScriptRunResult { status: string; stdout: string; error?: string; message?: string }
 
 export function Problem() {
   const { slug = '' } = useParams();
@@ -34,12 +36,16 @@ function ProblemInner({ slug }: { slug: string }) {
   const [tab, setTab] = useState<Tab>('problem');
   const [busy, setBusy] = useState<null | 'run' | 'submit'>(null);
   const [run, setRun] = useState<RunResult | null>(null);
+  const [customInput, setCustomInput] = useState('');
+  const [customRun, setCustomRun] = useState<ScriptRunResult | null>(null);
   const [submit, setSubmit] = useState<SubmitResult | null>(null);
   const [message, setMessage] = useState<{ kind: 'error' | 'info'; text: string } | null>(null);
   const [confirmSolution, setConfirmSolution] = useState(false);
   const [attempts, setAttempts] = useState<Attempt[] | null>(null);
+  const [compareAttempt, setCompareAttempt] = useState<Attempt | null>(null);
   const [saved, setSaved] = useState<'idle' | 'saving' | 'saved'>('idle');
   const lastSaved = useRef<string | null>(null);
+  const questionOpenedAt = useRef(Date.now());
 
   // Initialise the editor from the saved draft (or the starter code) once the question has loaded.
   useEffect(() => {
@@ -87,7 +93,9 @@ function ProblemInner({ slug }: { slug: string }) {
     setBusy('submit');
     setMessage(null);
     try {
-      const r = await api<SubmitResult>(`${base}/submit`, { method: 'POST', body: { code } });
+      const timeSpentMs = Math.min(Date.now() - questionOpenedAt.current, 21_600_000);
+      const r = await api<SubmitResult>(`${base}/submit`, { method: 'POST', body: { code, timeSpentMs } });
+      questionOpenedAt.current = Date.now();
       setSubmit(r);
       setRun(null);
       lastSaved.current = code;
@@ -98,6 +106,15 @@ function ProblemInner({ slug }: { slug: string }) {
     } finally {
       setBusy(null);
     }
+  };
+
+  const runCustomInput = async () => {
+    if (code === null || busy) return;
+    setBusy('run'); setCustomRun(null); setMessage(null);
+    try {
+      setCustomRun(await api<ScriptRunResult>(`/tracks/${track}/interview/cookbook-custom/run`, { method: 'POST', body: { code, stdin: customInput } }));
+    } catch (e) { fail(e); }
+    finally { setBusy(null); }
   };
 
   // Stable handlers for the editor's keyboard shortcuts.
@@ -280,11 +297,12 @@ function ProblemInner({ slug }: { slug: string }) {
                   <div key={a._id} className="row between q-link" style={{ cursor: 'default' }}>
                     <div className="stack-sm">
                       <strong>{a.passed ? 'All tests passed' : `${a.passedCount} of ${a.total} tests passed`}</strong>
-                      <span className="small muted">{new Date(a.createdAt).toLocaleString()}{a.hintsUsed ? `, ${a.hintsUsed} hint${a.hintsUsed > 1 ? 's' : ''} used` : ''}</span>
+                    <span className="small muted">{new Date(a.createdAt).toLocaleString()}{a.hintsUsed ? `, ${a.hintsUsed} hint${a.hintsUsed > 1 ? 's' : ''} used` : ''}{a.timeSpentMs !== undefined ? `, ${Math.max(1, Math.round(a.timeSpentMs / 60000))} min` : ''}</span>
                     </div>
-                    <button className="btn sm" onClick={() => { setCode(a.code); }}>Load into editor</button>
+                    <div className="row"><button className="btn sm" onClick={() => { setCode(a.code); }}>Load into editor</button><button className="btn sm" aria-pressed={compareAttempt?._id === a._id} onClick={() => setCompareAttempt(compareAttempt?._id === a._id ? null : a)}>{compareAttempt?._id === a._id ? 'Hide comparison' : 'Compare with current'}</button></div>
                   </div>
                 ))}
+                {compareAttempt && <section className="attempt-compare panel"><div className="row between"><h3>Attempt comparison</h3><button className="btn ghost sm" onClick={() => setCompareAttempt(null)}>Close</button></div><div className="compare-columns"><div><strong>Previous attempt</strong><pre className="glance-code"><code>{compareAttempt.code}</code></pre></div><div><strong>Current editor</strong><pre className="glance-code"><code>{code}</code></pre></div></div><p className="small muted">Review the changes in your approach alongside the test results and time from each attempt.</p></section>}
               </>
             )}
           </div>
@@ -301,6 +319,13 @@ function ProblemInner({ slug }: { slug: string }) {
             </span>
           </div>
           <CodeEditor value={code} onChange={setCode} onRun={onRun} onSubmit={onSubmit} />
+          <details className="custom-stdin">
+            <summary>Run as a script with custom standard input</summary>
+            <p className="small muted">Useful for input/output style exercises. This runs your full script in the isolated Python runner.</p>
+            <label className="field"><span>Standard input</span><textarea className="input scratch-input" value={customInput} onChange={(event) => setCustomInput(event.target.value)} placeholder="Type input lines here…" /></label>
+            <button className="btn sm" disabled={!!busy} onClick={() => void runCustomInput()}>{busy === 'run' ? 'Running…' : 'Run with this input'}</button>
+            {customRun && <div className={`alert ${customRun.error || customRun.status !== 'ok' ? 'error' : 'info'}`}><strong>{customRun.error ? 'Execution error' : 'Script output'}</strong>{customRun.error ? <pre>{customRun.error}</pre> : <><pre className="glance-output">{customRun.stdout || '(no output)'}</pre>{customRun.message && <p className="small">{customRun.message}</p>}</>}</div>}
+          </details>
           <div className="editor-bar small muted">
             <span><kbd>Ctrl</kbd>+<kbd>Enter</kbd> run examples</span>
             <span><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Enter</kbd> submit</span>
@@ -342,6 +367,7 @@ function ProblemInner({ slug }: { slug: string }) {
                 </div>
                 {result.message && <div className="alert">{result.message}</div>}
                 <TestResults tests={result.tests} entry={q.entry} />
+                {result.limits && <p className="small muted">Sandbox limits: {result.limits.wallSeconds}s wall time · {result.limits.cpuSeconds}s CPU · {result.limits.memoryMb} MB memory</p>}
               </>
             )}
 

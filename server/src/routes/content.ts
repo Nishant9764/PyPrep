@@ -62,6 +62,7 @@ contentRouter.get(
     ]);
     const done = new Set(lp.filter((l) => l.completed).map((l) => `${l.topic}/${l.lesson}`));
     const marked = new Set(lp.filter((l) => l.bookmarked).map((l) => `${l.topic}/${l.lesson}`));
+    const mastered = new Set(lp.filter((l) => !!l.masteredAt).map((l) => `${l.topic}/${l.lesson}`));
     const solved = new Set(qp.filter((q) => q.status === 'solved').map((q) => q.question));
     const attempted = new Set(qp.map((q) => q.question));
     const meta = new Map(lessonMeta.map((l) => [`${l.topic}/${l.slug}`, l]));
@@ -86,6 +87,7 @@ contentRouter.get(
               summary: m?.summary,
               minutes: m?.minutes,
               completed: done.has(`${t.slug}/${l.slug}`),
+              mastered: mastered.has(`${t.slug}/${l.slug}`),
               bookmarked: marked.has(`${t.slug}/${l.slug}`),
             };
           }),
@@ -148,7 +150,7 @@ contentRouter.get(
       practice,
       prev: i > 0 ? flat[i - 1] : null,
       next: i >= 0 && i < flat.length - 1 ? flat[i + 1] : null,
-      progress: { completed: !!progress?.completed, bookmarked: !!progress?.bookmarked },
+      progress: { completed: !!progress?.completed, bookmarked: !!progress?.bookmarked, mastered: !!progress?.masteredAt, masteryScore: progress?.masteryScore ?? null },
     });
   }),
 );

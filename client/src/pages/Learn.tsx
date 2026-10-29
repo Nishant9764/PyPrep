@@ -16,6 +16,7 @@ export function Learn() {
       <div className="grid-2">
         {data?.topics.map((t) => {
           const done = t.lessons.filter((l) => l.completed).length;
+          const mastered = t.lessons.filter((l) => l.mastered).length;
           return (
             <section key={t.slug} className="panel topic-card" aria-labelledby={`t-${t.slug}`}>
               <div className="topic-title">
@@ -23,14 +24,15 @@ export function Learn() {
                 <h2 id={`t-${t.slug}`}>{t.title}</h2>
               </div>
               <p className="muted">{t.description}</p>
-              <ProgressBar value={done} max={t.lessons.length} label={`${t.title}: ${done} of ${t.lessons.length} lessons done`} />
+              <ProgressBar value={mastered} max={t.lessons.length} label={`${t.title}: ${mastered} of ${t.lessons.length} lessons mastered`} />
+              <p className="small muted">{done} complete · {mastered} mastered of {t.lessons.length}</p>
               <div>
                 {t.lessons.map((l) => (
                   <Link key={l.slug} className="lesson-row" to={`/t/${track}/learn/${t.slug}/${l.slug}`}>
-                    <span className={`check ${l.completed ? 'done' : ''}`} aria-hidden="true">{l.completed ? '✓' : ''}</span>
+                    <span className={`check ${l.completed ? 'done' : ''}`} aria-hidden="true">{l.mastered ? '★' : l.completed ? '✓' : ''}</span>
                     <span className="grow">
                       {l.title}
-                      <span className="sr-only">{l.completed ? ' (completed)' : ''}</span>
+                      <span className="sr-only">{l.mastered ? ' (mastered)' : l.completed ? ' (completed)' : ''}</span>
                     </span>
                     {l.minutes ? <span className="small muted">{l.minutes} min</span> : null}
                   </Link>

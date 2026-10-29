@@ -33,6 +33,7 @@ export interface RunResponse {
   results: TestResult[];
   /** Human-readable note when status is not "ok". */
   message?: string;
+  limits?: { wallSeconds: number; cpuSeconds: number; memoryMb: number };
 }
 
 /** A language adapter. Adding a new track language means adding one of these. */

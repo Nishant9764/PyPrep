@@ -25,6 +25,7 @@ export interface GradedTest {
   diagnosis?: string;
   error?: string;
   skipped?: boolean;
+  ms?: number;
   // Visible tests only:
   args?: unknown[];
   kwargs?: Record<string, unknown>;
@@ -41,6 +42,7 @@ export interface GradeOutcome {
   status: RunnerResponse['status'];
   message?: string;
   tests: GradedTest[]; // internal: carries tags for hidden tests as well
+  limits?: RunnerResponse['limits'];
 }
 
 /** Only the fields the runner understands: authoring metadata (tags, diagnosis, hidden) stays here. */
@@ -77,6 +79,7 @@ export async function grade(
       tags: t.tags ?? [],
       passed: !!r.passed,
       skipped: r.skipped,
+      ms: r.ms,
       error: r.error,
       diagnosis: !r.passed ? t.diagnosis : undefined,
     };
@@ -93,7 +96,7 @@ export async function grade(
     }
     return g;
   });
-  return { status: res.status, message: res.message, tests };
+  return { status: res.status, message: res.message, tests, limits: res.limits };
 }
 
 /**

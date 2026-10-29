@@ -26,6 +26,7 @@ const runLimiter = perUser(config.runsPerMinute, 60_000, 'runs');
 const submitLimiter = perUser(config.submitsPerMinute, 60_000, 'submissions');
 
 const codeSchema = z.object({ code: z.string().max(20000) });
+const submitSchema = codeSchema.extend({ timeSpentMs: z.number().int().min(0).max(21_600_000).optional() });
 const interviewCodeSchema = z.object({ code: z.string().max(20000), stdin: z.string().max(20000).optional() });
 
 async function runInterviewCode(trackSlug: string, item: string, code: string, stdin: string) {
@@ -76,6 +77,7 @@ practiceRouter.post(
     res.json({
       status: outcome.status,
       message: outcome.message,
+      limits: outcome.limits,
       tests: outcome.tests.map(toPublicTest),
       passedCount: outcome.tests.filter((t) => t.passed).length,
       total: outcome.tests.length,
@@ -88,7 +90,7 @@ practiceRouter.post(
   `${base}/submit`,
   submitLimiter,
   wrap(async (req, res) => {
-    const { code } = codeSchema.parse(req.body);
+    const { code, timeSpentMs } = submitSchema.parse(req.body);
     const user = req.user!;
     const { track, question } = await load(req.params.track, req.params.slug);
     const outcome = await grade(question, track.language, code, 'all');
@@ -142,6 +144,7 @@ practiceRouter.post(
         passedCount,
         total,
         hintsUsed: progress.hintsRevealed,
+        timeSpentMs,
         suspects: diagnosis?.suspects.slice(0, 3).map((s) => ({ concept: s.concept, confidence: s.confidence })) ?? [],
       });
       await bumpActivity(user._id, track.slug, localDate(req), { submissions: 1, solves: firstSolve ? 1 : 0 });
@@ -184,6 +187,7 @@ practiceRouter.post(
       runnerFault,
       status: outcome.status,
       message: outcome.message,
+      limits: outcome.limits,
       passedCount,
       total,
       firstSolve,
@@ -284,7 +288,7 @@ practiceRouter.get(
     const attempts = await Attempt.find({ user: req.user!._id, track: req.params.track, question: req.params.slug })
       .sort({ createdAt: -1 })
       .limit(10)
-      .select('code passed passedCount total createdAt hintsUsed')
+      .select('code passed passedCount total createdAt hintsUsed timeSpentMs')
       .lean();
     res.json({ attempts });
   }),
