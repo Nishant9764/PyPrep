@@ -2860,5 +2860,962 @@
     "challenge": "Explain an alternative approach to categorize salaries, then compare its time and space complexity.",
     "timeSaver": "Use the smallest clear query that states the intended row set. Check dialect-specific syntax, NULL semantics, and tie behavior before optimizing; indexes and the execution plan determine the real speedup.",
     "complexity": "Database-dependent: discuss the execution plan, row counts, indexes, sorting, grouping, and window operations rather than assigning one universal Big-O cost."
+  },
+  {
+    "id": "python-51",
+    "area": "Python",
+    "number": 51,
+    "title": "Normalize repeated whitespace",
+    "pattern": "Collapse repeated spaces and trim a sentence.",
+    "topic": "Strings",
+    "difficulty": "easy",
+    "experience": "Fresher",
+    "kind": "Coding pattern",
+    "minutes": 3,
+    "answer": "Use `split()` with no separator to treat runs of whitespace uniformly, then `join()` with one space. Use a regex only when the normalization rules are more complex.",
+    "explanation": "Use `split()` with no separator to treat runs of whitespace uniformly, then `join()` with one space. Use a regex only when the normalization rules are more complex. Expected cost: O(n) time and O(n) output space.",
+    "code": "text = \"  Python\\t is   fun  \"\nprint(\" \".join(text.split()))",
+    "expectedOutput": "Python is fun",
+    "steps": [
+      "Clarify the input and required behavior: normalize repeated whitespace.",
+      "Walk through the chosen built-in or manual approach.",
+      "Check empty input, duplicates, ties, missing fields, and mutation behavior as relevant.",
+      "State the time and space trade-off (O(n) time and O(n) output space)."
+    ],
+    "edgeCase": "Clarify empty input, repeated values, tie behavior, missing or invalid data, and whether mutation is allowed before coding.",
+    "followUp": "How would you change this for a generator, larger input, Unicode text, or stricter validation?",
+    "challenge": "Show a second approach and explain when you would prefer it.",
+    "timeSaver": "Use the standard-library operation when its behavior exactly matches the requirement; write the loop when custom rules, validation, or early exit matter.",
+    "complexity": "O(n) time and O(n) output space",
+    "approaches": [
+      {
+        "name": "split + join",
+        "code": "text = \"  Python\\t is   fun  \"\nprint(\" \".join(text.split()))",
+        "tradeoff": "Idiomatic; collapses all whitespace and trims both ends.",
+        "complexity": "O(n) time, O(n) space"
+      },
+      {
+        "name": "Manual scan",
+        "code": "text = \"  Python\\t is   fun  \"\nparts = []\nword = []\nfor char in text:\n    if char.isspace():\n        if word:\n            parts.append(\"\".join(word))\n            word = []\n    else:\n        word.append(char)\nif word:\n    parts.append(\"\".join(word))\nprint(\" \".join(parts))",
+        "tradeoff": "Explicit state machine; useful when whitespace rules need custom handling.",
+        "complexity": "O(n) time, O(n) space"
+      }
+    ]
+  },
+  {
+    "id": "python-52",
+    "area": "Python",
+    "number": 52,
+    "title": "Convert a sentence to title case",
+    "pattern": "Capitalize words in a sentence.",
+    "topic": "Strings",
+    "difficulty": "easy",
+    "experience": "Fresher",
+    "kind": "Coding pattern",
+    "minutes": 3,
+    "answer": "`str.title()` is the quick built-in, but its apostrophe and acronym rules may not match product requirements. Define the rule before choosing a manual approach.",
+    "explanation": "`str.title()` is the quick built-in, but its apostrophe and acronym rules may not match product requirements. Define the rule before choosing a manual approach. Expected cost: O(n) time and O(n) output space.",
+    "code": "text = \"python interview prep\"\nprint(text.title())",
+    "expectedOutput": "Python Interview Prep",
+    "steps": [
+      "Clarify the input and required behavior: convert a sentence to title case.",
+      "Walk through the chosen built-in or manual approach.",
+      "Check empty input, duplicates, ties, missing fields, and mutation behavior as relevant.",
+      "State the time and space trade-off (O(n) time and O(n) output space)."
+    ],
+    "edgeCase": "Clarify empty input, repeated values, tie behavior, missing or invalid data, and whether mutation is allowed before coding.",
+    "followUp": "How would you change this for a generator, larger input, Unicode text, or stricter validation?",
+    "challenge": "Show a second approach and explain when you would prefer it.",
+    "timeSaver": "Use the standard-library operation when its behavior exactly matches the requirement; write the loop when custom rules, validation, or early exit matter.",
+    "complexity": "O(n) time and O(n) output space",
+    "approaches": [
+      {
+        "name": "Built-in",
+        "code": "text = \"python interview prep\"\nprint(text.title())",
+        "tradeoff": "Fast to write; check how punctuation and apostrophes should behave.",
+        "complexity": "O(n) time, O(n) space"
+      },
+      {
+        "name": "Manual words",
+        "code": "text = \"python interview prep\"\nprint(\" \".join(word[:1].upper() + word[1:].lower() for word in text.split()))",
+        "tradeoff": "Makes word-level casing explicit; also normalizes the remaining letters.",
+        "complexity": "O(n) time, O(n) space"
+      }
+    ]
+  },
+  {
+    "id": "python-53",
+    "area": "Python",
+    "number": 53,
+    "title": "Find the first non-repeating character",
+    "pattern": "Return the first character that appears exactly once.",
+    "topic": "Strings",
+    "difficulty": "easy",
+    "experience": "Fresher",
+    "kind": "Coding pattern",
+    "minutes": 3,
+    "answer": "Count frequencies first, then scan the original string to preserve first-seen order. `Counter` is concise; a dictionary loop shows the mechanics.",
+    "explanation": "Count frequencies first, then scan the original string to preserve first-seen order. `Counter` is concise; a dictionary loop shows the mechanics. Expected cost: O(n) time and O(k) space.",
+    "code": "from collections import Counter\ntext = \"swiss\"\ncounts = Counter(text)\nprint(next((char for char in text if counts[char] == 1), None))",
+    "expectedOutput": "w",
+    "steps": [
+      "Clarify the input and required behavior: find the first non-repeating character.",
+      "Walk through the chosen built-in or manual approach.",
+      "Check empty input, duplicates, ties, missing fields, and mutation behavior as relevant.",
+      "State the time and space trade-off (O(n) time and O(k) space)."
+    ],
+    "edgeCase": "Clarify empty input, repeated values, tie behavior, missing or invalid data, and whether mutation is allowed before coding.",
+    "followUp": "How would you change this for a generator, larger input, Unicode text, or stricter validation?",
+    "challenge": "Show a second approach and explain when you would prefer it.",
+    "timeSaver": "Use the standard-library operation when its behavior exactly matches the requirement; write the loop when custom rules, validation, or early exit matter.",
+    "complexity": "O(n) time and O(k) space",
+    "approaches": [
+      {
+        "name": "Counter",
+        "code": "from collections import Counter\ntext = \"swiss\"\ncounts = Counter(text)\nprint(next((char for char in text if counts[char] == 1), None))",
+        "tradeoff": "Concise two-pass approach; returns None when every character repeats.",
+        "complexity": "O(n) time, O(k) space"
+      },
+      {
+        "name": "Manual dictionary",
+        "code": "text = \"swiss\"\ncounts = {}\nfor char in text:\n    counts[char] = counts.get(char, 0) + 1\nanswer = None\nfor char in text:\n    if counts[char] == 1:\n        answer = char\n        break\nprint(answer)",
+        "tradeoff": "No Counter import; clearly separates counting from order-preserving selection.",
+        "complexity": "O(n) expected time, O(k) space"
+      }
+    ]
+  },
+  {
+    "id": "python-54",
+    "area": "Python",
+    "number": 54,
+    "title": "Find the longest word",
+    "pattern": "Find the longest word in a sentence.",
+    "topic": "Strings",
+    "difficulty": "easy",
+    "experience": "Fresher",
+    "kind": "Coding pattern",
+    "minutes": 3,
+    "answer": "Use `max(words, key=len)` after tokenizing. Decide how ties and punctuation should be handled.",
+    "explanation": "Use `max(words, key=len)` after tokenizing. Decide how ties and punctuation should be handled. Expected cost: O(n) time over the text.",
+    "code": "sentence = \"Python makes scripting readable\"\nwords = sentence.split()\nprint(max(words, key=len))",
+    "expectedOutput": "scripting",
+    "steps": [
+      "Clarify the input and required behavior: find the longest word.",
+      "Walk through the chosen built-in or manual approach.",
+      "Check empty input, duplicates, ties, missing fields, and mutation behavior as relevant.",
+      "State the time and space trade-off (O(n) time over the text)."
+    ],
+    "edgeCase": "Clarify empty input, repeated values, tie behavior, missing or invalid data, and whether mutation is allowed before coding.",
+    "followUp": "How would you change this for a generator, larger input, Unicode text, or stricter validation?",
+    "challenge": "Show a second approach and explain when you would prefer it.",
+    "timeSaver": "Use the standard-library operation when its behavior exactly matches the requirement; write the loop when custom rules, validation, or early exit matter.",
+    "complexity": "O(n) time over the text",
+    "approaches": [
+      {
+        "name": "max + key",
+        "code": "sentence = \"Python makes scripting readable\"\nwords = sentence.split()\nprint(max(words, key=len))",
+        "tradeoff": "Readable built-in; raises ValueError for no words unless a default is supplied.",
+        "complexity": "O(n) time, O(n) token storage"
+      },
+      {
+        "name": "Manual scan",
+        "code": "sentence = \"Python makes scripting readable\"\nlongest = \"\"\nfor word in sentence.split():\n    if len(word) > len(longest):\n        longest = word\nprint(longest)",
+        "tradeoff": "Shows tie behavior: keeps the first longest word.",
+        "complexity": "O(n) time, O(n) token storage"
+      }
+    ]
+  },
+  {
+    "id": "python-55",
+    "area": "Python",
+    "number": 55,
+    "title": "Remove punctuation",
+    "pattern": "Remove punctuation while keeping letters, digits, and whitespace.",
+    "topic": "Strings",
+    "difficulty": "easy",
+    "experience": "Fresher",
+    "kind": "Coding pattern",
+    "minutes": 3,
+    "answer": "`str.translate()` with `str.maketrans` removes a set of characters efficiently. For Unicode-aware rules, define which punctuation categories count.",
+    "explanation": "`str.translate()` with `str.maketrans` removes a set of characters efficiently. For Unicode-aware rules, define which punctuation categories count. Expected cost: O(n) time and O(n) output space.",
+    "code": "import string\ntext = \"Hi, Python! Ready?\"\ntable = str.maketrans(\"\", \"\", string.punctuation)\nprint(text.translate(table))",
+    "expectedOutput": "Hi Python Ready",
+    "steps": [
+      "Clarify the input and required behavior: remove punctuation.",
+      "Walk through the chosen built-in or manual approach.",
+      "Check empty input, duplicates, ties, missing fields, and mutation behavior as relevant.",
+      "State the time and space trade-off (O(n) time and O(n) output space)."
+    ],
+    "edgeCase": "Clarify empty input, repeated values, tie behavior, missing or invalid data, and whether mutation is allowed before coding.",
+    "followUp": "How would you change this for a generator, larger input, Unicode text, or stricter validation?",
+    "challenge": "Show a second approach and explain when you would prefer it.",
+    "timeSaver": "Use the standard-library operation when its behavior exactly matches the requirement; write the loop when custom rules, validation, or early exit matter.",
+    "complexity": "O(n) time and O(n) output space",
+    "approaches": [
+      {
+        "name": "translate",
+        "code": "import string\ntext = \"Hi, Python! Ready?\"\ntable = str.maketrans(\"\", \"\", string.punctuation)\nprint(text.translate(table))",
+        "tradeoff": "Good for a fixed character deletion table; `string.punctuation` is ASCII punctuation.",
+        "complexity": "O(n) time, O(n) output space"
+      },
+      {
+        "name": "Manual filter",
+        "code": "import string\ntext = \"Hi, Python! Ready?\"\nprint(\"\".join(char for char in text if char not in string.punctuation))",
+        "tradeoff": "Easy to customize and explain; membership checks use the punctuation string.",
+        "complexity": "O(n) time, O(n) output space"
+      }
+    ]
+  },
+  {
+    "id": "python-56",
+    "area": "Python",
+    "number": 56,
+    "title": "Check whether a sentence is a pangram",
+    "pattern": "Check if every English alphabet letter occurs.",
+    "topic": "Strings",
+    "difficulty": "easy",
+    "experience": "Fresher",
+    "kind": "Coding pattern",
+    "minutes": 3,
+    "answer": "Normalize to lowercase and compare the set of letters with the alphabet. Clarify that this definition is for English a–z.",
+    "explanation": "Normalize to lowercase and compare the set of letters with the alphabet. Clarify that this definition is for English a–z. Expected cost: O(n) time and O(1) space for a fixed alphabet.",
+    "code": "import string\ntext = \"The quick brown fox jumps over the lazy dog\"\nprint(set(string.ascii_lowercase) <= set(text.lower()))",
+    "expectedOutput": "True",
+    "steps": [
+      "Clarify the input and required behavior: check whether a sentence is a pangram.",
+      "Walk through the chosen built-in or manual approach.",
+      "Check empty input, duplicates, ties, missing fields, and mutation behavior as relevant.",
+      "State the time and space trade-off (O(n) time and O(1) space for a fixed alphabet)."
+    ],
+    "edgeCase": "Clarify empty input, repeated values, tie behavior, missing or invalid data, and whether mutation is allowed before coding.",
+    "followUp": "How would you change this for a generator, larger input, Unicode text, or stricter validation?",
+    "challenge": "Show a second approach and explain when you would prefer it.",
+    "timeSaver": "Use the standard-library operation when its behavior exactly matches the requirement; write the loop when custom rules, validation, or early exit matter.",
+    "complexity": "O(n) time and O(1) space for a fixed alphabet",
+    "approaches": [
+      {
+        "name": "Set comparison",
+        "code": "import string\ntext = \"The quick brown fox jumps over the lazy dog\"\nprint(set(string.ascii_lowercase) <= set(text.lower()))",
+        "tradeoff": "Concise; ignores punctuation and non-English letters naturally.",
+        "complexity": "O(n) time, O(1) fixed-alphabet space"
+      },
+      {
+        "name": "Manual flags",
+        "code": "text = \"The quick brown fox jumps over the lazy dog\".lower()\nseen = set()\nfor char in text:\n    if \"a\" <= char <= \"z\":\n        seen.add(char)\nprint(len(seen) == 26)",
+        "tradeoff": "Makes the accepted alphabet explicit.",
+        "complexity": "O(n) time, O(1) fixed-alphabet space"
+      }
+    ]
+  },
+  {
+    "id": "python-57",
+    "area": "Python",
+    "number": 57,
+    "title": "Count words by first letter",
+    "pattern": "Group words by their first letter, ignoring case.",
+    "topic": "Strings",
+    "difficulty": "easy",
+    "experience": "Fresher",
+    "kind": "Coding pattern",
+    "minutes": 3,
+    "answer": "Build a dictionary of lists with `defaultdict(list)`. A normal dictionary plus `setdefault` avoids the import.",
+    "explanation": "Build a dictionary of lists with `defaultdict(list)`. A normal dictionary plus `setdefault` avoids the import. Expected cost: O(n) time and O(n) output space.",
+    "code": "from collections import defaultdict\nwords = [\"Apple\", \"apricot\", \"Berry\"]\ngroups = defaultdict(list)\nfor word in words:\n    if word:\n        groups[word[0].lower()].append(word)\nprint(dict(groups))",
+    "expectedOutput": "{'a': ['Apple', 'apricot'], 'b': ['Berry']}",
+    "steps": [
+      "Clarify the input and required behavior: count words by first letter.",
+      "Walk through the chosen built-in or manual approach.",
+      "Check empty input, duplicates, ties, missing fields, and mutation behavior as relevant.",
+      "State the time and space trade-off (O(n) time and O(n) output space)."
+    ],
+    "edgeCase": "Clarify empty input, repeated values, tie behavior, missing or invalid data, and whether mutation is allowed before coding.",
+    "followUp": "How would you change this for a generator, larger input, Unicode text, or stricter validation?",
+    "challenge": "Show a second approach and explain when you would prefer it.",
+    "timeSaver": "Use the standard-library operation when its behavior exactly matches the requirement; write the loop when custom rules, validation, or early exit matter.",
+    "complexity": "O(n) time and O(n) output space",
+    "approaches": [
+      {
+        "name": "defaultdict",
+        "code": "from collections import defaultdict\nwords = [\"Apple\", \"apricot\", \"Berry\"]\ngroups = defaultdict(list)\nfor word in words:\n    if word:\n        groups[word[0].lower()].append(word)\nprint(dict(groups))",
+        "tradeoff": "Creates a list automatically for each new key.",
+        "complexity": "O(n) time, O(n) space"
+      },
+      {
+        "name": "setdefault",
+        "code": "words = [\"Apple\", \"apricot\", \"Berry\"]\ngroups = {}\nfor word in words:\n    if word:\n        groups.setdefault(word[0].lower(), []).append(word)\nprint(groups)",
+        "tradeoff": "Uses only a regular dictionary and its built-in setdefault method.",
+        "complexity": "O(n) expected time, O(n) space"
+      }
+    ]
+  },
+  {
+    "id": "python-58",
+    "area": "Python",
+    "number": 58,
+    "title": "Flatten a one-level nested list",
+    "pattern": "Flatten one level of nested lists.",
+    "topic": "Lists and data transformation",
+    "difficulty": "easy",
+    "experience": "Fresher",
+    "kind": "Coding pattern",
+    "minutes": 3,
+    "answer": "A nested comprehension is concise. It flattens exactly one level and assumes every item is iterable.",
+    "explanation": "A nested comprehension is concise. It flattens exactly one level and assumes every item is iterable. Expected cost: O(n) time and O(n) output space.",
+    "code": "nested = [[1, 2], [3], [4, 5]]\nprint([item for group in nested for item in group])",
+    "expectedOutput": "[1, 2, 3, 4, 5]",
+    "steps": [
+      "Clarify the input and required behavior: flatten a one-level nested list.",
+      "Walk through the chosen built-in or manual approach.",
+      "Check empty input, duplicates, ties, missing fields, and mutation behavior as relevant.",
+      "State the time and space trade-off (O(n) time and O(n) output space)."
+    ],
+    "edgeCase": "Clarify empty input, repeated values, tie behavior, missing or invalid data, and whether mutation is allowed before coding.",
+    "followUp": "How would you change this for a generator, larger input, Unicode text, or stricter validation?",
+    "challenge": "Show a second approach and explain when you would prefer it.",
+    "timeSaver": "Use the standard-library operation when its behavior exactly matches the requirement; write the loop when custom rules, validation, or early exit matter.",
+    "complexity": "O(n) time and O(n) output space",
+    "approaches": [
+      {
+        "name": "Comprehension",
+        "code": "nested = [[1, 2], [3], [4, 5]]\nprint([item for group in nested for item in group])",
+        "tradeoff": "Compact for a known one-level structure.",
+        "complexity": "O(n) time, O(n) output space"
+      },
+      {
+        "name": "Nested loops",
+        "code": "nested = [[1, 2], [3], [4, 5]]\nflat = []\nfor group in nested:\n    for item in group:\n        flat.append(item)\nprint(flat)",
+        "tradeoff": "More explicit and easy to extend with validation or filtering.",
+        "complexity": "O(n) time, O(n) output space"
+      }
+    ]
+  },
+  {
+    "id": "python-59",
+    "area": "Python",
+    "number": 59,
+    "title": "Split a list into fixed-size batches",
+    "pattern": "Split a list into batches of two, preserving the final short batch.",
+    "topic": "Lists and data transformation",
+    "difficulty": "easy",
+    "experience": "Fresher",
+    "kind": "Coding pattern",
+    "minutes": 3,
+    "answer": "Slicing is convenient for a list. For arbitrary iterators or very large streams, use `itertools.islice` to avoid materializing the input.",
+    "explanation": "Slicing is convenient for a list. For arbitrary iterators or very large streams, use `itertools.islice` to avoid materializing the input. Expected cost: O(n) time and O(n) output space.",
+    "code": "items = [1, 2, 3, 4, 5]\nsize = 2\nprint([items[i:i + size] for i in range(0, len(items), size)])",
+    "expectedOutput": "[[1, 2], [3, 4], [5]]",
+    "steps": [
+      "Clarify the input and required behavior: split a list into fixed-size batches.",
+      "Walk through the chosen built-in or manual approach.",
+      "Check empty input, duplicates, ties, missing fields, and mutation behavior as relevant.",
+      "State the time and space trade-off (O(n) time and O(n) output space)."
+    ],
+    "edgeCase": "Clarify empty input, repeated values, tie behavior, missing or invalid data, and whether mutation is allowed before coding.",
+    "followUp": "How would you change this for a generator, larger input, Unicode text, or stricter validation?",
+    "challenge": "Show a second approach and explain when you would prefer it.",
+    "timeSaver": "Use the standard-library operation when its behavior exactly matches the requirement; write the loop when custom rules, validation, or early exit matter.",
+    "complexity": "O(n) time and O(n) output space",
+    "approaches": [
+      {
+        "name": "Slicing",
+        "code": "items = [1, 2, 3, 4, 5]\nsize = 2\nprint([items[i:i + size] for i in range(0, len(items), size)])",
+        "tradeoff": "Clear for lists; creates each batch as a new list.",
+        "complexity": "O(n) time, O(n) output space"
+      },
+      {
+        "name": "Manual loop",
+        "code": "items = [1, 2, 3, 4, 5]\nsize = 2\nbatches = []\nfor start in range(0, len(items), size):\n    batch = []\n    for index in range(start, min(start + size, len(items))):\n        batch.append(items[index])\n    batches.append(batch)\nprint(batches)",
+        "tradeoff": "No slicing; makes batch boundaries and the final partial batch explicit.",
+        "complexity": "O(n) time, O(n) output space"
+      }
+    ]
+  },
+  {
+    "id": "python-60",
+    "area": "Python",
+    "number": 60,
+    "title": "Merge dictionaries with right-side values winning",
+    "pattern": "Merge two dictionaries and explain conflicting keys.",
+    "topic": "Dictionaries",
+    "difficulty": "easy",
+    "experience": "Fresher",
+    "kind": "Coding pattern",
+    "minutes": 3,
+    "answer": "Use `|` in Python 3.9+ or unpacking with `**`. `update()` mutates the target dictionary.",
+    "explanation": "Use `|` in Python 3.9+ or unpacking with `**`. `update()` mutates the target dictionary. Expected cost: O(n + m) time and space.",
+    "code": "left = {\"a\": 1, \"b\": 2}\nright = {\"b\": 9, \"c\": 3}\nprint(left | right)",
+    "expectedOutput": "{'a': 1, 'b': 9, 'c': 3}",
+    "steps": [
+      "Clarify the input and required behavior: merge dictionaries with right-side values winning.",
+      "Walk through the chosen built-in or manual approach.",
+      "Check empty input, duplicates, ties, missing fields, and mutation behavior as relevant.",
+      "State the time and space trade-off (O(n + m) time and space)."
+    ],
+    "edgeCase": "Clarify empty input, repeated values, tie behavior, missing or invalid data, and whether mutation is allowed before coding.",
+    "followUp": "How would you change this for a generator, larger input, Unicode text, or stricter validation?",
+    "challenge": "Show a second approach and explain when you would prefer it.",
+    "timeSaver": "Use the standard-library operation when its behavior exactly matches the requirement; write the loop when custom rules, validation, or early exit matter.",
+    "complexity": "O(n + m) time and space",
+    "approaches": [
+      {
+        "name": "Union operator",
+        "code": "left = {\"a\": 1, \"b\": 2}\nright = {\"b\": 9, \"c\": 3}\nprint(left | right)",
+        "tradeoff": "Python 3.9+; creates a new dictionary and right side wins.",
+        "complexity": "O(n + m) time, O(n + m) space"
+      },
+      {
+        "name": "Unpacking",
+        "code": "left = {\"a\": 1, \"b\": 2}\nright = {\"b\": 9, \"c\": 3}\nmerged = {**left, **right}\nprint(merged)",
+        "tradeoff": "Works on older Python versions too; creates a new dictionary.",
+        "complexity": "O(n + m) time, O(n + m) space"
+      },
+      {
+        "name": "update()",
+        "code": "left = {\"a\": 1, \"b\": 2}\nright = {\"b\": 9, \"c\": 3}\nleft.update(right)\nprint(left)",
+        "tradeoff": "Mutates left in place.",
+        "complexity": "O(n + m) time, O(n) additional space"
+      }
+    ]
+  },
+  {
+    "id": "python-61",
+    "area": "Python",
+    "number": 61,
+    "title": "Sort dictionary entries by value",
+    "pattern": "Sort key-value pairs by their values.",
+    "topic": "Dictionaries",
+    "difficulty": "medium",
+    "experience": "1–2 years",
+    "kind": "Coding pattern",
+    "minutes": 3,
+    "answer": "Use `sorted(d.items(), key=lambda pair: pair[1])`. Add a secondary key when deterministic tie ordering by key is required.",
+    "explanation": "Use `sorted(d.items(), key=lambda pair: pair[1])`. Add a secondary key when deterministic tie ordering by key is required. Expected cost: O(n log n) time and O(n) space.",
+    "code": "scores = {\"Mia\": 8, \"Ari\": 10, \"Noor\": 8}\nprint(sorted(scores.items(), key=lambda pair: (pair[1], pair[0])))",
+    "expectedOutput": "[('Mia', 8), ('Noor', 8), ('Ari', 10)]",
+    "steps": [
+      "Clarify the input and required behavior: sort dictionary entries by value.",
+      "Walk through the chosen built-in or manual approach.",
+      "Check empty input, duplicates, ties, missing fields, and mutation behavior as relevant.",
+      "State the time and space trade-off (O(n log n) time and O(n) space)."
+    ],
+    "edgeCase": "Clarify empty input, repeated values, tie behavior, missing or invalid data, and whether mutation is allowed before coding.",
+    "followUp": "How would you change this for a generator, larger input, Unicode text, or stricter validation?",
+    "challenge": "Show a second approach and explain when you would prefer it.",
+    "timeSaver": "Use the standard-library operation when its behavior exactly matches the requirement; write the loop when custom rules, validation, or early exit matter.",
+    "complexity": "O(n log n) time and O(n) space",
+    "approaches": [
+      {
+        "name": "sorted + key",
+        "code": "scores = {\"Mia\": 8, \"Ari\": 10, \"Noor\": 8}\nprint(sorted(scores.items(), key=lambda pair: (pair[1], pair[0])))",
+        "tradeoff": "Readable; tuple key sorts by value, then name for ties.",
+        "complexity": "O(n log n) time, O(n) space"
+      },
+      {
+        "name": "Manual insertion",
+        "code": "scores = {\"Mia\": 8, \"Ari\": 10, \"Noor\": 8}\nentries = list(scores.items())\nfor i in range(1, len(entries)):\n    current = entries[i]\n    j = i - 1\n    while j >= 0 and (entries[j][1], entries[j][0]) > (current[1], current[0]):\n        entries[j + 1] = entries[j]\n        j -= 1\n    entries[j + 1] = current\nprint(entries)",
+        "tradeoff": "Demonstrates sorting logic but is O(n²); prefer sorted() in production.",
+        "complexity": "O(n²) time, O(n) space"
+      }
+    ]
+  },
+  {
+    "id": "python-62",
+    "area": "Python",
+    "number": 62,
+    "title": "Invert a dictionary while preserving duplicate values",
+    "pattern": "Create a reverse mapping where each original value maps to all matching keys.",
+    "topic": "Dictionaries",
+    "difficulty": "medium",
+    "experience": "1–2 years",
+    "kind": "Coding pattern",
+    "minutes": 3,
+    "answer": "Use `defaultdict(list)` and append keys; a plain dict comprehension would silently lose duplicates.",
+    "explanation": "Use `defaultdict(list)` and append keys; a plain dict comprehension would silently lose duplicates. Expected cost: O(n) expected time and O(n) space.",
+    "code": "from collections import defaultdict\nsource = {\"a\": 1, \"b\": 2, \"c\": 1}\ninverted = defaultdict(list)\nfor key, value in source.items():\n    inverted[value].append(key)\nprint(dict(inverted))",
+    "expectedOutput": "{1: ['a', 'c'], 2: ['b']}",
+    "steps": [
+      "Clarify the input and required behavior: invert a dictionary while preserving duplicate values.",
+      "Walk through the chosen built-in or manual approach.",
+      "Check empty input, duplicates, ties, missing fields, and mutation behavior as relevant.",
+      "State the time and space trade-off (O(n) expected time and O(n) space)."
+    ],
+    "edgeCase": "Clarify empty input, repeated values, tie behavior, missing or invalid data, and whether mutation is allowed before coding.",
+    "followUp": "How would you change this for a generator, larger input, Unicode text, or stricter validation?",
+    "challenge": "Show a second approach and explain when you would prefer it.",
+    "timeSaver": "Use the standard-library operation when its behavior exactly matches the requirement; write the loop when custom rules, validation, or early exit matter.",
+    "complexity": "O(n) expected time and O(n) space",
+    "approaches": [
+      {
+        "name": "defaultdict(list)",
+        "code": "from collections import defaultdict\nsource = {\"a\": 1, \"b\": 2, \"c\": 1}\ninverted = defaultdict(list)\nfor key, value in source.items():\n    inverted[value].append(key)\nprint(dict(inverted))",
+        "tradeoff": "Keeps every original key when values repeat.",
+        "complexity": "O(n) expected time, O(n) space"
+      },
+      {
+        "name": "setdefault",
+        "code": "source = {\"a\": 1, \"b\": 2, \"c\": 1}\ninverted = {}\nfor key, value in source.items():\n    inverted.setdefault(value, []).append(key)\nprint(inverted)",
+        "tradeoff": "Same behavior using only a regular dictionary.",
+        "complexity": "O(n) expected time, O(n) space"
+      }
+    ]
+  },
+  {
+    "id": "python-63",
+    "area": "Python",
+    "number": 63,
+    "title": "Group records by a field",
+    "pattern": "Group records by department.",
+    "topic": "Dictionaries and records",
+    "difficulty": "medium",
+    "experience": "1–2 years",
+    "kind": "Coding pattern",
+    "minutes": 3,
+    "answer": "Use `defaultdict(list)` for a concise grouping loop. Validate that every record has the field and decide how missing values should be handled.",
+    "explanation": "Use `defaultdict(list)` for a concise grouping loop. Validate that every record has the field and decide how missing values should be handled. Expected cost: O(n) time and O(n) output space.",
+    "code": "from collections import defaultdict\nemployees = [{\"name\": \"Ava\", \"dept\": \"Eng\"}, {\"name\": \"Ben\", \"dept\": \"Sales\"}, {\"name\": \"Cam\", \"dept\": \"Eng\"}]\ngroups = defaultdict(list)\nfor employee in employees:\n    groups[employee[\"dept\"]].append(employee[\"name\"])\nprint(dict(groups))",
+    "expectedOutput": "{'Eng': ['Ava', 'Cam'], 'Sales': ['Ben']}",
+    "steps": [
+      "Clarify the input and required behavior: group records by a field.",
+      "Walk through the chosen built-in or manual approach.",
+      "Check empty input, duplicates, ties, missing fields, and mutation behavior as relevant.",
+      "State the time and space trade-off (O(n) time and O(n) output space)."
+    ],
+    "edgeCase": "Clarify empty input, repeated values, tie behavior, missing or invalid data, and whether mutation is allowed before coding.",
+    "followUp": "How would you change this for a generator, larger input, Unicode text, or stricter validation?",
+    "challenge": "Show a second approach and explain when you would prefer it.",
+    "timeSaver": "Use the standard-library operation when its behavior exactly matches the requirement; write the loop when custom rules, validation, or early exit matter.",
+    "complexity": "O(n) time and O(n) output space"
+  },
+  {
+    "id": "python-64",
+    "area": "Python",
+    "number": 64,
+    "title": "Transform dictionary values",
+    "pattern": "Create a new dictionary with every numeric value doubled.",
+    "topic": "Dictionaries",
+    "difficulty": "medium",
+    "experience": "1–2 years",
+    "kind": "Coding pattern",
+    "minutes": 3,
+    "answer": "A dictionary comprehension expresses the key-value transformation directly. Use a loop when validation or error handling is needed.",
+    "explanation": "A dictionary comprehension expresses the key-value transformation directly. Use a loop when validation or error handling is needed. Expected cost: O(n) time and O(n) output space.",
+    "code": "prices = {\"tea\": 2, \"coffee\": 3}\nprint({name: price * 2 for name, price in prices.items()})",
+    "expectedOutput": "{'tea': 4, 'coffee': 6}",
+    "steps": [
+      "Clarify the input and required behavior: transform dictionary values.",
+      "Walk through the chosen built-in or manual approach.",
+      "Check empty input, duplicates, ties, missing fields, and mutation behavior as relevant.",
+      "State the time and space trade-off (O(n) time and O(n) output space)."
+    ],
+    "edgeCase": "Clarify empty input, repeated values, tie behavior, missing or invalid data, and whether mutation is allowed before coding.",
+    "followUp": "How would you change this for a generator, larger input, Unicode text, or stricter validation?",
+    "challenge": "Show a second approach and explain when you would prefer it.",
+    "timeSaver": "Use the standard-library operation when its behavior exactly matches the requirement; write the loop when custom rules, validation, or early exit matter.",
+    "complexity": "O(n) time and O(n) output space"
+  },
+  {
+    "id": "python-65",
+    "area": "Python",
+    "number": 65,
+    "title": "Filter dictionary entries by value",
+    "pattern": "Keep only dictionary entries whose value is at least a threshold.",
+    "topic": "Dictionaries",
+    "difficulty": "medium",
+    "experience": "1–2 years",
+    "kind": "Coding pattern",
+    "minutes": 3,
+    "answer": "Use a comprehension for the common case. It creates a new mapping and leaves the original unchanged.",
+    "explanation": "Use a comprehension for the common case. It creates a new mapping and leaves the original unchanged. Expected cost: O(n) time and O(k) output space.",
+    "code": "scores = {\"Ava\": 82, \"Ben\": 67, \"Cam\": 91}\nprint({name: score for name, score in scores.items() if score >= 80})",
+    "expectedOutput": "{'Ava': 82, 'Cam': 91}",
+    "steps": [
+      "Clarify the input and required behavior: filter dictionary entries by value.",
+      "Walk through the chosen built-in or manual approach.",
+      "Check empty input, duplicates, ties, missing fields, and mutation behavior as relevant.",
+      "State the time and space trade-off (O(n) time and O(k) output space)."
+    ],
+    "edgeCase": "Clarify empty input, repeated values, tie behavior, missing or invalid data, and whether mutation is allowed before coding.",
+    "followUp": "How would you change this for a generator, larger input, Unicode text, or stricter validation?",
+    "challenge": "Show a second approach and explain when you would prefer it.",
+    "timeSaver": "Use the standard-library operation when its behavior exactly matches the requirement; write the loop when custom rules, validation, or early exit matter.",
+    "complexity": "O(n) time and O(k) output space"
+  },
+  {
+    "id": "python-66",
+    "area": "Python",
+    "number": 66,
+    "title": "Write a function that accepts any number of positional values",
+    "pattern": "Accept numbers with `*args` and return their sum.",
+    "topic": "Functions and arguments",
+    "difficulty": "medium",
+    "experience": "1–2 years",
+    "kind": "Coding pattern",
+    "minutes": 3,
+    "answer": "`*args` collects extra positional arguments into a tuple. Consider whether an empty call should return zero; `sum()` does.",
+    "explanation": "`*args` collects extra positional arguments into a tuple. Consider whether an empty call should return zero; `sum()` does. Expected cost: O(n) time and O(1) extra space.",
+    "code": "def total(*values):\n    return sum(values)\nprint(total(2, 3, 5))",
+    "expectedOutput": "10",
+    "steps": [
+      "Clarify the input and required behavior: write a function that accepts any number of positional values.",
+      "Walk through the chosen built-in or manual approach.",
+      "Check empty input, duplicates, ties, missing fields, and mutation behavior as relevant.",
+      "State the time and space trade-off (O(n) time and O(1) extra space)."
+    ],
+    "edgeCase": "Clarify empty input, repeated values, tie behavior, missing or invalid data, and whether mutation is allowed before coding.",
+    "followUp": "How would you change this for a generator, larger input, Unicode text, or stricter validation?",
+    "challenge": "Show a second approach and explain when you would prefer it.",
+    "timeSaver": "Use the standard-library operation when its behavior exactly matches the requirement; write the loop when custom rules, validation, or early exit matter.",
+    "complexity": "O(n) time and O(1) extra space"
+  },
+  {
+    "id": "python-67",
+    "area": "Python",
+    "number": 67,
+    "title": "Use a safe mutable default",
+    "pattern": "Write a function that accumulates values without sharing a default list between calls.",
+    "topic": "Functions and arguments",
+    "difficulty": "medium",
+    "experience": "1–2 years",
+    "kind": "Coding pattern",
+    "minutes": 3,
+    "answer": "Use `None` as a sentinel and allocate a fresh list inside each call. Defaults are evaluated once when the function is defined.",
+    "explanation": "Use `None` as a sentinel and allocate a fresh list inside each call. Defaults are evaluated once when the function is defined. Expected cost: O(1) plus append cost.",
+    "code": "def add_item(item, items=None):\n    if items is None:\n        items = []\n    items.append(item)\n    return items\nprint(add_item(\"a\"))\nprint(add_item(\"b\"))",
+    "expectedOutput": "['a']\n['b']",
+    "steps": [
+      "Clarify the input and required behavior: use a safe mutable default.",
+      "Walk through the chosen built-in or manual approach.",
+      "Check empty input, duplicates, ties, missing fields, and mutation behavior as relevant.",
+      "State the time and space trade-off (O(1) plus append cost)."
+    ],
+    "edgeCase": "Clarify empty input, repeated values, tie behavior, missing or invalid data, and whether mutation is allowed before coding.",
+    "followUp": "How would you change this for a generator, larger input, Unicode text, or stricter validation?",
+    "challenge": "Show a second approach and explain when you would prefer it.",
+    "timeSaver": "Use the standard-library operation when its behavior exactly matches the requirement; write the loop when custom rules, validation, or early exit matter.",
+    "complexity": "O(1) plus append cost"
+  },
+  {
+    "id": "python-68",
+    "area": "Python",
+    "number": 68,
+    "title": "Return multiple values and unpack them",
+    "pattern": "Return a quotient and remainder from a function.",
+    "topic": "Functions and arguments",
+    "difficulty": "medium",
+    "experience": "1–2 years",
+    "kind": "Coding pattern",
+    "minutes": 3,
+    "answer": "Return a tuple and unpack it at the call site. This improves clarity when the result has a small fixed shape.",
+    "explanation": "Return a tuple and unpack it at the call site. This improves clarity when the result has a small fixed shape. Expected cost: O(1) time.",
+    "code": "def divide_and_remainder(a, b):\n    return divmod(a, b)\nquotient, remainder = divide_and_remainder(17, 5)\nprint(quotient, remainder)",
+    "expectedOutput": "3 2",
+    "steps": [
+      "Clarify the input and required behavior: return multiple values and unpack them.",
+      "Walk through the chosen built-in or manual approach.",
+      "Check empty input, duplicates, ties, missing fields, and mutation behavior as relevant.",
+      "State the time and space trade-off (O(1) time)."
+    ],
+    "edgeCase": "Clarify empty input, repeated values, tie behavior, missing or invalid data, and whether mutation is allowed before coding.",
+    "followUp": "How would you change this for a generator, larger input, Unicode text, or stricter validation?",
+    "challenge": "Show a second approach and explain when you would prefer it.",
+    "timeSaver": "Use the standard-library operation when its behavior exactly matches the requirement; write the loop when custom rules, validation, or early exit matter.",
+    "complexity": "O(1) time"
+  },
+  {
+    "id": "python-69",
+    "area": "Python",
+    "number": 69,
+    "title": "Create a lazy sequence with a generator",
+    "pattern": "Yield the first n square numbers without building a list.",
+    "topic": "Iteration and generators",
+    "difficulty": "medium",
+    "experience": "1–2 years",
+    "kind": "Coding pattern",
+    "minutes": 3,
+    "answer": "A generator function yields one value at a time and retains its local state between requests.",
+    "explanation": "A generator function yields one value at a time and retains its local state between requests. Expected cost: O(n) time and O(1) generator state (excluding collected output).",
+    "code": "def squares(count):\n    for number in range(count):\n        yield number * number\nprint(list(squares(4)))",
+    "expectedOutput": "[0, 1, 4, 9]",
+    "steps": [
+      "Clarify the input and required behavior: create a lazy sequence with a generator.",
+      "Walk through the chosen built-in or manual approach.",
+      "Check empty input, duplicates, ties, missing fields, and mutation behavior as relevant.",
+      "State the time and space trade-off (O(n) time and O(1) generator state (excluding collected output))."
+    ],
+    "edgeCase": "Clarify empty input, repeated values, tie behavior, missing or invalid data, and whether mutation is allowed before coding.",
+    "followUp": "How would you change this for a generator, larger input, Unicode text, or stricter validation?",
+    "challenge": "Show a second approach and explain when you would prefer it.",
+    "timeSaver": "Use the standard-library operation when its behavior exactly matches the requirement; write the loop when custom rules, validation, or early exit matter.",
+    "complexity": "O(n) time and O(1) generator state (excluding collected output)"
+  },
+  {
+    "id": "python-70",
+    "area": "Python",
+    "number": 70,
+    "title": "Write a simple logging decorator",
+    "pattern": "Wrap a function and print its name when called.",
+    "topic": "Functions and decorators",
+    "difficulty": "medium",
+    "experience": "1–2 years",
+    "kind": "Coding pattern",
+    "minutes": 3,
+    "answer": "A decorator receives a callable and returns a wrapper. Use `functools.wraps` to preserve metadata.",
+    "explanation": "A decorator receives a callable and returns a wrapper. Use `functools.wraps` to preserve metadata. Expected cost: Wrapper overhead is O(1) beyond the wrapped call.",
+    "code": "from functools import wraps\ndef announce(func):\n    @wraps(func)\n    def wrapper(*args, **kwargs):\n        print(f\"Calling {func.__name__}\")\n        return func(*args, **kwargs)\n    return wrapper\n@announce\ndef greet(name):\n    return f\"Hello, {name}\"\nprint(greet(\"Ava\"))",
+    "expectedOutput": "Calling greet\nHello, Ava",
+    "steps": [
+      "Clarify the input and required behavior: write a simple logging decorator.",
+      "Walk through the chosen built-in or manual approach.",
+      "Check empty input, duplicates, ties, missing fields, and mutation behavior as relevant.",
+      "State the time and space trade-off (Wrapper overhead is O(1) beyond the wrapped call)."
+    ],
+    "edgeCase": "Clarify empty input, repeated values, tie behavior, missing or invalid data, and whether mutation is allowed before coding.",
+    "followUp": "How would you change this for a generator, larger input, Unicode text, or stricter validation?",
+    "challenge": "Show a second approach and explain when you would prefer it.",
+    "timeSaver": "Use the standard-library operation when its behavior exactly matches the requirement; write the loop when custom rules, validation, or early exit matter.",
+    "complexity": "Wrapper overhead is O(1) beyond the wrapped call"
+  },
+  {
+    "id": "python-71",
+    "area": "Python",
+    "number": 71,
+    "title": "Define a small dataclass",
+    "pattern": "Represent a point with two coordinates and print it.",
+    "topic": "Classes and data models",
+    "difficulty": "medium",
+    "experience": "1–2 years",
+    "kind": "Coding pattern",
+    "minutes": 3,
+    "answer": "`dataclass` generates common methods such as `__init__` and `__repr__`. Use `default_factory` for mutable defaults.",
+    "explanation": "`dataclass` generates common methods such as `__init__` and `__repr__`. Use `default_factory` for mutable defaults. Expected cost: O(1) construction for fixed fields.",
+    "code": "from dataclasses import dataclass\n@dataclass\nclass Point:\n    x: int\n    y: int\npoint = Point(2, 3)\nprint(point)",
+    "expectedOutput": "Point(x=2, y=3)",
+    "steps": [
+      "Clarify the input and required behavior: define a small dataclass.",
+      "Walk through the chosen built-in or manual approach.",
+      "Check empty input, duplicates, ties, missing fields, and mutation behavior as relevant.",
+      "State the time and space trade-off (O(1) construction for fixed fields)."
+    ],
+    "edgeCase": "Clarify empty input, repeated values, tie behavior, missing or invalid data, and whether mutation is allowed before coding.",
+    "followUp": "How would you change this for a generator, larger input, Unicode text, or stricter validation?",
+    "challenge": "Show a second approach and explain when you would prefer it.",
+    "timeSaver": "Use the standard-library operation when its behavior exactly matches the requirement; write the loop when custom rules, validation, or early exit matter.",
+    "complexity": "O(1) construction for fixed fields"
+  },
+  {
+    "id": "python-72",
+    "area": "Python",
+    "number": 72,
+    "title": "Validate an attribute with a property",
+    "pattern": "Keep a temperature in Celsius non-negative.",
+    "topic": "Classes and data models",
+    "difficulty": "medium",
+    "experience": "1–2 years",
+    "kind": "Coding pattern",
+    "minutes": 3,
+    "answer": "A property exposes method-based validation through attribute syntax. Raise a clear exception for invalid assignments.",
+    "explanation": "A property exposes method-based validation through attribute syntax. Raise a clear exception for invalid assignments. Expected cost: O(1) get and set.",
+    "code": "class Temperature:\n    def __init__(self, celsius):\n        self.celsius = celsius\n    @property\n    def celsius(self):\n        return self._celsius\n    @celsius.setter\n    def celsius(self, value):\n        if value < 0:\n            raise ValueError(\"temperature cannot be below absolute zero\")\n        self._celsius = value\nt = Temperature(20)\nt.celsius = 25\nprint(t.celsius)",
+    "expectedOutput": "25",
+    "steps": [
+      "Clarify the input and required behavior: validate an attribute with a property.",
+      "Walk through the chosen built-in or manual approach.",
+      "Check empty input, duplicates, ties, missing fields, and mutation behavior as relevant.",
+      "State the time and space trade-off (O(1) get and set)."
+    ],
+    "edgeCase": "Clarify empty input, repeated values, tie behavior, missing or invalid data, and whether mutation is allowed before coding.",
+    "followUp": "How would you change this for a generator, larger input, Unicode text, or stricter validation?",
+    "challenge": "Show a second approach and explain when you would prefer it.",
+    "timeSaver": "Use the standard-library operation when its behavior exactly matches the requirement; write the loop when custom rules, validation, or early exit matter.",
+    "complexity": "O(1) get and set"
+  },
+  {
+    "id": "python-73",
+    "area": "Python",
+    "number": 73,
+    "title": "Read a text file safely",
+    "pattern": "Read a UTF-8 file using a context manager.",
+    "topic": "Files and exceptions",
+    "difficulty": "medium",
+    "experience": "1–2 years",
+    "kind": "Coding pattern",
+    "minutes": 3,
+    "answer": "Use `with` so the file closes even if later code raises. Choose explicit encoding and stream line-by-line for large files.",
+    "explanation": "Use `with` so the file closes even if later code raises. Choose explicit encoding and stream line-by-line for large files. Expected cost: O(n) time and memory for read(); iterate lines to reduce memory.",
+    "code": "from pathlib import Path\npath = Path(\"notes.txt\")\nwith path.open(encoding=\"utf-8\") as file:\n    contents = file.read()\nprint(contents.strip())",
+    "expectedOutput": "Depends on notes.txt content",
+    "steps": [
+      "Clarify the input and required behavior: read a text file safely.",
+      "Walk through the chosen built-in or manual approach.",
+      "Check empty input, duplicates, ties, missing fields, and mutation behavior as relevant.",
+      "State the time and space trade-off (O(n) time and memory for read(); iterate lines to reduce memory)."
+    ],
+    "edgeCase": "Clarify empty input, repeated values, tie behavior, missing or invalid data, and whether mutation is allowed before coding.",
+    "followUp": "How would you change this for a generator, larger input, Unicode text, or stricter validation?",
+    "challenge": "Show a second approach and explain when you would prefer it.",
+    "timeSaver": "Use the standard-library operation when its behavior exactly matches the requirement; write the loop when custom rules, validation, or early exit matter.",
+    "complexity": "O(n) time and memory for read(); iterate lines to reduce memory"
+  },
+  {
+    "id": "python-74",
+    "area": "Python",
+    "number": 74,
+    "title": "Parse a value with a specific exception handler",
+    "pattern": "Convert a user-provided string to an integer and handle invalid input.",
+    "topic": "Exceptions and validation",
+    "difficulty": "medium",
+    "experience": "1–2 years",
+    "kind": "Coding pattern",
+    "minutes": 3,
+    "answer": "Attempt the conversion and catch `ValueError`, the expected failure. Avoid catching every exception unless you can handle each failure meaningfully.",
+    "explanation": "Attempt the conversion and catch `ValueError`, the expected failure. Avoid catching every exception unless you can handle each failure meaningfully. Expected cost: O(1) time.",
+    "code": "def parse_age(text):\n    try:\n        return int(text)\n    except ValueError:\n        return None\nprint(parse_age(\"24\"))\nprint(parse_age(\"unknown\"))",
+    "expectedOutput": "24\nNone",
+    "steps": [
+      "Clarify the input and required behavior: parse a value with a specific exception handler.",
+      "Walk through the chosen built-in or manual approach.",
+      "Check empty input, duplicates, ties, missing fields, and mutation behavior as relevant.",
+      "State the time and space trade-off (O(1) time)."
+    ],
+    "edgeCase": "Clarify empty input, repeated values, tie behavior, missing or invalid data, and whether mutation is allowed before coding.",
+    "followUp": "How would you change this for a generator, larger input, Unicode text, or stricter validation?",
+    "challenge": "Show a second approach and explain when you would prefer it.",
+    "timeSaver": "Use the standard-library operation when its behavior exactly matches the requirement; write the loop when custom rules, validation, or early exit matter.",
+    "complexity": "O(1) time"
+  },
+  {
+    "id": "python-75",
+    "area": "Python",
+    "number": 75,
+    "title": "Pair names and values with a starting index",
+    "pattern": "Print each item with a one-based index.",
+    "topic": "Built-ins and iteration",
+    "difficulty": "medium",
+    "experience": "1–2 years",
+    "kind": "Coding pattern",
+    "minutes": 3,
+    "answer": "Use `enumerate(iterable, start=1)` instead of maintaining a counter manually.",
+    "explanation": "Use `enumerate(iterable, start=1)` instead of maintaining a counter manually. Expected cost: O(n) time and O(1) extra space.",
+    "code": "names = [\"Ava\", \"Ben\"]\nfor index, name in enumerate(names, start=1):\n    print(index, name)",
+    "expectedOutput": "1 Ava\n2 Ben",
+    "steps": [
+      "Clarify the input and required behavior: pair names and values with a starting index.",
+      "Walk through the chosen built-in or manual approach.",
+      "Check empty input, duplicates, ties, missing fields, and mutation behavior as relevant.",
+      "State the time and space trade-off (O(n) time and O(1) extra space)."
+    ],
+    "edgeCase": "Clarify empty input, repeated values, tie behavior, missing or invalid data, and whether mutation is allowed before coding.",
+    "followUp": "How would you change this for a generator, larger input, Unicode text, or stricter validation?",
+    "challenge": "Show a second approach and explain when you would prefer it.",
+    "timeSaver": "Use the standard-library operation when its behavior exactly matches the requirement; write the loop when custom rules, validation, or early exit matter.",
+    "complexity": "O(n) time and O(1) extra space"
+  },
+  {
+    "id": "python-76",
+    "area": "Python",
+    "number": 76,
+    "title": "Apply the same operation to two iterables",
+    "pattern": "Add corresponding values from two lists.",
+    "topic": "Built-ins and iteration",
+    "difficulty": "medium",
+    "experience": "1–2 years",
+    "kind": "Coding pattern",
+    "minutes": 3,
+    "answer": "`zip()` is concise and lazy; use `strict=True` when unequal lengths indicate a bug (Python 3.10+).",
+    "explanation": "`zip()` is concise and lazy; use `strict=True` when unequal lengths indicate a bug (Python 3.10+). Expected cost: O(n) time and O(n) output space.",
+    "code": "left = [1, 2, 3]\nright = [10, 20, 30]\nprint([a + b for a, b in zip(left, right, strict=True)])",
+    "expectedOutput": "[11, 22, 33]",
+    "steps": [
+      "Clarify the input and required behavior: apply the same operation to two iterables.",
+      "Walk through the chosen built-in or manual approach.",
+      "Check empty input, duplicates, ties, missing fields, and mutation behavior as relevant.",
+      "State the time and space trade-off (O(n) time and O(n) output space)."
+    ],
+    "edgeCase": "Clarify empty input, repeated values, tie behavior, missing or invalid data, and whether mutation is allowed before coding.",
+    "followUp": "How would you change this for a generator, larger input, Unicode text, or stricter validation?",
+    "challenge": "Show a second approach and explain when you would prefer it.",
+    "timeSaver": "Use the standard-library operation when its behavior exactly matches the requirement; write the loop when custom rules, validation, or early exit matter.",
+    "complexity": "O(n) time and O(n) output space"
+  },
+  {
+    "id": "python-77",
+    "area": "Python",
+    "number": 77,
+    "title": "Check whether every record is valid",
+    "pattern": "Check that all input values are positive using `all()`.",
+    "topic": "Built-ins and iteration",
+    "difficulty": "medium",
+    "experience": "1–2 years",
+    "kind": "Coding pattern",
+    "minutes": 3,
+    "answer": "`all()` short-circuits on the first false value. Remember that `all([])` is True, so handle empty input if the requirement differs.",
+    "explanation": "`all()` short-circuits on the first false value. Remember that `all([])` is True, so handle empty input if the requirement differs. Expected cost: O(n) worst-case time, O(1) extra space.",
+    "code": "values = [2, 5, 1]\nprint(all(value > 0 for value in values))",
+    "expectedOutput": "True",
+    "steps": [
+      "Clarify the input and required behavior: check whether every record is valid.",
+      "Walk through the chosen built-in or manual approach.",
+      "Check empty input, duplicates, ties, missing fields, and mutation behavior as relevant.",
+      "State the time and space trade-off (O(n) worst-case time, O(1) extra space)."
+    ],
+    "edgeCase": "Clarify empty input, repeated values, tie behavior, missing or invalid data, and whether mutation is allowed before coding.",
+    "followUp": "How would you change this for a generator, larger input, Unicode text, or stricter validation?",
+    "challenge": "Show a second approach and explain when you would prefer it.",
+    "timeSaver": "Use the standard-library operation when its behavior exactly matches the requirement; write the loop when custom rules, validation, or early exit matter.",
+    "complexity": "O(n) worst-case time, O(1) extra space"
+  },
+  {
+    "id": "python-78",
+    "area": "Python",
+    "number": 78,
+    "title": "Filter and transform values without an explicit loop",
+    "pattern": "Return the squares of even values.",
+    "topic": "Built-ins and iteration",
+    "difficulty": "medium",
+    "experience": "1–2 years",
+    "kind": "Coding pattern",
+    "minutes": 3,
+    "answer": "A comprehension is usually clearest. `filter()` and `map()` are alternatives, but combining them can be less readable.",
+    "explanation": "A comprehension is usually clearest. `filter()` and `map()` are alternatives, but combining them can be less readable. Expected cost: O(n) time and O(k) output space.",
+    "code": "values = [1, 2, 3, 4]\nprint([value * value for value in values if value % 2 == 0])",
+    "expectedOutput": "[4, 16]",
+    "steps": [
+      "Clarify the input and required behavior: filter and transform values without an explicit loop.",
+      "Walk through the chosen built-in or manual approach.",
+      "Check empty input, duplicates, ties, missing fields, and mutation behavior as relevant.",
+      "State the time and space trade-off (O(n) time and O(k) output space)."
+    ],
+    "edgeCase": "Clarify empty input, repeated values, tie behavior, missing or invalid data, and whether mutation is allowed before coding.",
+    "followUp": "How would you change this for a generator, larger input, Unicode text, or stricter validation?",
+    "challenge": "Show a second approach and explain when you would prefer it.",
+    "timeSaver": "Use the standard-library operation when its behavior exactly matches the requirement; write the loop when custom rules, validation, or early exit matter.",
+    "complexity": "O(n) time and O(k) output space"
+  },
+  {
+    "id": "python-79",
+    "area": "Python",
+    "number": 79,
+    "title": "Sort records by multiple fields",
+    "pattern": "Sort employees by department, then salary descending.",
+    "topic": "Sorting and records",
+    "difficulty": "medium",
+    "experience": "1–2 years",
+    "kind": "Coding pattern",
+    "minutes": 3,
+    "answer": "Use a tuple key and negate numeric fields for descending order; Python sorting is stable.",
+    "explanation": "Use a tuple key and negate numeric fields for descending order; Python sorting is stable. Expected cost: O(n log n) time and O(n) space.",
+    "code": "employees = [{\"name\": \"A\", \"dept\": \"Eng\", \"salary\": 90}, {\"name\": \"B\", \"dept\": \"Eng\", \"salary\": 100}, {\"name\": \"C\", \"dept\": \"Sales\", \"salary\": 80}]\nresult = sorted(employees, key=lambda e: (e[\"dept\"], -e[\"salary\"]))\nprint([(e[\"name\"], e[\"dept\"], e[\"salary\"]) for e in result])",
+    "expectedOutput": "[('B', 'Eng', 100), ('A', 'Eng', 90), ('C', 'Sales', 80)]",
+    "steps": [
+      "Clarify the input and required behavior: sort records by multiple fields.",
+      "Walk through the chosen built-in or manual approach.",
+      "Check empty input, duplicates, ties, missing fields, and mutation behavior as relevant.",
+      "State the time and space trade-off (O(n log n) time and O(n) space)."
+    ],
+    "edgeCase": "Clarify empty input, repeated values, tie behavior, missing or invalid data, and whether mutation is allowed before coding.",
+    "followUp": "How would you change this for a generator, larger input, Unicode text, or stricter validation?",
+    "challenge": "Show a second approach and explain when you would prefer it.",
+    "timeSaver": "Use the standard-library operation when its behavior exactly matches the requirement; write the loop when custom rules, validation, or early exit matter.",
+    "complexity": "O(n log n) time and O(n) space"
   }
 ]

@@ -74,7 +74,7 @@ export function InterviewGlance() {
 
   return <div className="page">
     <PageHead title="Interview Glance">
-      <p>100 compact Python and SQL interview patterns with working solutions, expected results, edge cases, and a quick explanation you can say aloud.</p>
+      <p>{questions.length} compact Python and SQL interview questions with working solutions, expected results, edge cases, and quick explanations you can say aloud.</p>
       <div className="row"><Link className="btn primary" to={`/t/${track}/trace-bench`}>Open Trace Bench</Link><Link className="btn" to={`/t/${track}/interview-guide`}>Complete Interview Guide</Link><span className="small muted">Guided dry runs and 400+ questions from the supplied guide.</span></div>
     </PageHead>
 
@@ -84,7 +84,7 @@ export function InterviewGlance() {
     </section>
 
     <div className="tabs" role="tablist" aria-label="Interview subject">
-      {(['Python', 'SQL'] as const).map((subject) => <button key={subject} className="tab" role="tab" aria-selected={area === subject} onClick={() => { setArea(subject); setTopic(''); setKind(''); }}>{subject} <span className="chip">50</span></button>)}
+      {(['Python', 'SQL'] as const).map((subject) => <button key={subject} className="tab" role="tab" aria-selected={area === subject} onClick={() => { setArea(subject); setTopic(''); setKind(''); }}>{subject} <span className="chip">{questions.filter((q) => q.area === subject).length}</span></button>)}
       <button className="btn sm glance-mode" aria-pressed={quick} onClick={() => setQuick(!quick)}>{quick ? 'Quick glance: on' : 'Quick glance: off'}</button>
     </div>
 
