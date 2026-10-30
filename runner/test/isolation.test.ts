@@ -51,7 +51,9 @@ async function waitForServer() {
 }
 
 async function main() {
-  server = spawn(path.join(__dirname, '../node_modules/.bin/tsx'), [path.join(__dirname, '../src/index.ts')], {
+  // Load TypeScript through Node's loader instead of the tsx CLI. The CLI opens
+  // a temporary IPC socket, which is denied in some restricted CI environments.
+  server = spawn(process.execPath, ['--import', 'tsx', path.join(__dirname, '../src/index.ts')], {
     env: {
       ...process.env,
       RUNNER_SECRET: SECRET,
