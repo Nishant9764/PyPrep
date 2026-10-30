@@ -9,6 +9,7 @@ What makes it a learning tool rather than a quiz site:
 * **A model of what you know.** A per-skill mastery estimate (decayed Beta evidence, discounted when you needed hints or the solution) drives a "what to practise next" list, steps back to a shaky prerequisite instead of drilling the dependent skill, and schedules review of skills you have not touched in a while.
 * **Safe code execution.** Learner code runs in a separate service with no network, its own unprivileged user per run, CPU, memory, process and file limits, and a wall-clock kill.
 * **Gated access.** Signup creates a *request*. Nobody can log in until an administrator approves it.
+* **Visual Lab.** Learners can build Python with draggable blocks, inspect the generated code, run it in the isolated runner, and explore small models for memory, conditions, loops, functions, slices and generators.
 
 ```
 Browser ──► web (nginx, React build) ──/api──► api (Express) ──► MongoDB
@@ -130,7 +131,7 @@ pyprep/
 │
 └── client/                      React + TypeScript + Vite
     └── src/
-        ├── pages/               Dashboard, Learn, Lesson, Reference, PracticeList, Problem, Saved, Admin, Auth
+        ├── pages/               Dashboard, Learn, Lesson, VisualLab, Reference, PracticeList, Problem, Saved, Admin, Auth
         └── components/          CodeEditor, Heatmap, DiagnosisPanel, TestResults, Markdown, Shell
 ```
 
