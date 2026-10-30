@@ -4,7 +4,7 @@ A full-stack platform for learning Python from scratch and practising interview 
 
 What makes it a learning tool rather than a quiz site:
 
-* **Real lessons.** 29 lessons across seven topics, including first-program/debugging guidance and files/JSON/CSV, each starting from a mental model, then the syntax, common traps and self-check questions.
+* **Real lessons.** 30 lessons across seven topics, including first-program/debugging guidance and files/JSON/CSV, each starting from a mental model, then the syntax, common traps and self-check questions.
 * **Diagnosis, not just "wrong answer".** Every test case is tagged with the skill it probes. When a submission fails, PyPrep looks at the *pattern* of passes and failures and tells you which underlying skill is shaky: indexing, slice bounds, slice step, or loop direction, for example. After repeated misses on the same skill it sends you back to the lesson and to smaller questions on exactly that skill.
 * **A model of what you know.** A per-skill mastery estimate (decayed Beta evidence, discounted when you needed hints or the solution) drives a "what to practise next" list, steps back to a shaky prerequisite instead of drilling the dependent skill, and schedules review of skills you have not touched in a while.
 * **Safe code execution.** Learner code runs in a separate service with no network, its own unprivileged user per run, CPU, memory, process and file limits, and a wall-clock kill.
@@ -50,7 +50,7 @@ Do not judge it by how the pages look. These are the four things worth checking,
 
 | Check | How |
 |---|---|
-| **Is the learning content deep enough?** | `npm run validate:content` checks structure and that every one of the 60 reference solutions passes its tests while every starter fails. Then read a lesson, e.g. `content/tracks/python/strings/lessons/01-indexing-and-slicing.md`, and a question file, e.g. `content/tracks/python/strings/questions.json` (every test names the skill it probes and carries a diagnosis message). |
+| **Is the learning content deep enough?** | `npm run validate:content` checks structure and that every one of the 70 reference solutions passes its tests while every starter fails. Then read a lesson, e.g. `content/tracks/python/strings/lessons/01-indexing-and-slicing.md`, and a question file, e.g. `content/tracks/python/strings/questions.json` (every test names the skill it probes and carries a diagnosis message). |
 | **Does the registration approval flow work?** | Sign up at `/signup`. Try to log in: you are refused ("waiting for approval") and no session is issued. Log in as the admin, open **Approvals**, approve. Now the user can log in. Decline shows the reason to the user; suspending locks a signed-in user out on their very next request. `npm run test:e2e` asserts all of this. |
 | **Is progress saved after logout?** | Solve a question, bookmark something, complete a lesson, log out, log back in: solved count, bookmarks, lesson completion, weak spots, activity graph, revealed hints and your unsaved editor draft are all restored (all stored server-side, in MongoDB). Also asserted by `npm run test:e2e`. |
 | **Is code execution safely isolated?** | `npm run test:runner` throws infinite loops, a program that swallows the timeout exception, memory bombs, a fork bomb, output floods, `sys.exit`, attempts to read the runner's secret and `/proc`, to write large files, to become root and to raise its own limits at the runner. All must be contained. Details and honest limits in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#security-model). |
@@ -61,19 +61,19 @@ Do not judge it by how the pages look. These are the four things worth checking,
 
 | Topic | Lessons | Questions |
 |---|---|---|
-| Fundamentals | 4 | 11 |
+| Fundamentals | 5 | 11 |
 | Control flow | 3 | 8 |
 | Strings | 3 | 10 |
 | Collections | 4 | 8 |
 | Functions | 4 | 8 |
 | Object-oriented Python | 4 | 8 |
-| Advanced Python (exceptions, generators, decorators, complexity, interview patterns, typing, testing, memory management, files and data formats) | 7 | 15 |
+| Advanced Python (exceptions, generators, decorators, complexity, interview patterns, typing, testing, memory management, files and data formats) | 7 | 17 |
 
 Each topic also has a syntax reference (cheat sheet). Questions come in two kinds, *practice* and *interview*, in three difficulties, each with three progressive hints, hidden edge-case tests and a worked solution that explains why, not just what.
 
 ### Interview Glance and Trace Bench
 
-The main navigation includes **Interview Glance**, with 79 Python coding prompts and 50 SQL revision entries. Python prompts include built-in, slicing, and manual alternatives where useful; the editor uses the same syntax-aware CodeMirror editor as practice. Revision progress is saved per account. **Complete Interview Guide** contains 409 non-DSA questions from the supplied question guide with concise authored answer notes. **Code Clinic** has 10 runnable examples. **Mock Interview** provides a timed coding round, output-prediction exercises, and project/behavioral prompts. **Trace Bench** has 17 curated, step-by-step Python dry runs; these are guided traces, not a live interpreter or a complete view of Python internals.
+The main navigation includes **Interview Glance**, led by 94 Python coding prompts; a separate optional section contains 50 SQL revision entries. Python prompts include built-in, slicing, and manual alternatives where useful; the editor uses the same syntax-aware CodeMirror editor as practice. Revision progress is saved per account. **Complete Interview Guide** contains 409 non-DSA questions from the supplied question guide with concise authored answer notes. **Code Clinic** has 10 runnable examples. **Mock Interview** provides a timed coding round, output-prediction exercises, and project/behavioral prompts. **Trace Bench** has 17 curated, step-by-step Python dry runs; these are guided traces, not a live interpreter or a complete view of Python internals.
 
 **The learning loop**
 
@@ -103,7 +103,7 @@ pyprep/
 │   ├── validate.py              runs every reference solution through the real harness
 │   └── tracks/python/
 │       ├── track.json           topics and lesson order
-│       ├── concepts.json        the skill map (52 skills + prerequisites) used for diagnosis
+│       ├── concepts.json        the skill map (56 skills + prerequisites) used for diagnosis
 │       └── <topic>/             fundamentals, control-flow, strings, collections,
 │           ├── lessons/NN-*.md  functions, oop, advanced
 │           ├── reference.md
@@ -159,6 +159,7 @@ Docker compose (`.env`): `JWT_SECRET`, `RUNNER_SECRET`, `ADMIN_EMAIL`, `ADMIN_PA
 ## Improving it
 
 * **Add or edit content**: change files under `content/`, run `npm run validate:content`, then `npm run seed`. See [content/CONTENT_GUIDE.md](content/CONTENT_GUIDE.md).
+* **Make curriculum edits visible**: local development requires `npm run seed` after changing files under `content/`. The Docker API seeds on startup, so restart it with `docker compose restart api`. Interview banks live in the client bundle; rebuild/restart the web service after changing those JSON files.
 * **Add a track** (JavaScript, SQL, ...): a content folder plus one runner adapter. See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#adding-a-track).
 * **Tune the learner model**: constants at the top of `server/src/services/mastery.ts`; behaviour is pinned by `server/test/learning.test.ts`.
 
@@ -170,5 +171,5 @@ Docker compose (`.env`): `JWT_SECRET`, `RUNNER_SECRET`, `ADMIN_EMAIL`, `ADMIN_PA
 * **Rate limits are in memory**, per API instance. Behind several instances, switch to a shared store (e.g. Redis).
 * **No email.** Approval decisions are visible in the app, but nobody is notified by email; there is also no password reset yet.
 * **The container runs Python 3.11** (Debian bookworm). Content is written for 3.10+ and validated on 3.13 here; behaviour differences are unlikely but run `validate.py` with your target version.
-* The curriculum currently has 68 graded exercises across 55 skill concepts. Every concept has at least two tagged questions, but this is still a compact first release rather than an exhaustive Python reference.
+* The curriculum currently has 70 graded exercises across 56 skill concepts. Fifty-four concepts have at least two tagged exercises; two concepts currently have one each. This is a compact first release rather than an exhaustive Python reference.
 * The supplied interview guide is a question list, not an answer key. PyPrep authors concise study notes for it; a continuing editorial review is needed for complete, individualized answers, examples, and version/source notes.

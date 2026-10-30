@@ -13,6 +13,9 @@ const userSchema = new Schema(
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
     passwordHash: { type: String, required: true },
     sessionVersion: { type: Number, default: 0 },
+    preferences: {
+      weeklyLearningGoal: { type: Number, min: 1, max: 20, default: 5 },
+    },
     role: { type: String, enum: ['user', 'admin'], default: 'user' },
     status: { type: String, enum: USER_STATUSES, default: 'pending', index: true },
     signupNote: { type: String, maxlength: 500 },
@@ -157,6 +160,7 @@ const lessonProgressSchema = new Schema(
     masteryScore: { type: Number, min: 0, max: 100, default: null },
     /** Learner's retrieval-practice self-checks, keyed by stable check number. */
     selfCheckAnswers: { type: Map, of: Boolean, default: {} },
+    learningTimeMs: { type: Number, min: 0, default: 0 },
     masteredAt: Date,
     /** Never reset: activity credit for a lesson is given once, however often it is toggled. */
     everCompleted: { type: Boolean, default: false },

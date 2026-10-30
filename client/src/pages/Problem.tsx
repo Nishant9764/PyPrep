@@ -45,7 +45,28 @@ function ProblemInner({ slug }: { slug: string }) {
   const [compareAttempt, setCompareAttempt] = useState<Attempt | null>(null);
   const [saved, setSaved] = useState<'idle' | 'saving' | 'saved'>('idle');
   const lastSaved = useRef<string | null>(null);
-  const questionOpenedAt = useRef(Date.now());
+  const activeSince = useRef<number | null>(document.visibilityState === 'visible' ? performance.now() : null);
+  const activeElapsed = useRef(0);
+
+  useEffect(() => {
+    const visibilityChanged = () => {
+      if (document.visibilityState === 'hidden') {
+        if (activeSince.current !== null) activeElapsed.current += performance.now() - activeSince.current;
+        activeSince.current = null;
+      } else if (activeSince.current === null) activeSince.current = performance.now();
+    };
+    document.addEventListener('visibilitychange', visibilityChanged);
+    return () => document.removeEventListener('visibilitychange', visibilityChanged);
+  }, []);
+
+  const takeActiveTime = () => {
+    const now = performance.now();
+    if (activeSince.current !== null) activeElapsed.current += now - activeSince.current;
+    const spent = Math.min(21_600_000, Math.max(0, Math.floor(activeElapsed.current)));
+    activeElapsed.current = 0;
+    activeSince.current = document.visibilityState === 'visible' ? now : null;
+    return spent;
+  };
 
   // Initialise the editor from the saved draft (or the starter code) once the question has loaded.
   useEffect(() => {
@@ -92,16 +113,17 @@ function ProblemInner({ slug }: { slug: string }) {
     if (code === null || busy) return;
     setBusy('submit');
     setMessage(null);
+    let timeSpentMs = 0;
     try {
-      const timeSpentMs = Math.min(Date.now() - questionOpenedAt.current, 21_600_000);
+      timeSpentMs = takeActiveTime();
       const r = await api<SubmitResult>(`${base}/submit`, { method: 'POST', body: { code, timeSpentMs } });
-      questionOpenedAt.current = Date.now();
       setSubmit(r);
       setRun(null);
       lastSaved.current = code;
       setData((d) => (d ? { ...d, progress: { ...d.progress, status: r.progress.status, attempts: r.progress.attempts, solvedIndependently: r.progress.solvedIndependently } } : d));
       setAttempts(null);
     } catch (e) {
+      activeElapsed.current += timeSpentMs;
       fail(e);
     } finally {
       setBusy(null);

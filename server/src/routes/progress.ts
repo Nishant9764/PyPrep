@@ -18,6 +18,19 @@ async function trackOr404(slug: string) {
   return t;
 }
 
+progressRouter.post('/:track/lessons/:topic/:lesson/time', wrap(async (req, res) => {
+  const { track, topic, lesson } = req.params;
+  await trackOr404(track);
+  if (!await Lesson.exists({ track, topic, slug: lesson })) throw new HttpError(404, 'Lesson not found.');
+  const { milliseconds } = z.object({ milliseconds: z.number().int().min(1).max(30_000) }).parse(req.body);
+  const row = await LessonProgress.findOneAndUpdate(
+    { user: req.user!._id, track, topic, lesson },
+    { $inc: { learningTimeMs: milliseconds } },
+    { upsert: true, new: true },
+  ).select('learningTimeMs').lean();
+  res.json({ learningTimeMs: row?.learningTimeMs ?? milliseconds });
+}));
+
 /** Contribution-style graph data: one row per active local day. */
 progressRouter.get(
   '/:track/progress/activity',
@@ -165,6 +178,7 @@ progressRouter.get(
         accuracy: attemptTotals.attempts ? round(attemptTotals.passed / attemptTotals.attempts) : null,
         firstAttemptSuccess: aggregate.first.length ? round(aggregate.first.filter((a: any) => a.passed).length / aggregate.first.length) : null,
         timeLearningMinutesEstimated: lp.filter((l) => l.completed).reduce((total, l) => total + (lessons.find((item) => item.topic === l.topic && item.slug === l.lesson)?.minutes ?? 0), 0),
+        timeLearningMinutesActive: Math.round(lp.reduce((total, lesson) => total + (lesson.learningTimeMs ?? 0), 0) / 60_000),
         timeSolvingMinutes: Math.round((attemptTotals.timeSpentMs ?? 0) / 60_000),
         bookmarks: qp.filter((p) => p.bookmarked).length + lp.filter((l) => l.bookmarked).length + interviewProgress.filter((p) => p.bookmarked).length,
         submissions: activity.reduce((a, d) => a + d.submissions, 0),
@@ -302,7 +316,7 @@ const interviewStateBody = z.object({
 progressRouter.put(
   '/:track/progress/interview/:item',
   wrap(async (req, res) => {
-    if (!/^(?:python-(?:0[1-9]|[1-6]\d|7[0-9])|sql-(?:0[1-9]|[1-4]\d|50))$/.test(req.params.item)) throw new HttpError(404, 'Interview item not found.');
+    if (!/^(?:python-(?:0[1-9]|[1-9]\d)|sql-(?:0[1-9]|[1-4]\d|50))$/.test(req.params.item)) throw new HttpError(404, 'Interview item not found.');
     await trackOr404(req.params.track);
     const body = interviewStateBody.parse(req.body);
     const user = req.user!._id;

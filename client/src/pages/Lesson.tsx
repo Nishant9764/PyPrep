@@ -25,6 +25,52 @@ export function Lesson() {
     window.scrollTo({ top: 0 });
   }, [data]);
 
+  useEffect(() => {
+    if (!data) return;
+    let activeSince: number | null = document.visibilityState === 'visible' ? performance.now() : null;
+    let pendingMs = 0;
+    let sending = false;
+    const flush = () => {
+      if (sending || pendingMs < 1000) return;
+      const milliseconds = Math.min(30_000, Math.floor(pendingMs));
+      pendingMs -= milliseconds;
+      sending = true;
+      void api(`/tracks/${track}/lessons/${topic}/${lesson}/time`, { method: 'POST', body: { milliseconds } })
+        .catch(() => { pendingMs += milliseconds; })
+        .finally(() => { sending = false; if (pendingMs >= 1000) flush(); });
+    };
+    const pause = () => {
+      if (activeSince !== null) {
+        pendingMs += Math.min(30_000, Math.max(0, performance.now() - activeSince));
+        activeSince = null;
+      }
+      flush();
+    };
+    const visibilityChanged = () => {
+      if (document.visibilityState === 'hidden') pause();
+      else if (activeSince === null) activeSince = performance.now();
+    };
+    const pageShown = () => {
+      if (document.visibilityState === 'visible' && activeSince === null) activeSince = performance.now();
+    };
+    const timer = window.setInterval(() => {
+      if (document.visibilityState !== 'visible' || activeSince === null) return;
+      pendingMs += Math.min(30_000, Math.max(0, performance.now() - activeSince));
+      activeSince = performance.now();
+      flush();
+    }, 15_000);
+    document.addEventListener('visibilitychange', visibilityChanged);
+    window.addEventListener('pagehide', pause);
+    window.addEventListener('pageshow', pageShown);
+    return () => {
+      pause();
+      window.clearInterval(timer);
+      document.removeEventListener('visibilitychange', visibilityChanged);
+      window.removeEventListener('pagehide', pause);
+      window.removeEventListener('pageshow', pageShown);
+    };
+  }, [data, track, topic, lesson]);
+
   const update = async (patch: Partial<typeof state>) => {
     setBusy(true);
     setProblem(null);

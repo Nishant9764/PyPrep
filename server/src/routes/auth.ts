@@ -57,6 +57,17 @@ const loginLimiter = rateLimit({
 
 export const authRouter = Router();
 
+authRouter.get('/preferences', requireAuth, wrap(async (req, res) => {
+  res.json({ weeklyLearningGoal: req.user!.preferences?.weeklyLearningGoal ?? 5 });
+}));
+
+authRouter.put('/preferences', requireAuth, wrap(async (req, res) => {
+  const { weeklyLearningGoal } = z.object({ weeklyLearningGoal: z.number().int().min(1).max(20) }).parse(req.body);
+  req.user!.preferences = { ...(req.user!.preferences ?? {}), weeklyLearningGoal };
+  await req.user!.save();
+  res.json({ weeklyLearningGoal: req.user!.preferences.weeklyLearningGoal });
+}));
+
 /**
  * Signup creates a PENDING account only. No session is issued and nothing is accessible until an
  * administrator approves it.

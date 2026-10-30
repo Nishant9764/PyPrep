@@ -21,6 +21,7 @@ export function InterviewGlance() {
   const { track = 'python' } = useParams();
   const { data, error, loading, reload, setData } = useApi<{ items: ReviewState[] }>(`/tracks/${track}/progress/interview`);
   const [area, setArea] = useState<'Python' | 'SQL'>('Python');
+  const [showSql, setShowSql] = useState(false);
   const [search, setSearch] = useState('');
   const [topic, setTopic] = useState('');
   const [difficulty, setDifficulty] = useState('');
@@ -76,7 +77,7 @@ export function InterviewGlance() {
 
   return <div className="page">
     <PageHead title="Interview Glance">
-      <p>{questions.length} compact Python and SQL interview questions with working solutions, expected results, edge cases, and quick explanations you can say aloud.</p>
+      <p>Python coding questions with working solutions, expected results, edge cases, and quick explanations you can say aloud. SQL revision is available as an optional section.</p>
       <div className="row"><Link className="btn primary" to={`/t/${track}/mock-interview`}>Start a Mock Interview</Link><Link className="btn" to={`/t/${track}/trace-bench`}>Open Trace Bench</Link><Link className="btn" to={`/t/${track}/interview-guide`}>Complete Interview Guide</Link><span className="small muted">Guided dry runs and 400+ questions from the supplied guide.</span></div>
     </PageHead>
 
@@ -85,10 +86,8 @@ export function InterviewGlance() {
       <div className="facts"><div className="fact"><b>{questions.filter((q) => q.area === area).length}</b><span>{area} questions</span></div><div className="fact"><b>{(data?.items ?? []).filter((i) => questions.some((q) => q.area === area && q.id === i.item && i.completed)).length}</b><span>revised</span></div></div>
     </section>
 
-    <div className="tabs" role="tablist" aria-label="Interview subject">
-      {(['Python', 'SQL'] as const).map((subject) => <button key={subject} className="tab" role="tab" aria-selected={area === subject} onClick={() => { setArea(subject); setTopic(''); setKind(''); }}>{subject} <span className="chip">{questions.filter((q) => q.area === subject).length}</span></button>)}
-      <button className="btn sm glance-mode" aria-pressed={quick} onClick={() => setQuick(!quick)}>{quick ? 'Quick glance: on' : 'Quick glance: off'}</button>
-    </div>
+    <div className="row between glance-subject"><div className="row"><span className="chip solved">Python · {questions.filter((q) => q.area === 'Python').length}</span>{area === 'SQL' && <button className="btn sm" onClick={() => { setArea('Python'); setShowSql(false); setTopic(''); setKind(''); }}>Back to Python</button>}</div><button className="btn sm glance-mode" aria-pressed={quick} onClick={() => setQuick(!quick)}>{quick ? 'Quick glance: on' : 'Quick glance: off'}</button></div>
+    <section className="panel optional-sql"><div className="row between"><div><span className="eyebrow">OPTIONAL REVISION</span><h2>SQL interview questions</h2><p className="small muted">A separate 50-question reference bank. Python remains the main preparation path.</p></div><button className="btn" aria-expanded={showSql} onClick={() => { const next = !showSql; setShowSql(next); setArea(next ? 'SQL' : 'Python'); setTopic(''); setKind(''); }}>{showSql ? 'Hide SQL section' : 'Open SQL revision · 50 questions'}</button></div></section>
 
     <div className="filters glance-filters" role="search" aria-label="Filter interview questions">
       <label className="field glance-search"><span>Search</span><input className="input" type="search" placeholder="Question, method, keyword…" value={search} onChange={(e) => setSearch(e.target.value)} /></label>

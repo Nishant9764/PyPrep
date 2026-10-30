@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { useApi } from '../api';
+import { api, useApi } from '../api';
 import { useAuth } from '../auth';
 import { Heatmap } from '../components/Heatmap';
 import { DifficultyChip, ErrorBox, Loading, PageHead, ProgressBar } from '../components/ui';
@@ -13,8 +13,10 @@ export function Dashboard() {
   const recs = useApi<{ recommendations: Recommendation[] }>(`/tracks/${track}/progress/recommendations`);
   const activity = useApi<{ days: ActivityDay[]; today: string }>(`/tracks/${track}/progress/activity`);
   const mockScores = useApi<{ scores: { id: string; mode: 'coding' | 'predict'; score: number; correct: number; total: number; at: string }[] }>(`/tracks/${track}/progress/mock-scores`);
-  const [weeklyTarget, setWeeklyTarget] = useState(() => Number(localStorage.getItem('pyprep-weekly-goal') || 5));
-  useEffect(() => { localStorage.setItem('pyprep-weekly-goal', String(weeklyTarget)); }, [weeklyTarget]);
+  const preferences = useApi<{ weeklyLearningGoal: number }>('/auth/preferences');
+  const [weeklyTarget, setWeeklyTarget] = useState(5);
+  const [preferenceError, setPreferenceError] = useState('');
+  useEffect(() => { if (preferences.data) setWeeklyTarget(preferences.data.weeklyLearningGoal); }, [preferences.data]);
   const s = summary.data;
   const weekSessions = useMemo(() => {
     if (!activity.data) return 0;
@@ -23,6 +25,19 @@ export function Dashboard() {
   }, [activity.data]);
   const weakestSkills = s?.skillMastery.filter((item) => item.evidence > 0 && item.mastery !== null).sort((a, b) => (a.mastery ?? 1) - (b.mastery ?? 1)).slice(0, 5) ?? [];
   const overdueSkills = s?.skillMastery.filter((item) => item.overdue).sort((a, b) => Date.parse(a.reviewDueAt ?? '') - Date.parse(b.reviewDueAt ?? '')).slice(0, 5) ?? [];
+
+  async function updateWeeklyTarget(value: number) {
+    const previous = weeklyTarget;
+    setWeeklyTarget(value);
+    setPreferenceError('');
+    try {
+      const saved = await api<{ weeklyLearningGoal: number }>('/auth/preferences', { method: 'PUT', body: { weeklyLearningGoal: value } });
+      setWeeklyTarget(saved.weeklyLearningGoal);
+    } catch (error) {
+      setWeeklyTarget(previous);
+      setPreferenceError(error instanceof Error ? error.message : 'Could not save your learning goal.');
+    }
+  }
 
   return (
     <div className="page">
@@ -53,8 +68,8 @@ export function Dashboard() {
       )}
 
       {s && <section className="dash-grid dash-overview">
-        <article className="panel dash-card weekly-card"><div className="row between"><div><span className="eyebrow">WEEKLY MOMENTUM</span><h2>Your learning goal</h2></div><span className="chip">{Math.min(weekSessions, weeklyTarget)}/{weeklyTarget}</span></div><div className="goal-track"><span style={{ width: `${Math.min(100, weekSessions / weeklyTarget * 100)}%` }} /></div><p className="small muted">{weekSessions} practice submissions and lesson completions in the last 7 days. Goal is saved in this browser.</p><label className="field"><span>Weekly activity target</span><select className="input" value={weeklyTarget} onChange={(event) => setWeeklyTarget(Number(event.target.value))}>{[3, 5, 7, 10, 14].map((goal) => <option key={goal} value={goal}>{goal} learning actions</option>)}</select></label><p className="small">Streak: <strong>{s.streak.current} days</strong> · Keep a small daily practice session going.</p></article>
-        <article className="panel dash-card time-card"><span className="eyebrow">TIME INVESTED</span><h2>Learning vs solving</h2><div className="time-split"><div><strong>{s.totals.timeLearningMinutesEstimated}m</strong><span>planned lesson minutes completed</span></div><div><strong>{s.totals.timeSolvingMinutes}m</strong><span>time measured across submissions</span></div></div><p className="small muted">Lesson time uses authored lesson estimates; solving time is measured between opening a problem and submitting.</p></article>
+        <article className="panel dash-card weekly-card"><div className="row between"><div><span className="eyebrow">WEEKLY MOMENTUM</span><h2>Your learning goal</h2></div><span className="chip">{Math.min(weekSessions, weeklyTarget)}/{weeklyTarget}</span></div><div className="goal-track"><span style={{ width: `${Math.min(100, weekSessions / weeklyTarget * 100)}%` }} /></div><p className="small muted">{weekSessions} practice submissions and lesson completions in the last 7 days. Your goal is saved to your account across devices.</p><label className="field"><span>Weekly activity target</span><select className="input" disabled={preferences.loading} value={weeklyTarget} onChange={(event) => void updateWeeklyTarget(Number(event.target.value))}>{[3, 5, 7, 10, 14].map((goal) => <option key={goal} value={goal}>{goal} learning actions</option>)}</select></label>{preferenceError && <p className="small alert error" role="alert">{preferenceError}</p>}<p className="small">Streak: <strong>{s.streak.current} days</strong> · Keep a small daily practice session going.</p></article>
+        <article className="panel dash-card time-card"><span className="eyebrow">TIME INVESTED</span><h2>Learning vs solving</h2><div className="time-split"><div><strong>{s.totals.timeLearningMinutesActive}m</strong><span>lesson time in visible tabs</span></div><div><strong>{s.totals.timeSolvingMinutes}m</strong><span>recorded problem time</span></div><div><strong>{s.totals.timeLearningMinutesEstimated}m</strong><span>planned lesson time completed</span></div></div><p className="small muted">Lesson and problem focus time pauses when a tab is hidden. Planned lesson minutes are a separate curriculum estimate. Older problem records may include hidden-tab time.</p></article>
       </section>}
 
       <section className="stack" aria-labelledby="next-h">

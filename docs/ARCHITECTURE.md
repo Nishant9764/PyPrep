@@ -23,15 +23,15 @@ The API talks to the runner over TCP (dev) or a unix socket on a shared volume (
 Curriculum collections (all keyed by `track`):
 
 * `tracks`: `{slug, title, language, topics[{slug, title, lessons[]}]}`. `language` selects the runner adapter.
-* `concepts`: the skill map. `{track, id, title, topic, lesson, prereqs[]}`. 52 skills for Python.
+* `concepts`: the skill map. `{track, id, title, topic, lesson, prereqs[]}`. 56 skills for Python.
 * `lessons`, `references`: markdown bodies with front matter.
 * `questions`: prompt, starter code, hints, solution, and `testsJson`, a JSON string of the authored tests (opaque to the database, so nested arrays and odd keys are always safe).
 
 Learner collections (keyed by `user` + `track`):
 
-* `users`: status `pending | approved | rejected | suspended`, role, and an audit `history` of decisions.
+* `users`: status `pending | approved | rejected | suspended`, role, account-wide learning preferences, and an audit `history` of decisions.
 * `questionprogresses`: status, attempts, hints revealed, solution viewed, solved independently, bookmark, editor draft.
-* `lessonprogresses`: completed (+ an `everCompleted` flag so toggling cannot inflate activity), bookmark.
+* `lessonprogresses`: completed (+ an `everCompleted` flag so toggling cannot inflate activity), bookmark, saved retrieval-check answers, and foreground lesson time.
 * `attempts`: every submission (code, passed/total, top suspects).
 * `masteries`: per-skill evidence (`alpha`, `beta`), failures, last practised, counts of each authored misconception hit.
 * `activitydays`: one row per local calendar day, which feeds the contribution graph.
@@ -133,7 +133,8 @@ Concept ids are per-track, so mastery, weak spots and the activity graph are sep
 All routes are under `/api` and, except signup/login, require a session.
 
 ```
-POST   /auth/signup | /auth/login | /auth/logout        GET /auth/me
+POST   /auth/signup | /auth/login | /auth/logout        GET /auth/me | /auth/preferences
+PUT    /auth/preferences
 GET    /admin/stats | /admin/users?status=&q=
 POST   /admin/users/:id/(approve|reject|suspend|reinstate)
 
@@ -148,9 +149,10 @@ POST   /tracks/:t/questions/:slug/run | /submit | /hint | /solution
 PUT    /tracks/:t/questions/:slug/draft | /bookmark      DELETE .../bookmark
 GET    /tracks/:t/questions/:slug/attempts
 PUT    /tracks/:t/lessons/:topic/:lesson/state           {completed?, bookmarked?}
+POST   /tracks/:t/lessons/:topic/:lesson/time            {milliseconds}
 GET    /tracks/:t/progress/(summary|activity|mastery|recommendations|bookmarks)
 GET    /tracks/:t/progress/interview
 PUT    /tracks/:t/progress/interview/:item
 ```
 
-Interview prep is split across structured banks: `client/src/data/interviewQuestions.json` (79 Python and 50 SQL entries), `client/src/data/interviewGuideQuestions.json` (409 non-DSA prompts from the supplied guide), `client/src/data/interviewCookbook.ts` (10 runnable examples), and `client/src/data/mockInterviewData.ts` (timed coding prompts, output prediction and project/behavioral prompts). Review progress alone is stored per learner in MongoDB. The Trace Bench uses curated walkthroughs from `client/src/data/traceScenarios.ts` and labels them as guided dry runs rather than full interpreter traces.
+Interview prep is split across structured banks: `client/src/data/interviewQuestions.json` (94 Python and 50 optional SQL entries), `client/src/data/interviewGuideQuestions.json` (409 non-DSA prompts from the supplied guide), `client/src/data/interviewCookbook.ts` (10 runnable examples), and `client/src/data/mockInterviewData.ts` (timed coding prompts, output prediction and project/behavioral prompts). Review progress alone is stored per learner in MongoDB. The Trace Bench uses curated walkthroughs from `client/src/data/traceScenarios.ts` and labels them as guided dry runs rather than full interpreter traces.

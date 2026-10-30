@@ -177,6 +177,7 @@ export interface Summary {
     accuracy: number | null;
     firstAttemptSuccess: number | null;
     timeLearningMinutesEstimated: number;
+    timeLearningMinutesActive: number;
     timeSolvingMinutes: number;
     bookmarks: number;
     submissions: number;

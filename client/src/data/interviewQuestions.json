@@ -3817,5 +3817,620 @@
     "challenge": "Show a second approach and explain when you would prefer it.",
     "timeSaver": "Use the standard-library operation when its behavior exactly matches the requirement; write the loop when custom rules, validation, or early exit matter.",
     "complexity": "O(n log n) time and O(n) space"
+  },
+  {
+    "id": "python-80",
+    "area": "Python",
+    "number": 80,
+    "title": "Group records with defaultdict",
+    "pattern": "Build a grouped mapping in one pass while preserving order.",
+    "topic": "Dictionaries and records",
+    "difficulty": "medium",
+    "experience": "Internship",
+    "kind": "Coding pattern",
+    "minutes": 6,
+    "answer": "Use `defaultdict(list)` for concise grouping, or initialize each missing key with `setdefault`. This is a data-processing pattern, not a search problem.",
+    "explanation": "A mapping from category to a list keeps each source record in its original order. `defaultdict(list)` creates the empty list on first access; the manual alternative makes that initialization explicit. Time is O(n) for n records, plus the output lists.",
+    "code": "from collections import defaultdict\nrecords = [{\"name\": \"Ari\", \"team\": \"Blue\"}, {\"name\": \"Kim\", \"team\": \"Red\"}, {\"name\": \"Noa\", \"team\": \"Blue\"}]\ngroups = defaultdict(list)\nfor row in records:\n    groups[row[\"team\"]].append(row[\"name\"])\nprint(dict(groups))",
+    "expectedOutput": "{'Blue': ['Ari', 'Noa'], 'Red': ['Kim']}",
+    "steps": [
+      "Read one record at a time.",
+      "Use its team value as the dictionary key.",
+      "Append its name to the list for that key.",
+      "Convert defaultdict to dict if callers should not create keys by reading them."
+    ],
+    "edgeCase": "Decide how to handle missing or blank team/name fields and whether category matching should be case-sensitive.",
+    "followUp": "How would you group by two fields, such as team and location?",
+    "challenge": "Write the same grouping using a normal dict and setdefault().",
+    "timeSaver": "Use defaultdict(list) when repeated keys should collect values.",
+    "complexity": "O(n) time and O(n) output space",
+    "approaches": [
+      {
+        "name": "defaultdict",
+        "code": "from collections import defaultdict\ngroups = defaultdict(list)\nfor row in records:\n    groups[row[\"team\"]].append(row[\"name\"])",
+        "tradeoff": "Compact and avoids a missing-key branch.",
+        "complexity": "O(n) time"
+      },
+      {
+        "name": "Plain dict",
+        "code": "groups = {}\nfor row in records:\n    groups.setdefault(row[\"team\"], []).append(row[\"name\"])",
+        "tradeoff": "Uses only a built-in dict and makes the default operation visible.",
+        "complexity": "O(n) time"
+      }
+    ]
+  },
+  {
+    "id": "python-81",
+    "area": "Python",
+    "number": 81,
+    "title": "Copy nested data without sharing inner lists",
+    "pattern": "Explain why a shallow copy still shares nested mutable values.",
+    "topic": "Python basics and data structures",
+    "difficulty": "medium",
+    "experience": "Fresher",
+    "kind": "Coding pattern",
+    "minutes": 5,
+    "answer": "`list.copy()` duplicates only the outer list. Use `copy.deepcopy()` when the nested mutable structure must also be independent, or copy only the specific nested values you need.",
+    "explanation": "A shallow copy preserves references to the items inside the container. Here the inner list is shared, so appending through the copy changes the original too. Deep copy recursively copies nested objects, but can cost more memory and may be inappropriate for objects that should remain shared.",
+    "code": "import copy\noriginal = [[1], [2]]\nshallow = original.copy()\ndeep = copy.deepcopy(original)\nshallow[0].append(9)\ndeep[1].append(8)\nprint(original)\nprint(shallow)\nprint(deep)",
+    "expectedOutput": "[[1, 9], [2]]\n[[1, 9], [2]]\n[[1], [2, 8]]",
+    "steps": [
+      "The outer list is copied for shallow.",
+      "Both outer lists still point to the same first inner list.",
+      "The deep copy has its own nested lists.",
+      "Mutation through shallow is visible in original; mutation through deep is not."
+    ],
+    "edgeCase": "Deep-copying custom objects may invoke copy hooks and may duplicate objects that should remain shared.",
+    "followUp": "How would you copy only the top-level list and the first nested list?",
+    "challenge": "Compare `is` and `==` for each pair of outer and inner lists.",
+    "timeSaver": "Use a shallow copy for flat containers; choose targeted copies or deepcopy only when nested independence is required.",
+    "complexity": "O(n) time and space for this small nested structure",
+    "approaches": [
+      {
+        "name": "Deep copy",
+        "code": "import copy\nindependent = copy.deepcopy(original)",
+        "tradeoff": "Recursively copies nested values; may do more work than needed.",
+        "complexity": "O(n) in the copied object graph"
+      },
+      {
+        "name": "Copy just the required level",
+        "code": "independent = [inner.copy() for inner in original]",
+        "tradeoff": "Clear and efficient when the nesting shape is known.",
+        "complexity": "O(n) for the copied lists"
+      }
+    ]
+  },
+  {
+    "id": "python-82",
+    "area": "Python",
+    "number": 82,
+    "title": "Build a lazy generator pipeline",
+    "pattern": "Use generators to process records without materializing intermediate lists.",
+    "topic": "Iteration and generators",
+    "difficulty": "medium",
+    "experience": "Internship",
+    "kind": "Coding pattern",
+    "minutes": 6,
+    "answer": "A generator expression yields one transformed item at a time. Chaining it with `sum()` or another consumer avoids storing intermediate lists.",
+    "explanation": "The generator expression is lazy: it computes each score only when `sum()` asks for the next value. This is useful for large or streamed data. The source is still consumed once, and a generator cannot be restarted after exhaustion.",
+    "code": "records = [{\"active\": True, \"score\": 4}, {\"active\": False, \"score\": 9}, {\"active\": True, \"score\": 6}]\nactive_scores = (row[\"score\"] for row in records if row[\"active\"])\nprint(sum(active_scores))",
+    "expectedOutput": "10",
+    "steps": [
+      "Create a generator expression rather than a list.",
+      "For each record, test active before reading its score.",
+      "sum requests each yielded score and accumulates it.",
+      "No list of active scores is stored."
+    ],
+    "edgeCase": "A generator source is consumed once; if it is needed twice, create it again or deliberately store the values.",
+    "followUp": "How would you stop processing after the running total exceeds a limit?",
+    "challenge": "Add a normalization step that converts missing scores to zero.",
+    "timeSaver": "Use parentheses for a generator expression passed as the only function argument.",
+    "complexity": "O(n) time and O(1) intermediate space",
+    "approaches": [
+      {
+        "name": "Generator expression",
+        "code": "total = sum(row[\"score\"] for row in records if row[\"active\"])",
+        "tradeoff": "Lazy and memory-efficient.",
+        "complexity": "O(n) time, O(1) intermediate space"
+      },
+      {
+        "name": "List comprehension",
+        "code": "total = sum([row[\"score\"] for row in records if row[\"active\"]])",
+        "tradeoff": "Simple to inspect, but materializes every selected score.",
+        "complexity": "O(n) time and O(k) intermediate space"
+      }
+    ]
+  },
+  {
+    "id": "python-83",
+    "area": "Python",
+    "number": 83,
+    "title": "Delegate values with yield from",
+    "pattern": "Forward values from a nested iterable without writing a second loop.",
+    "topic": "Iteration and generators",
+    "difficulty": "medium",
+    "experience": "Internship",
+    "kind": "Coding pattern",
+    "minutes": 5,
+    "answer": "`yield from iterable` yields each item from that iterable in order. It keeps the outer function lazy and avoids building a combined list.",
+    "explanation": "The function pauses while the nested iterable produces values, then resumes with the next group. `yield from` is delegation; it does not recursively flatten arbitrary nesting unless the code explicitly recurses.",
+    "code": "def chain_groups(groups):\n    for group in groups:\n        yield from group\n\nprint(list(chain_groups([[\"a\", \"b\"], [], [\"c\"]])))",
+    "expectedOutput": "['a', 'b', 'c']",
+    "steps": [
+      "Call the generator function; it returns a generator without running the body yet.",
+      "The for loop visits each group.",
+      "yield from emits each item in that group.",
+      "The empty group emits nothing and processing continues."
+    ],
+    "edgeCase": "This flattens exactly one level. A string is iterable too, so yielding from a string emits characters.",
+    "followUp": "How would you preserve the groups instead of flattening one level?",
+    "challenge": "Explain what happens if groups itself is a one-shot iterator.",
+    "timeSaver": "Use yield from to delegate to a known iterable; use recursion only when arbitrary nesting is part of the contract.",
+    "complexity": "O(n) time and O(1) additional space, excluding the output list made by the caller",
+    "approaches": [
+      {
+        "name": "yield from",
+        "code": "for group in groups:\n    yield from group",
+        "tradeoff": "Concise delegation and lazy output.",
+        "complexity": "O(n) time, O(1) extra space"
+      },
+      {
+        "name": "Nested loops",
+        "code": "for group in groups:\n    for item in group:\n        yield item",
+        "tradeoff": "More explicit and equally lazy.",
+        "complexity": "O(n) time, O(1) extra space"
+      }
+    ]
+  },
+  {
+    "id": "python-84",
+    "area": "Python",
+    "number": 84,
+    "title": "Write a decorator that keeps function metadata",
+    "pattern": "Wrap a function while preserving its name and docstring.",
+    "topic": "Functions and decorators",
+    "difficulty": "medium",
+    "experience": "Internship",
+    "kind": "Coding pattern",
+    "minutes": 7,
+    "answer": "Use `functools.wraps(function)` on the wrapper. The decorator still changes the callable, but the wrapper copies useful metadata and sets `__wrapped__`.",
+    "explanation": "A decorator receives a function and returns a replacement callable. Without wraps, tools often see the generic wrapper name and docstring instead of the original function metadata. wraps does not change the function’s runtime behavior or signature in every introspection context, but it provides the standard metadata chain.",
+    "code": "from functools import wraps\ndef announce(function):\n    @wraps(function)\n    def wrapper(*args, **kwargs):\n        print(\"calling\")\n        return function(*args, **kwargs)\n    return wrapper\n\n@announce\ndef greet(name):\n    \"\"\"Return a greeting.\"\"\"\n    return f\"Hello, {name}\"\n\nprint(greet.__name__)\nprint(greet.__doc__)\nprint(greet(\"Ada\"))",
+    "expectedOutput": "greet\nReturn a greeting.\ncalling\nHello, Ada",
+    "steps": [
+      "The decorator receives greet when the def statement runs.",
+      "wraps copies metadata from greet to wrapper.",
+      "The decorated name greet is rebound to wrapper.",
+      "Calling greet executes the wrapper, then returns the wrapped result."
+    ],
+    "edgeCase": "A wrapper should return the wrapped function result and accept the arguments required by the wrapped callable.",
+    "followUp": "How would you parameterize this decorator with an option?",
+    "challenge": "Explain why wraps helps documentation tools and debugging output.",
+    "timeSaver": "Use functools.wraps by default when writing decorators.",
+    "complexity": "O(1) wrapper overhead per call, excluding wrapped work",
+    "approaches": [
+      {
+        "name": "functools.wraps",
+        "code": "@wraps(function)\ndef wrapper(*args, **kwargs):\n    return function(*args, **kwargs)",
+        "tradeoff": "Standard approach; preserves metadata and __wrapped__.",
+        "complexity": "O(1) overhead"
+      },
+      {
+        "name": "Manual metadata",
+        "code": "wrapper.__name__ = function.__name__\nwrapper.__doc__ = function.__doc__",
+        "tradeoff": "Copies only selected attributes and is easy to forget details.",
+        "complexity": "O(1) setup"
+      }
+    ]
+  },
+  {
+    "id": "python-85",
+    "area": "Python",
+    "number": 85,
+    "title": "Capture each loop value in a closure",
+    "pattern": "Avoid late binding when creating callbacks inside a loop.",
+    "topic": "Functions and arguments",
+    "difficulty": "medium",
+    "experience": "Internship",
+    "kind": "Coding pattern",
+    "minutes": 5,
+    "answer": "Closures look up free variables when called. Capture the current value with a default argument, or use a small factory function.",
+    "explanation": "The lambdas below all close over the same loop variable, whose final value is 2 when the calls happen. A default parameter is evaluated when each lambda is created, preserving that iteration’s value.",
+    "code": "callbacks = [lambda value=value: value for value in range(3)]\nprint([callback() for callback in callbacks])",
+    "expectedOutput": "[0, 1, 2]",
+    "steps": [
+      "The list comprehension visits 0, then 1, then 2.",
+      "Each lambda is created with the current value as its default.",
+      "The loop finishes.",
+      "Each callback returns its own saved default."
+    ],
+    "edgeCase": "Default arguments are evaluated once when the function is created; avoid mutable defaults for per-call state.",
+    "followUp": "Show a factory-function alternative and compare readability.",
+    "challenge": "Predict the result if `lambda: value` is used instead.",
+    "timeSaver": "Use `lambda value=value` for small callbacks; prefer a named factory when the logic grows.",
+    "complexity": "O(n) callbacks and O(n) captured defaults",
+    "approaches": [
+      {
+        "name": "Default argument capture",
+        "code": "callbacks = [lambda value=value: value for value in range(3)]",
+        "tradeoff": "Concise, though the extra parameter can surprise readers.",
+        "complexity": "O(n)"
+      },
+      {
+        "name": "Factory function",
+        "code": "def make_callback(value):\n    def callback():\n        return value\n    return callback\ncallbacks = [make_callback(value) for value in range(3)]",
+        "tradeoff": "More explicit and scales better when callbacks need more logic.",
+        "complexity": "O(n)"
+      }
+    ]
+  },
+  {
+    "id": "python-86",
+    "area": "Python",
+    "number": 86,
+    "title": "Use a context manager for reliable cleanup",
+    "pattern": "Use with to release a resource even when work raises an exception.",
+    "topic": "Files and exceptions",
+    "difficulty": "easy",
+    "experience": "Fresher",
+    "kind": "Coding pattern",
+    "minutes": 4,
+    "answer": "A `with` statement calls the context manager’s exit logic when the block leaves, whether it finishes normally or raises. For files, this ensures the file is closed.",
+    "explanation": "The file object is managed by the context manager protocol. In this demo StringIO behaves like a small text file, making the example runnable without creating a disk file. For real text files, specify an encoding and keep the with block close to the I/O.",
+    "code": "from io import StringIO\nstream = StringIO(\"one\\ntwo\\n\")\nwith stream as file:\n    first = file.readline().strip()\n    print(first)\nprint(file.closed)",
+    "expectedOutput": "one\nTrue",
+    "steps": [
+      "Enter the with block and bind the managed resource to file.",
+      "Read the first line and print its stripped text.",
+      "Leave the block.",
+      "The context manager closes the stream."
+    ],
+    "edgeCase": "If an exception occurs inside the block, cleanup still runs; the exception is not automatically swallowed.",
+    "followUp": "What is the difference between finally and a context manager?",
+    "challenge": "Use `open(path, encoding=\"utf-8\")` to process a real file one line at a time.",
+    "timeSaver": "Use with open(...) for files instead of remembering a separate close call.",
+    "complexity": "O(1) memory for line-by-line processing",
+    "approaches": [
+      {
+        "name": "with statement",
+        "code": "with open(path, encoding=\"utf-8\") as file:\n    for line in file:\n        process(line)",
+        "tradeoff": "Automatic cleanup on normal and exceptional exits.",
+        "complexity": "O(1) extra memory per line"
+      },
+      {
+        "name": "try/finally",
+        "code": "file = open(path, encoding=\"utf-8\")\ntry:\n    process(file)\nfinally:\n    file.close()",
+        "tradeoff": "Explicit cleanup works, but is more verbose and easier to get wrong.",
+        "complexity": "O(1) extra memory"
+      }
+    ]
+  },
+  {
+    "id": "python-87",
+    "area": "Python",
+    "number": 87,
+    "title": "Handle invalid rows without hiding valid data",
+    "pattern": "Catch the expected conversion error and continue processing.",
+    "topic": "Files and exceptions",
+    "difficulty": "medium",
+    "experience": "Fresher",
+    "kind": "Coding pattern",
+    "minutes": 5,
+    "answer": "Catch the specific `ValueError` raised by `int()` and continue or record the bad row. Avoid a bare except that could hide programming errors.",
+    "explanation": "The exception boundary should cover only the conversion that can fail for expected input reasons. Returning both good values and rejected rows gives callers a way to inspect data quality instead of silently losing it.",
+    "code": "rows = [\"12\", \"bad\", \"7\"]\nvalid = []\ninvalid = []\nfor row in rows:\n    try:\n        valid.append(int(row))\n    except ValueError:\n        invalid.append(row)\nprint(valid)\nprint(invalid)",
+    "expectedOutput": "[12, 7]\n['bad']",
+    "steps": [
+      "Attempt to convert each row independently.",
+      "Append successful conversions to valid.",
+      "Catch only ValueError for malformed integer text.",
+      "Keep the rejected row so it can be logged or corrected."
+    ],
+    "edgeCase": "Decide how to handle blank strings, surrounding whitespace, and whether one invalid row should stop the whole import.",
+    "followUp": "Where should you log invalid rows in a production importer?",
+    "challenge": "Return the original row number with each invalid value.",
+    "timeSaver": "Catch exceptions around the smallest operation expected to fail.",
+    "complexity": "O(n) time and O(n) result space",
+    "approaches": [
+      {
+        "name": "try/except per value",
+        "code": "try:\n    value = int(text)\nexcept ValueError:\n    ...",
+        "tradeoff": "Best when malformed values are exceptional and need clear handling.",
+        "complexity": "O(1) per value"
+      },
+      {
+        "name": "Pre-validate text",
+        "code": "if text.strip().lstrip(\"+-\").isdigit():\n    value = int(text)",
+        "tradeoff": "May be useful for a narrow grammar, but validation can diverge from int() accepted syntax.",
+        "complexity": "O(n) per value"
+      }
+    ]
+  },
+  {
+    "id": "python-88",
+    "area": "Python",
+    "number": 88,
+    "title": "Give each dataclass instance its own list",
+    "pattern": "Use default_factory for mutable dataclass fields.",
+    "topic": "Classes and data models",
+    "difficulty": "medium",
+    "experience": "Internship",
+    "kind": "Coding pattern",
+    "minutes": 5,
+    "answer": "Use `field(default_factory=list)` so every instance receives a fresh list. A mutable list as the direct default would be shared or rejected by dataclasses.",
+    "explanation": "The factory is called when each instance is created. This keeps per-instance state independent. Dataclasses generate common methods such as __init__ and __repr__, but they do not make the object immutable unless configured.",
+    "code": "from dataclasses import dataclass, field\n@dataclass\nclass Team:\n    name: str\n    members: list[str] = field(default_factory=list)\n\na = Team(\"Blue\")\nb = Team(\"Red\")\na.members.append(\"Ari\")\nprint(a)\nprint(b.members)",
+    "expectedOutput": "Team(name='Blue', members=['Ari'])\n[]",
+    "steps": [
+      "Define members with a factory rather than a shared list object.",
+      "Construct a and b; the factory creates two different lists.",
+      "Mutate a.members.",
+      "b.members remains empty."
+    ],
+    "edgeCase": "A default_factory runs per instance. Use frozen=True only when shallow immutability is sufficient; nested mutable values can still change.",
+    "followUp": "How would you validate a field or compute a derived field?",
+    "challenge": "Add a method that returns the number of members.",
+    "timeSaver": "Use dataclasses for data containers with predictable fields and generated representation/equality.",
+    "complexity": "O(1) initialization plus the cost of constructing field defaults",
+    "approaches": [
+      {
+        "name": "dataclass factory",
+        "code": "members: list[str] = field(default_factory=list)",
+        "tradeoff": "Concise data model and fresh per-instance list.",
+        "complexity": "O(1) empty-list creation"
+      },
+      {
+        "name": "Regular class",
+        "code": "class Team:\n    def __init__(self, name, members=None):\n        self.name = name\n        self.members = [] if members is None else members",
+        "tradeoff": "More control, with more boilerplate.",
+        "complexity": "O(1) empty-list creation"
+      }
+    ]
+  },
+  {
+    "id": "python-89",
+    "area": "Python",
+    "number": 89,
+    "title": "Choose a classmethod for an alternate constructor",
+    "pattern": "Use a classmethod when construction should use the receiving class.",
+    "topic": "Classes and data models",
+    "difficulty": "medium",
+    "experience": "Internship",
+    "kind": "Coding pattern",
+    "minutes": 5,
+    "answer": "A `classmethod` receives the class as `cls`, so it can build the correct subclass. A staticmethod receives neither self nor cls and is best for a related utility that does not need class state.",
+    "explanation": "Calling `from_text` on a subclass passes that subclass as cls. Returning cls(...) preserves polymorphic construction, while hardcoding User(...) would always construct the base class.",
+    "code": "class User:\n    def __init__(self, name):\n        self.name = name\n    @classmethod\n    def from_text(cls, text):\n        return cls(text.strip())\n\nclass Admin(User):\n    pass\n\nuser = Admin.from_text(\"  Sam  \")\nprint(type(user).__name__, user.name)",
+    "expectedOutput": "Admin Sam",
+    "steps": [
+      "Admin inherits from_text.",
+      "The classmethod binds cls to Admin when called through Admin.",
+      "The method strips input and calls cls(...).",
+      "The returned object is an Admin instance."
+    ],
+    "edgeCase": "A classmethod factory must pass arguments compatible with subclasses, or subclasses should override it.",
+    "followUp": "When would a staticmethod be a better choice?",
+    "challenge": "Create a classmethod that parses a simple name=value string.",
+    "timeSaver": "Use classmethod for named constructors; use staticmethod only when class or instance state is unnecessary.",
+    "complexity": "O(n) time for stripping text",
+    "approaches": [
+      {
+        "name": "classmethod factory",
+        "code": "@classmethod\ndef from_text(cls, text):\n    return cls(text.strip())",
+        "tradeoff": "Works naturally with subclasses.",
+        "complexity": "O(n)"
+      },
+      {
+        "name": "Standalone factory",
+        "code": "def user_from_text(text):\n    return User(text.strip())",
+        "tradeoff": "Simple but not polymorphic unless the class is passed in.",
+        "complexity": "O(n)"
+      }
+    ]
+  },
+  {
+    "id": "python-90",
+    "area": "Python",
+    "number": 90,
+    "title": "Separate module setup from script execution",
+    "pattern": "Use the __main__ guard to keep imports from running script-only work.",
+    "topic": "Modules and testing",
+    "difficulty": "easy",
+    "experience": "Fresher",
+    "kind": "Coding pattern",
+    "minutes": 4,
+    "answer": "When a file is run directly, its `__name__` is `\"__main__\"`. When imported, `__name__` is the module name, so code inside the guard does not run during import.",
+    "explanation": "Function and class definitions are created during import, but the guarded block is reserved for command-line behavior. When this file is imported, the guard is false and main() is not called, so the import has no output side effect.",
+    "code": "def greet(name):\n    return f\"Hello, {name}\"\n\ndef main():\n    print(greet(\"Ada\"))\n\nif __name__ == \"__main__\":\n    main()",
+    "expectedOutput": "Hello, Ada",
+    "steps": [
+      "Python defines greet.",
+      "When run as a script, __name__ equals __main__.",
+      "The guarded block calls greet and prints the result.",
+      "On import, only the else branch in this demonstration would run."
+    ],
+    "edgeCase": "The `else` shown is only for demonstration; production modules commonly omit it to avoid output during import.",
+    "followUp": "Where should reusable constants and helper functions be placed?",
+    "challenge": "Explain how this guard helps a test runner import a module safely.",
+    "timeSaver": "Put CLI entry-point calls behind `if __name__ == \"__main__\":`.",
+    "complexity": "O(1) guard check",
+    "approaches": [
+      {
+        "name": "Main guard",
+        "code": "if __name__ == \"__main__\":\n    main()",
+        "tradeoff": "Standard and import-safe.",
+        "complexity": "O(1) guard check"
+      },
+      {
+        "name": "Unconditional call",
+        "code": "main()",
+        "tradeoff": "Runs on every import, which causes side effects and makes testing harder.",
+        "complexity": "Depends on main"
+      }
+    ]
+  },
+  {
+    "id": "python-91",
+    "area": "Python",
+    "number": 91,
+    "title": "Use else and finally in exception handling",
+    "pattern": "Distinguish successful try execution from cleanup that always runs.",
+    "topic": "Files and exceptions",
+    "difficulty": "medium",
+    "experience": "Fresher",
+    "kind": "Coding pattern",
+    "minutes": 5,
+    "answer": "`else` runs only if the try block raised no exception. `finally` runs whether the operation succeeds or fails, so it is suited to cleanup.",
+    "explanation": "Keep the operation that may fail in the try block. Put success-only work in else, and cleanup in finally. Catch specific exceptions that the program can handle.",
+    "code": "def parse(text):\n    try:\n        value = int(text)\n    except ValueError:\n        print(\"invalid\")\n    else:\n        print(\"parsed\", value)\n    finally:\n        print(\"done\")\n\nparse(\"8\")\nparse(\"x\")",
+    "expectedOutput": "parsed 8\ndone\ninvalid\ndone",
+    "steps": [
+      "For \"8\", int succeeds, so else runs.",
+      "finally runs after the successful path.",
+      "For \"x\", int raises ValueError and except handles it.",
+      "The exception is handled, then finally runs."
+    ],
+    "edgeCase": "An exception raised inside else is not caught by the preceding except clauses. Avoid returning from finally because it can suppress an active exception.",
+    "followUp": "What happens if the exception is not caught?",
+    "challenge": "Refactor resource cleanup to use a context manager.",
+    "timeSaver": "Use else for success-only work so the try block stays narrow.",
+    "complexity": "O(len(text)) conversion work",
+    "approaches": [
+      {
+        "name": "try/except/else/finally",
+        "code": "try:\n    value = parse_value(text)\nexcept ValueError:\n    handle_bad_input()\nelse:\n    use(value)\nfinally:\n    cleanup()",
+        "tradeoff": "Separates error, success, and cleanup paths.",
+        "complexity": "Depends on operations"
+      },
+      {
+        "name": "Context manager for resources",
+        "code": "with open(path, encoding=\"utf-8\") as file:\n    process(file)",
+        "tradeoff": "Preferred for resources with context manager support.",
+        "complexity": "Depends on processing"
+      }
+    ]
+  },
+  {
+    "id": "python-92",
+    "area": "Python",
+    "number": 92,
+    "title": "Test that code raises the expected exception",
+    "pattern": "Use assertRaises to test an error contract rather than a successful value.",
+    "topic": "Modules and testing",
+    "difficulty": "medium",
+    "experience": "Internship",
+    "kind": "Coding pattern",
+    "minutes": 5,
+    "answer": "Use `unittest.TestCase.assertRaises` to assert both that invalid input raises the documented exception and that valid input still works.",
+    "explanation": "A test should verify the contract rather than merely execute the function. assertRaises fails if no exception is raised; catching the exception inside the function under test would hide the behavior and make the test fail.",
+    "code": "import unittest\ndef positive(value):\n    if value < 0:\n        raise ValueError(\"value must be non-negative\")\n    return value\n\nclass PositiveTests(unittest.TestCase):\n    def test_valid(self):\n        self.assertEqual(positive(3), 3)\n    def test_negative(self):\n        with self.assertRaises(ValueError):\n            positive(-1)\n\nresult = unittest.TextTestRunner(stream=__import__(\"io\").StringIO()).run(unittest.defaultTestLoader.loadTestsFromTestCase(PositiveTests))\nprint(result.wasSuccessful(), result.testsRun)",
+    "expectedOutput": "True 2",
+    "steps": [
+      "The valid test checks the return value.",
+      "The negative test enters assertRaises(ValueError).",
+      "positive(-1) raises ValueError, satisfying the context manager.",
+      "The runner reports two successful tests."
+    ],
+    "edgeCase": "Assert the exception type and, when useful, its message. A broad Exception assertion can allow unrelated bugs to pass.",
+    "followUp": "How would you check the error message too?",
+    "challenge": "Add tests for zero and a non-numeric value with an explicit contract.",
+    "timeSaver": "Use assertRaises as a context manager so the failing statement is obvious.",
+    "complexity": "Test runtime is the sum of the tested operations",
+    "approaches": [
+      {
+        "name": "assertRaises context",
+        "code": "with self.assertRaises(ValueError):\n    positive(-1)",
+        "tradeoff": "Clear and supports inspecting the caught exception.",
+        "complexity": "Test dependent"
+      },
+      {
+        "name": "assertRaises method",
+        "code": "self.assertRaises(ValueError, positive, -1)",
+        "tradeoff": "Compact for a direct call; less convenient for multiple statements.",
+        "complexity": "Test dependent"
+      }
+    ]
+  },
+  {
+    "id": "python-93",
+    "area": "Python",
+    "number": 93,
+    "title": "Know that type hints are not automatic validation",
+    "pattern": "Use annotations for tools and readers, then validate untrusted values explicitly.",
+    "topic": "Functions and arguments",
+    "difficulty": "medium",
+    "experience": "Internship",
+    "kind": "Coding pattern",
+    "minutes": 4,
+    "answer": "Python type annotations are metadata used by editors, type checkers, and documentation tools. The interpreter does not generally enforce them on each call.",
+    "explanation": "A function annotated with int can still receive a string at runtime unless its code checks the value or a separate validation tool is used. Type hints improve communication and static analysis, but do not replace input validation at trust boundaries.",
+    "code": "def double(value: int) -> int:\n    return value * 2\n\nprint(double(3))\nprint(double(\"ha\"))",
+    "expectedOutput": "6\nhaha",
+    "steps": [
+      "The annotations describe the intended input and return type.",
+      "The interpreter calls the function without enforcing the annotation.",
+      "Multiplying 3 by 2 returns 6.",
+      "Multiplying the string by 2 repeats it and returns a string."
+    ],
+    "edgeCase": "Use explicit checks or a validation library for external data; static type checks only protect paths that are actually checked.",
+    "followUp": "How can a static checker catch a wrong call before execution?",
+    "challenge": "Add an isinstance check and raise TypeError for values outside the contract.",
+    "timeSaver": "Use type hints for intent and tooling; validate at runtime when data crosses an untrusted boundary.",
+    "complexity": "O(1) annotation metadata; runtime cost depends on explicit validation",
+    "approaches": [
+      {
+        "name": "Static intent",
+        "code": "def double(value: int) -> int:\n    return value * 2",
+        "tradeoff": "Low runtime overhead; requires type-check tooling for static feedback.",
+        "complexity": "O(1) annotation storage"
+      },
+      {
+        "name": "Runtime validation",
+        "code": "def double(value: int) -> int:\n    if not isinstance(value, int):\n        raise TypeError(\"value must be an int\")\n    return value * 2",
+        "tradeoff": "Enforces a boundary at runtime with a small check cost.",
+        "complexity": "O(1)"
+      }
+    ]
+  },
+  {
+    "id": "python-94",
+    "area": "Python",
+    "number": 94,
+    "title": "Implement an iterator without storing all values",
+    "pattern": "Use __iter__ and __next__ to make an object follow the iterator protocol.",
+    "topic": "Iteration and generators",
+    "difficulty": "advanced",
+    "experience": "Junior",
+    "kind": "Coding pattern",
+    "minutes": 7,
+    "answer": "An iterator returns itself from `__iter__` and returns one item per `__next__`; it raises `StopIteration` when finished. Prefer a generator unless the iterator needs custom state or reusable object behavior.",
+    "explanation": "The for loop calls iter() once and next() repeatedly. This iterator stores only the current state, while a list of all values would use space proportional to the sequence length.",
+    "code": "class Countdown:\n    def __init__(self, start):\n        self.current = start\n    def __iter__(self):\n        return self\n    def __next__(self):\n        if self.current <= 0:\n            raise StopIteration\n        value = self.current\n        self.current -= 1\n        return value\n\nprint(list(Countdown(3)))",
+    "expectedOutput": "[3, 2, 1]",
+    "steps": [
+      "iter() calls __iter__ and receives the Countdown object.",
+      "next() returns current and decreases it.",
+      "The loop repeats while current is positive.",
+      "At zero, __next__ raises StopIteration to signal completion."
+    ],
+    "edgeCase": "This iterator is one-pass and self-iterating; a second loop starts from its exhausted state. For a reusable iterable, return a new iterator from __iter__.",
+    "followUp": "What is the difference between an iterable and an iterator?",
+    "challenge": "Rewrite Countdown as a generator function and compare the code.",
+    "timeSaver": "Use a generator function for most custom iteration; implement the protocol directly when stateful object behavior is needed.",
+    "complexity": "O(n) time and O(1) iterator state",
+    "approaches": [
+      {
+        "name": "Iterator class",
+        "code": "def __iter__(self):\n    return self\ndef __next__(self):\n    ...",
+        "tradeoff": "Explicit state and full protocol control.",
+        "complexity": "O(1) state"
+      },
+      {
+        "name": "Generator",
+        "code": "def countdown(start):\n    while start > 0:\n        yield start\n        start -= 1",
+        "tradeoff": "Less boilerplate; Python implements iterator protocol for the generator.",
+        "complexity": "O(1) state"
+      }
+    ]
   }
 ]
