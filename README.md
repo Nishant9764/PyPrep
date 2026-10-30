@@ -50,7 +50,7 @@ Do not judge it by how the pages look. These are the four things worth checking,
 
 | Check | How |
 |---|---|
-| **Is the learning content deep enough?** | `npm run validate:content` checks structure and that every one of the 70 reference solutions passes its tests while every starter fails. Then read a lesson, e.g. `content/tracks/python/strings/lessons/01-indexing-and-slicing.md`, and a question file, e.g. `content/tracks/python/strings/questions.json` (every test names the skill it probes and carries a diagnosis message). |
+| **Is the learning content deep enough?** | `npm run validate:content` checks structure and that every one of the 72 reference solutions passes its tests while every starter fails. Then read a lesson, e.g. `content/tracks/python/strings/lessons/01-indexing-and-slicing.md`, and a question file, e.g. `content/tracks/python/strings/questions.json` (every test names the skill it probes and carries a diagnosis message). |
 | **Does the registration approval flow work?** | Sign up at `/signup`. Try to log in: you are refused ("waiting for approval") and no session is issued. Log in as the admin, open **Approvals**, approve. Now the user can log in. Decline shows the reason to the user; suspending locks a signed-in user out on their very next request. `npm run test:e2e` asserts all of this. |
 | **Is progress saved after logout?** | Solve a question, bookmark something, complete a lesson, log out, log back in: solved count, bookmarks, lesson completion, weak spots, activity graph, revealed hints and your unsaved editor draft are all restored (all stored server-side, in MongoDB). Also asserted by `npm run test:e2e`. |
 | **Is code execution safely isolated?** | `npm run test:runner` throws infinite loops, a program that swallows the timeout exception, memory bombs, a fork bomb, output floods, `sys.exit`, attempts to read the runner's secret and `/proc`, to write large files, to become root and to raise its own limits at the runner. All must be contained. Details and honest limits in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#security-model). |
@@ -67,7 +67,7 @@ Do not judge it by how the pages look. These are the four things worth checking,
 | Collections | 4 | 8 |
 | Functions | 4 | 8 |
 | Object-oriented Python | 4 | 8 |
-| Advanced Python (exceptions, generators, decorators, complexity, interview patterns, typing, testing, memory management, files and data formats) | 7 | 17 |
+| Advanced Python (exceptions, generators, decorators, complexity, interview patterns, typing, testing, memory management, files and data formats) | 7 | 19 |
 
 Each topic also has a syntax reference (cheat sheet). Questions come in two kinds, *practice* and *interview*, in three difficulties, each with three progressive hints, hidden edge-case tests and a worked solution that explains why, not just what.
 
@@ -171,5 +171,5 @@ Docker compose (`.env`): `JWT_SECRET`, `RUNNER_SECRET`, `ADMIN_EMAIL`, `ADMIN_PA
 * **Rate limits are in memory**, per API instance. Behind several instances, switch to a shared store (e.g. Redis).
 * **No email.** Approval decisions are visible in the app, but nobody is notified by email; there is also no password reset yet.
 * **The container runs Python 3.11** (Debian bookworm). Content is written for 3.10+ and validated on 3.13 here; behaviour differences are unlikely but run `validate.py` with your target version.
-* The curriculum currently has 70 graded exercises across 56 skill concepts. Fifty-four concepts have at least two tagged exercises; two concepts currently have one each. This is a compact first release rather than an exhaustive Python reference.
+* The curriculum currently has 72 graded exercises across 56 skill concepts. Every concept has at least two tagged exercises, so each mapped skill has a basic retry path. The curriculum remains a focused first release rather than an exhaustive Python reference.
 * The supplied interview guide is a question list, not an answer key. PyPrep authors concise study notes for it; a continuing editorial review is needed for complete, individualized answers, examples, and version/source notes.

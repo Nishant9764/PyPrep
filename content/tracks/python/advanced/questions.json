@@ -4,7 +4,9 @@
     "title": "Count Calls Decorator",
     "difficulty": "easy",
     "kind": "practice",
-    "concepts": ["decorators"],
+    "concepts": [
+      "decorators"
+    ],
     "estimatedMinutes": 8,
     "prompt": "Write a decorator `count_calls(func)`. The decorated function must behave exactly like the original (same arguments, same return value, same `__name__` and `__doc__`) but also expose an attribute `calls` holding how many times it has been called so far. `calls` starts at `0` for every decorated function.\n\n```python\n@count_calls\ndef add(a, b=0):\n    return a + b\n\nadd(1, 2)\nadd(3, b=4)\nprint(add.calls)   # 2\n```",
     "entry": "count_calls",
@@ -19,15 +21,56 @@
       "explanation": "`@count_calls` means `add = count_calls(add)`, so the name `add` ends up pointing at `wrapper`. The wrapper closes over `func`, forwards every argument with `*args, **kwargs`, and returns the original result, which makes it transparent to callers.\n\nFunctions are ordinary objects, so the counter can live as an attribute on the wrapper itself. Because `count_calls` runs once per decorated function, each function gets its own independent `calls` attribute. An alternative is a `nonlocal` counter plus a getter function, but the attribute is simpler to read.\n\n`functools.wraps(func)` copies `__name__` and `__doc__` so debugging and documentation still show the original function. Forgetting it is the classic mistake, along with forgetting to `return` the result."
     },
     "tests": [
-      { "program": "@count_calls\ndef add(a, b=0):\n    return a + b\nadd(1, 2)\nadd(3, b=4)\nresult = add.calls", "expected": 2, "tags": ["decorators"], "note": "counts two calls" },
-      { "program": "@count_calls\ndef add(a, b=0):\n    return a + b\nresult = add(2, b=5)", "expected": 7, "tags": ["decorators"], "note": "forwards args and returns the result",
-        "diagnosis": "The wrapper must forward its arguments and `return` the original function's result; otherwise the decorated function returns None." },
-      { "program": "@count_calls\ndef greet():\n    \"hi doc\"\n    return 1\nresult = [greet.__name__, greet.__doc__]", "expected": ["greet", "hi doc"], "tags": ["decorators"], "hidden": true,
-        "diagnosis": "The decorated function reports the wrapper's name and docstring. Apply `functools.wraps(func)` to the wrapper to keep the original metadata." },
-      { "program": "@count_calls\ndef f():\n    return 0\n@count_calls\ndef g():\n    return 0\nf()\nf()\ng()\nresult = [f.calls, g.calls]", "expected": [2, 1], "tags": ["decorators"], "hidden": true,
-        "diagnosis": "Each decorated function needs its own counter. Create the counter per decorated function, not as one shared global." },
-      { "program": "@count_calls\ndef f():\n    return 0\nresult = f.calls", "expected": 0, "tags": ["decorators"], "hidden": true,
-        "diagnosis": "`calls` must exist and start at 0 before the first call, so set the attribute when the decorator runs, not inside the wrapper." }
+      {
+        "program": "@count_calls\ndef add(a, b=0):\n    return a + b\nadd(1, 2)\nadd(3, b=4)\nresult = add.calls",
+        "expected": 2,
+        "tags": [
+          "decorators"
+        ],
+        "note": "counts two calls"
+      },
+      {
+        "program": "@count_calls\ndef add(a, b=0):\n    return a + b\nresult = add(2, b=5)",
+        "expected": 7,
+        "tags": [
+          "decorators"
+        ],
+        "note": "forwards args and returns the result",
+        "diagnosis": "The wrapper must forward its arguments and `return` the original function's result; otherwise the decorated function returns None."
+      },
+      {
+        "program": "@count_calls\ndef greet():\n    \"hi doc\"\n    return 1\nresult = [greet.__name__, greet.__doc__]",
+        "expected": [
+          "greet",
+          "hi doc"
+        ],
+        "tags": [
+          "decorators"
+        ],
+        "hidden": true,
+        "diagnosis": "The decorated function reports the wrapper's name and docstring. Apply `functools.wraps(func)` to the wrapper to keep the original metadata."
+      },
+      {
+        "program": "@count_calls\ndef f():\n    return 0\n@count_calls\ndef g():\n    return 0\nf()\nf()\ng()\nresult = [f.calls, g.calls]",
+        "expected": [
+          2,
+          1
+        ],
+        "tags": [
+          "decorators"
+        ],
+        "hidden": true,
+        "diagnosis": "Each decorated function needs its own counter. Create the counter per decorated function, not as one shared global."
+      },
+      {
+        "program": "@count_calls\ndef f():\n    return 0\nresult = f.calls",
+        "expected": 0,
+        "tags": [
+          "decorators"
+        ],
+        "hidden": true,
+        "diagnosis": "`calls` must exist and start at 0 before the first call, so set the attribute when the decorator runs, not inside the wrapper."
+      }
     ]
   },
   {
@@ -35,7 +78,10 @@
     "title": "Mini Test Runner",
     "difficulty": "easy",
     "kind": "practice",
-    "concepts": ["modules-testing", "exceptions"],
+    "concepts": [
+      "modules-testing",
+      "exceptions"
+    ],
     "estimatedMinutes": 10,
     "prompt": "Write `run_cases(func, cases)`, a tiny test runner. `cases` is a list of `(args, expected)` pairs where `args` is a tuple of positional arguments. Call `func(*args)` for each case and return the **list of indexes** of the cases that failed. A case fails if the result differs from `expected` **or** if `func` raises any exception. The runner itself must never crash.\n\n```python\ndef double(x):\n    return x * 2\n\nrun_cases(double, [((2,), 4), ((3,), 7), ((0,), 0)])   # [1]\n```",
     "entry": "run_cases",
@@ -50,14 +96,56 @@
       "explanation": "This is how test frameworks work in miniature. `assert` raises `AssertionError` when the comparison is false, and any other exception raised by `func` is also an `Exception`, so one `except Exception` clause turns both kinds of failure into a recorded index. The loop keeps going after a failure, so you get a full report rather than stopping at the first problem.\n\nA more explicit alternative is `if func(*args) != expected` inside the `try`, which does not depend on `assert`. That is actually more robust: Python run with `-O` strips `assert` statements, which is why `assert` belongs in tests and not in production validation. We catch `Exception` rather than a bare `except:` so Ctrl-C (`KeyboardInterrupt`) still stops the run."
     },
     "tests": [
-      { "program": "def double(x):\n    return x * 2\nresult = run_cases(double, [((2,), 4), ((3,), 7), ((0,), 0)])", "expected": [1], "tags": ["modules-testing"], "note": "one failing case" },
-      { "program": "def add(a, b):\n    return a + b\nresult = run_cases(add, [((1, 2), 3), ((0, 0), 0)])", "expected": [], "tags": ["modules-testing"], "note": "all pass" },
-      { "program": "def inv(x):\n    return 10 // x\nresult = run_cases(inv, [((2,), 5), ((0,), 0), ((5,), 2)])", "expected": [1], "tags": ["exceptions"], "hidden": true,
-        "diagnosis": "When the function under test raises, that case should count as failed and the runner should continue. Wrap the call in try/except Exception." },
-      { "program": "def ident(x):\n    return x\nresult = run_cases(ident, [((1,), 2), ((2,), 2), ((3,), 4), ((4,), 4)])", "expected": [0, 2], "tags": ["modules-testing"], "hidden": true,
-        "diagnosis": "Report every failing index, in order, and keep running after a failure instead of stopping at the first one." },
-      { "program": "result = run_cases(len, [])", "expected": [], "tags": ["modules-testing"], "hidden": true,
-        "diagnosis": "No cases means no failures; return an empty list." }
+      {
+        "program": "def double(x):\n    return x * 2\nresult = run_cases(double, [((2,), 4), ((3,), 7), ((0,), 0)])",
+        "expected": [
+          1
+        ],
+        "tags": [
+          "modules-testing"
+        ],
+        "note": "one failing case"
+      },
+      {
+        "program": "def add(a, b):\n    return a + b\nresult = run_cases(add, [((1, 2), 3), ((0, 0), 0)])",
+        "expected": [],
+        "tags": [
+          "modules-testing"
+        ],
+        "note": "all pass"
+      },
+      {
+        "program": "def inv(x):\n    return 10 // x\nresult = run_cases(inv, [((2,), 5), ((0,), 0), ((5,), 2)])",
+        "expected": [
+          1
+        ],
+        "tags": [
+          "exceptions"
+        ],
+        "hidden": true,
+        "diagnosis": "When the function under test raises, that case should count as failed and the runner should continue. Wrap the call in try/except Exception."
+      },
+      {
+        "program": "def ident(x):\n    return x\nresult = run_cases(ident, [((1,), 2), ((2,), 2), ((3,), 4), ((4,), 4)])",
+        "expected": [
+          0,
+          2
+        ],
+        "tags": [
+          "modules-testing"
+        ],
+        "hidden": true,
+        "diagnosis": "Report every failing index, in order, and keep running after a failure instead of stopping at the first one."
+      },
+      {
+        "program": "result = run_cases(len, [])",
+        "expected": [],
+        "tags": [
+          "modules-testing"
+        ],
+        "hidden": true,
+        "diagnosis": "No cases means no failures; return an empty list."
+      }
     ]
   },
   {
@@ -65,7 +153,9 @@
     "title": "Find Missing Type Hints",
     "difficulty": "easy",
     "kind": "practice",
-    "concepts": ["type-hints"],
+    "concepts": [
+      "type-hints"
+    ],
     "estimatedMinutes": 10,
     "prompt": "Type hints are stored on every function in its `__annotations__` dictionary. Write `unannotated(func)` that returns a list of the parameter names of `func` that have **no** annotation, in the order they are declared. If the function has no return annotation, append the string `\"return\"` at the end. (`*args` and `**kwargs` count as parameters named `args` and `kwargs`.)\n\n```python\ndef f(a: int, b, c: str = \"x\"):\n    return 1\n\nunannotated(f)   # ['b', 'return']\n```\n\nHint: `inspect.signature(func).parameters` lists the parameter names in order.",
     "entry": "unannotated",
@@ -80,16 +170,68 @@
       "explanation": "Annotations are just data attached to the function: a dict mapping each annotated parameter name to its hint, with the special key `\"return\"` for the result. Python never enforces them, which is exactly why a tool can read them. `inspect.signature` gives the parameters in declaration order (including `*args` and `**kwargs`), so a membership check against the dict finds the gaps.\n\nNote the difference between a missing hint and a hint of `None`: `-> None` creates the key `\"return\"` with value `None`, so the key test is correct, while `hints.get(\"return\")` would wrongly report it as missing."
     },
     "tests": [
-      { "program": "def f(a: int, b, c: str = \"x\"):\n    return 1\nresult = unannotated(f)", "expected": ["b", "return"], "tags": ["type-hints"], "note": "mixed" },
-      { "program": "def g(x: int) -> int:\n    return x\nresult = unannotated(g)", "expected": [], "tags": ["type-hints"], "note": "fully annotated" },
-      { "program": "def h(*args, **kw) -> None:\n    pass\nresult = unannotated(h)", "expected": ["args", "kw"], "tags": ["type-hints"], "hidden": true,
-        "diagnosis": "`*args` and `**kwargs` are parameters too; read them from the signature, not only from the positional-argument names." },
-      { "program": "def k(a, b: list[int] | None = None) -> bool:\n    return True\nresult = unannotated(k)", "expected": ["a"], "tags": ["type-hints"], "hidden": true,
-        "diagnosis": "Check whether the name is a key in `__annotations__`; do not inspect the hint's value. A union type or a default does not change that." },
-      { "program": "def n():\n    pass\nresult = unannotated(n)", "expected": ["return"], "tags": ["type-hints"], "hidden": true,
-        "diagnosis": "A function with no parameters and no return hint is still missing its return annotation." },
-      { "program": "def m() -> None:\n    pass\nresult = unannotated(m)", "expected": [], "tags": ["type-hints"], "hidden": true,
-        "diagnosis": "`-> None` is a real annotation. Test for the key \"return\" being present, not for the value being truthy." }
+      {
+        "program": "def f(a: int, b, c: str = \"x\"):\n    return 1\nresult = unannotated(f)",
+        "expected": [
+          "b",
+          "return"
+        ],
+        "tags": [
+          "type-hints"
+        ],
+        "note": "mixed"
+      },
+      {
+        "program": "def g(x: int) -> int:\n    return x\nresult = unannotated(g)",
+        "expected": [],
+        "tags": [
+          "type-hints"
+        ],
+        "note": "fully annotated"
+      },
+      {
+        "program": "def h(*args, **kw) -> None:\n    pass\nresult = unannotated(h)",
+        "expected": [
+          "args",
+          "kw"
+        ],
+        "tags": [
+          "type-hints"
+        ],
+        "hidden": true,
+        "diagnosis": "`*args` and `**kwargs` are parameters too; read them from the signature, not only from the positional-argument names."
+      },
+      {
+        "program": "def k(a, b: list[int] | None = None) -> bool:\n    return True\nresult = unannotated(k)",
+        "expected": [
+          "a"
+        ],
+        "tags": [
+          "type-hints"
+        ],
+        "hidden": true,
+        "diagnosis": "Check whether the name is a key in `__annotations__`; do not inspect the hint's value. A union type or a default does not change that."
+      },
+      {
+        "program": "def n():\n    pass\nresult = unannotated(n)",
+        "expected": [
+          "return"
+        ],
+        "tags": [
+          "type-hints"
+        ],
+        "hidden": true,
+        "diagnosis": "A function with no parameters and no return hint is still missing its return annotation."
+      },
+      {
+        "program": "def m() -> None:\n    pass\nresult = unannotated(m)",
+        "expected": [],
+        "tags": [
+          "type-hints"
+        ],
+        "hidden": true,
+        "diagnosis": "`-> None` is a real annotation. Test for the key \"return\" being present, not for the value being truthy."
+      }
     ]
   },
   {
@@ -97,7 +239,10 @@
     "title": "Two Sum",
     "difficulty": "medium",
     "kind": "interview",
-    "concepts": ["hash-map-patterns", "complexity"],
+    "concepts": [
+      "hash-map-patterns",
+      "complexity"
+    ],
     "estimatedMinutes": 15,
     "prompt": "**Interview framing:** a payments team wants to find two transactions whose amounts add up to a refund total.\n\nWrite `two_sum(nums, target)`. `nums` is an unsorted list of integers (may include negatives and duplicate values). Exactly one pair of **different positions** `i < j` satisfies `nums[i] + nums[j] == target`. Return `[i, j]`.\n\n```python\ntwo_sum([2, 7, 11, 15], 9)   # [0, 1]\ntwo_sum([3, 3], 6)           # [0, 1]\n```\n\nConstraint: `nums` can hold tens of thousands of values, so aim for better than O(n^2). Be ready to state the time and space complexity.",
     "entry": "two_sum",
@@ -112,16 +257,113 @@
       "explanation": "**Brute force:** check every pair with two nested loops: O(n^2) time, O(1) space. On 40,000 numbers that is about 800 million comparisons, far too slow.\n\n**Idea:** the inner loop only exists to find `target - x`. A dict from value to index answers that question in O(1). Walk the list once; for each element, look up its complement among the elements *before* it, then record the element itself.\n\n**Why check before store:** if you stored first, an element could pair with itself (`[5, 1, 9]`, target 10 would wrongly match 5 with 5). Checking first only ever pairs an element with an earlier one, which also gives `i < j` for free and handles duplicates like `[3, 3]`.\n\n**Complexity:** O(n) time, O(n) space. This is the classic trade of memory for speed. Alternative: sort and use two pointers (O(n log n) time, O(1) extra space), but you lose the original indices unless you carry them along."
     },
     "tests": [
-      { "args": [[2, 7, 11, 15], 9], "expected": [0, 1], "tags": ["hash-map-patterns"], "note": "basic" },
-      { "args": [[3, 2, 4], 6], "expected": [1, 2], "tags": ["hash-map-patterns"], "note": "not the first element" },
-      { "args": [[3, 3], 6], "expected": [0, 1], "tags": ["hash-map-patterns"], "hidden": true,
-        "diagnosis": "Duplicate values are allowed as long as they are at different positions. Store each value after checking for its complement." },
-      { "args": [[5, 1, 9], 10], "expected": [1, 2], "tags": ["hash-map-patterns"], "hidden": true,
-        "diagnosis": "An element cannot be paired with itself. Check the dict for the complement before inserting the current number." },
-      { "args": [[-1, -2, -3, -4, -5], -8], "expected": [2, 4], "tags": ["hash-map-patterns"], "hidden": true,
-        "diagnosis": "Negative numbers are fine for a dict-based solution; do not assume values are positive or sorted." },
-      { "program": "nums = list(range(40000))\nresult = two_sum(nums, 39999 + 39998)", "expected": [39998, 39999], "tags": ["complexity"], "hidden": true,
-        "diagnosis": "This input has 40,000 numbers; checking all pairs is about 800 million steps. Use a dict to look up the complement in O(1) so the whole thing is O(n)." }
+      {
+        "args": [
+          [
+            2,
+            7,
+            11,
+            15
+          ],
+          9
+        ],
+        "expected": [
+          0,
+          1
+        ],
+        "tags": [
+          "hash-map-patterns"
+        ],
+        "note": "basic"
+      },
+      {
+        "args": [
+          [
+            3,
+            2,
+            4
+          ],
+          6
+        ],
+        "expected": [
+          1,
+          2
+        ],
+        "tags": [
+          "hash-map-patterns"
+        ],
+        "note": "not the first element"
+      },
+      {
+        "args": [
+          [
+            3,
+            3
+          ],
+          6
+        ],
+        "expected": [
+          0,
+          1
+        ],
+        "tags": [
+          "hash-map-patterns"
+        ],
+        "hidden": true,
+        "diagnosis": "Duplicate values are allowed as long as they are at different positions. Store each value after checking for its complement."
+      },
+      {
+        "args": [
+          [
+            5,
+            1,
+            9
+          ],
+          10
+        ],
+        "expected": [
+          1,
+          2
+        ],
+        "tags": [
+          "hash-map-patterns"
+        ],
+        "hidden": true,
+        "diagnosis": "An element cannot be paired with itself. Check the dict for the complement before inserting the current number."
+      },
+      {
+        "args": [
+          [
+            -1,
+            -2,
+            -3,
+            -4,
+            -5
+          ],
+          -8
+        ],
+        "expected": [
+          2,
+          4
+        ],
+        "tags": [
+          "hash-map-patterns"
+        ],
+        "hidden": true,
+        "diagnosis": "Negative numbers are fine for a dict-based solution; do not assume values are positive or sorted."
+      },
+      {
+        "program": "nums = list(range(40000))\nresult = two_sum(nums, 39999 + 39998)",
+        "expected": [
+          39998,
+          39999
+        ],
+        "tags": [
+          "complexity"
+        ],
+        "hidden": true,
+        "diagnosis": "This input has 40,000 numbers; checking all pairs is about 800 million steps. Use a dict to look up the complement in O(1) so the whole thing is O(n)."
+      }
     ]
   },
   {
@@ -129,7 +371,10 @@
     "title": "Shortest Subarray With Enough Sum",
     "difficulty": "medium",
     "kind": "interview",
-    "concepts": ["sliding-window", "complexity"],
+    "concepts": [
+      "sliding-window",
+      "complexity"
+    ],
     "estimatedMinutes": 18,
     "prompt": "**Interview framing:** given daily download counts, find the shortest run of consecutive days whose total reaches a quota.\n\nWrite `min_subarray_len(target, nums)`. `nums` is a list of **positive** integers. Return the length of the shortest contiguous subarray whose sum is **at least** `target`, or `0` if no such subarray exists.\n\n```python\nmin_subarray_len(7, [2, 3, 1, 2, 4, 3])   # 2   ([4, 3])\nmin_subarray_len(11, [1, 1, 1, 1])        # 0\n```\n\nThe list can have 100,000 items. Explain your complexity.",
     "entry": "min_subarray_len",
@@ -144,18 +389,115 @@
       "explanation": "**Brute force:** for every start index, extend the end until the sum reaches the target: O(n^2) time. With 100,000 items that is billions of steps.\n\n**Sliding window:** positivity is what makes the window valid. Expand `right` until the sum is big enough, then shrink `left` as far as the sum still meets the target, recording the width each time. The shrinking uses `while`, not `if`, because after removing one element the window may still be large enough to shrink again.\n\nThe width is `right - left + 1` because both ends are inclusive. Each index is added once and removed at most once, so the loops do about 2n steps in total: **O(n) time, O(1) space**.\n\nWhy it fails with negative numbers: removing a negative from the left would *increase* the sum, so the window logic breaks. You would then need prefix sums plus a monotonic deque."
     },
     "tests": [
-      { "args": [7, [2, 3, 1, 2, 4, 3]], "expected": 2, "tags": ["sliding-window"], "note": "classic" },
-      { "args": [11, [1, 1, 1, 1]], "expected": 0, "tags": ["sliding-window"], "note": "impossible" },
-      { "args": [4, [1, 4, 4]], "expected": 1, "tags": ["sliding-window"], "hidden": true,
-        "diagnosis": "A single element can already reach the target, so a window of width 1 must be possible. Check the width as `right - left + 1`." },
-      { "args": [15, [1, 2, 3, 4, 5]], "expected": 5, "tags": ["sliding-window"], "hidden": true,
-        "diagnosis": "The whole list may be the only valid window; make sure the last window is evaluated before the loop ends." },
-      { "args": [3, []], "expected": 0, "tags": ["sliding-window"], "hidden": true,
-        "diagnosis": "An empty list has no subarrays, so the answer is 0." },
-      { "args": [6, [10, 1, 1, 1, 1, 1, 1]], "expected": 1, "tags": ["sliding-window"], "hidden": true,
-        "diagnosis": "After the window becomes valid, keep shrinking with `while` until it is no longer valid, so you find the shortest window." },
-      { "program": "nums = [1] * 100000\nresult = min_subarray_len(50000, nums)", "expected": 50000, "tags": ["complexity"], "hidden": true,
-        "diagnosis": "100,000 items: trying every start/end pair is O(n^2) and times out. Maintain a running sum with a sliding window so each element is processed a constant number of times." }
+      {
+        "args": [
+          7,
+          [
+            2,
+            3,
+            1,
+            2,
+            4,
+            3
+          ]
+        ],
+        "expected": 2,
+        "tags": [
+          "sliding-window"
+        ],
+        "note": "classic"
+      },
+      {
+        "args": [
+          11,
+          [
+            1,
+            1,
+            1,
+            1
+          ]
+        ],
+        "expected": 0,
+        "tags": [
+          "sliding-window"
+        ],
+        "note": "impossible"
+      },
+      {
+        "args": [
+          4,
+          [
+            1,
+            4,
+            4
+          ]
+        ],
+        "expected": 1,
+        "tags": [
+          "sliding-window"
+        ],
+        "hidden": true,
+        "diagnosis": "A single element can already reach the target, so a window of width 1 must be possible. Check the width as `right - left + 1`."
+      },
+      {
+        "args": [
+          15,
+          [
+            1,
+            2,
+            3,
+            4,
+            5
+          ]
+        ],
+        "expected": 5,
+        "tags": [
+          "sliding-window"
+        ],
+        "hidden": true,
+        "diagnosis": "The whole list may be the only valid window; make sure the last window is evaluated before the loop ends."
+      },
+      {
+        "args": [
+          3,
+          []
+        ],
+        "expected": 0,
+        "tags": [
+          "sliding-window"
+        ],
+        "hidden": true,
+        "diagnosis": "An empty list has no subarrays, so the answer is 0."
+      },
+      {
+        "args": [
+          6,
+          [
+            10,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1
+          ]
+        ],
+        "expected": 1,
+        "tags": [
+          "sliding-window"
+        ],
+        "hidden": true,
+        "diagnosis": "After the window becomes valid, keep shrinking with `while` until it is no longer valid, so you find the shortest window."
+      },
+      {
+        "program": "nums = [1] * 100000\nresult = min_subarray_len(50000, nums)",
+        "expected": 50000,
+        "tags": [
+          "complexity"
+        ],
+        "hidden": true,
+        "diagnosis": "100,000 items: trying every start/end pair is O(n^2) and times out. Maintain a running sum with a sliding window so each element is processed a constant number of times."
+      }
     ]
   },
   {
@@ -163,7 +505,10 @@
     "title": "Rollback on Error",
     "difficulty": "medium",
     "kind": "practice",
-    "concepts": ["context-managers", "exceptions"],
+    "concepts": [
+      "context-managers",
+      "exceptions"
+    ],
     "estimatedMinutes": 15,
     "prompt": "Write a context manager `transaction(items)` for a list. Inside the `with` block the list may be changed freely. If the block finishes normally the changes stay. If the block raises **any** exception, restore the list **in place** to exactly what it contained when the block was entered, and let the exception continue to propagate (do not swallow it). The value bound by `as` should be the list itself.\n\n```python\ndata = [1, 2]\ntry:\n    with transaction(data):\n        data.append(3)\n        raise ValueError(\"boom\")\nexcept ValueError:\n    pass\nprint(data)   # [1, 2]\n```",
     "entry": "transaction",
@@ -178,14 +523,60 @@
       "explanation": "`@contextmanager` turns a generator into an object with `__enter__` and `__exit__`. Everything before `yield` is the setup, the value yielded is what `as` receives, and if the `with` body raises, the exception is thrown back into the generator at the `yield` line, where our `try/except` can react.\n\nThe rollback uses `items[:] = snapshot`. Writing `items = snapshot` would only rebind a local name and the caller's list would stay modified; slice assignment replaces the contents of the same list object, so every alias sees the restored data (a mutation-versus-rebinding distinction).\n\nA bare `raise` re-raises the original exception with its traceback. If you swallowed it, the caller would never know the operation failed. Catching `BaseException` also rolls back on `KeyboardInterrupt`. A class with `__enter__` and `__exit__` works equally well: `__exit__` receives the exception info and returns a falsy value to let it propagate."
     },
     "tests": [
-      { "program": "data = [1, 2]\ntry:\n    with transaction(data):\n        data.append(3)\n        data.append(4)\n        raise ValueError('boom')\nexcept ValueError:\n    pass\nresult = data", "expected": [1, 2], "tags": ["context-managers"], "note": "rollback" },
-      { "program": "data = [1]\nwith transaction(data):\n    data.append(2)\nresult = data", "expected": [1, 2], "tags": ["context-managers"], "note": "commit" },
-      { "program": "data = []\ntry:\n    with transaction(data):\n        raise KeyError('k')\nexcept KeyError:\n    result = 'propagated'\nelse:\n    result = 'swallowed'", "expected": "propagated", "tags": ["exceptions"], "hidden": true,
-        "diagnosis": "After restoring the list you must re-raise the exception with a bare `raise`; otherwise the error is silently swallowed." },
-      { "program": "data = [1]\nalias = data\ntry:\n    with transaction(data):\n        data.append(2)\n        raise RuntimeError\nexcept RuntimeError:\n    pass\nresult = [alias, data is alias]", "expected": [[1], true], "tags": ["context-managers"], "hidden": true,
-        "diagnosis": "Restore with slice assignment `items[:] = snapshot` so the same list object is changed. `items = snapshot` only rebinds a local name." },
-      { "program": "data = [5]\nwith transaction(data) as d:\n    result = d is data", "expected": true, "tags": ["context-managers"], "hidden": true,
-        "diagnosis": "The `as` target is whatever you `yield`. Yield the list itself." }
+      {
+        "program": "data = [1, 2]\ntry:\n    with transaction(data):\n        data.append(3)\n        data.append(4)\n        raise ValueError('boom')\nexcept ValueError:\n    pass\nresult = data",
+        "expected": [
+          1,
+          2
+        ],
+        "tags": [
+          "context-managers"
+        ],
+        "note": "rollback"
+      },
+      {
+        "program": "data = [1]\nwith transaction(data):\n    data.append(2)\nresult = data",
+        "expected": [
+          1,
+          2
+        ],
+        "tags": [
+          "context-managers"
+        ],
+        "note": "commit"
+      },
+      {
+        "program": "data = []\ntry:\n    with transaction(data):\n        raise KeyError('k')\nexcept KeyError:\n    result = 'propagated'\nelse:\n    result = 'swallowed'",
+        "expected": "propagated",
+        "tags": [
+          "exceptions"
+        ],
+        "hidden": true,
+        "diagnosis": "After restoring the list you must re-raise the exception with a bare `raise`; otherwise the error is silently swallowed."
+      },
+      {
+        "program": "data = [1]\nalias = data\ntry:\n    with transaction(data):\n        data.append(2)\n        raise RuntimeError\nexcept RuntimeError:\n    pass\nresult = [alias, data is alias]",
+        "expected": [
+          [
+            1
+          ],
+          true
+        ],
+        "tags": [
+          "context-managers"
+        ],
+        "hidden": true,
+        "diagnosis": "Restore with slice assignment `items[:] = snapshot` so the same list object is changed. `items = snapshot` only rebinds a local name."
+      },
+      {
+        "program": "data = [5]\nwith transaction(data) as d:\n    result = d is data",
+        "expected": true,
+        "tags": [
+          "context-managers"
+        ],
+        "hidden": true,
+        "diagnosis": "The `as` target is whatever you `yield`. Yield the list itself."
+      }
     ]
   },
   {
@@ -193,7 +584,10 @@
     "title": "Lazy Chunks",
     "difficulty": "medium",
     "kind": "practice",
-    "concepts": ["generators", "iterators"],
+    "concepts": [
+      "generators",
+      "iterators"
+    ],
     "estimatedMinutes": 15,
     "prompt": "Write a generator function `chunks(iterable, size)` that yields successive **lists** of up to `size` items from `iterable`. The last chunk may be shorter. It must be lazy and work for any iterable, including one-shot iterators and infinite ones: never build the whole input in memory first.\n\n```python\nlist(chunks([1, 2, 3, 4, 5], 2))   # [[1, 2], [3, 4], [5]]\n\nimport itertools\nit = chunks(itertools.count(1), 3)\nnext(it)   # [1, 2, 3]\nnext(it)   # [4, 5, 6]\n```\n\n`size` is always at least 1.",
     "entry": "chunks",
@@ -208,16 +602,107 @@
       "explanation": "Calling `iter()` once gives a single iterator whose position is remembered. Each `islice(it, size)` consumes the next `size` items from that same iterator, so successive chunks continue where the previous one stopped. When the iterator is exhausted, `islice` produces nothing, the list is empty, and the generator returns (which raises `StopIteration` for the consumer).\n\nBecause only one chunk is ever held in memory, this works on infinite iterators like `itertools.count()` and on one-shot iterators such as files or other generators. The tempting alternative `list(iterable)` followed by slicing is simpler, but it hangs on an infinite input and uses O(n) memory instead of O(size).\n\nMistakes to avoid: calling `iter()` inside the loop on a *list* would restart from the beginning each time, and forgetting the `if not chunk` check would loop forever on empty chunks."
     },
     "tests": [
-      { "program": "result = list(chunks([1, 2, 3, 4, 5], 2))", "expected": [[1, 2], [3, 4], [5]], "tags": ["generators"], "note": "last chunk shorter" },
-      { "program": "result = list(chunks('abc', 5))", "expected": [["a", "b", "c"]], "tags": ["generators"], "note": "size larger than input" },
-      { "program": "result = list(chunks([], 3))", "expected": [], "tags": ["generators"], "hidden": true,
-        "diagnosis": "An empty input should produce no chunks at all, not one empty list." },
-      { "program": "import itertools\nit = chunks(itertools.count(1), 3)\nresult = [next(it), next(it)]", "expected": [[1, 2, 3], [4, 5, 6]], "tags": ["generators"], "hidden": true,
-        "diagnosis": "Do not convert the input with `list(iterable)`: infinite iterators never finish. Pull items lazily, one chunk at a time." },
-      { "program": "it = iter(range(7))\nresult = list(chunks(it, 3))", "expected": [[0, 1, 2], [3, 4, 5], [6]], "tags": ["iterators"], "hidden": true,
-        "diagnosis": "A one-shot iterator cannot be sliced or indexed. Call `iter()` once and keep consuming that same iterator." },
-      { "program": "g = chunks([1, 2, 3], 2)\nresult = [iter(g) is g, next(g)]", "expected": [true, [1, 2]], "tags": ["iterators"], "hidden": true,
-        "diagnosis": "The return value must be a real generator (an iterator): `yield` inside the function, rather than returning a finished list." }
+      {
+        "program": "result = list(chunks([1, 2, 3, 4, 5], 2))",
+        "expected": [
+          [
+            1,
+            2
+          ],
+          [
+            3,
+            4
+          ],
+          [
+            5
+          ]
+        ],
+        "tags": [
+          "generators"
+        ],
+        "note": "last chunk shorter"
+      },
+      {
+        "program": "result = list(chunks('abc', 5))",
+        "expected": [
+          [
+            "a",
+            "b",
+            "c"
+          ]
+        ],
+        "tags": [
+          "generators"
+        ],
+        "note": "size larger than input"
+      },
+      {
+        "program": "result = list(chunks([], 3))",
+        "expected": [],
+        "tags": [
+          "generators"
+        ],
+        "hidden": true,
+        "diagnosis": "An empty input should produce no chunks at all, not one empty list."
+      },
+      {
+        "program": "import itertools\nit = chunks(itertools.count(1), 3)\nresult = [next(it), next(it)]",
+        "expected": [
+          [
+            1,
+            2,
+            3
+          ],
+          [
+            4,
+            5,
+            6
+          ]
+        ],
+        "tags": [
+          "generators"
+        ],
+        "hidden": true,
+        "diagnosis": "Do not convert the input with `list(iterable)`: infinite iterators never finish. Pull items lazily, one chunk at a time."
+      },
+      {
+        "program": "it = iter(range(7))\nresult = list(chunks(it, 3))",
+        "expected": [
+          [
+            0,
+            1,
+            2
+          ],
+          [
+            3,
+            4,
+            5
+          ],
+          [
+            6
+          ]
+        ],
+        "tags": [
+          "iterators"
+        ],
+        "hidden": true,
+        "diagnosis": "A one-shot iterator cannot be sliced or indexed. Call `iter()` once and keep consuming that same iterator."
+      },
+      {
+        "program": "g = chunks([1, 2, 3], 2)\nresult = [iter(g) is g, next(g)]",
+        "expected": [
+          true,
+          [
+            1,
+            2
+          ]
+        ],
+        "tags": [
+          "iterators"
+        ],
+        "hidden": true,
+        "diagnosis": "The return value must be a real generator (an iterator): `yield` inside the function, rather than returning a finished list."
+      }
     ]
   },
   {
@@ -225,7 +710,10 @@
     "title": "Write Your Own Memoize",
     "difficulty": "hard",
     "kind": "interview",
-    "concepts": ["decorators", "complexity"],
+    "concepts": [
+      "decorators",
+      "complexity"
+    ],
     "estimatedMinutes": 20,
     "prompt": "**Interview framing:** 'Implement `functools.lru_cache` without the library, then use it to make a recursive function fast.'\n\nWrite a decorator `memoize(func)` that caches results by the **positional arguments** of each call (all arguments are hashable; you do not need to support keyword arguments). A repeated call with the same arguments must return the stored result without calling `func` again, including when the stored result is `None`, `0` or another falsy value. Preserve the function's `__name__`.\n\n```python\n@memoize\ndef fib(n):\n    return n if n < 2 else fib(n - 1) + fib(n - 2)\n\nfib(60)   # 1548008755920, instantly\n```\n\nBe ready to explain the complexity of the plain recursion versus the memoized one.",
     "entry": "memoize",
@@ -240,14 +728,62 @@
       "explanation": "The decorator body runs once per decorated function, so `cache` is created once and shared by every call through the closure. The wrapper uses the argument tuple as the key, which is why arguments must be hashable (the same restriction `lru_cache` has).\n\n**Why it matters:** plain recursive Fibonacci recomputes the same subproblems and makes about 2^n calls, which is exponential: `fib(60)` would take centuries. Because the recursive calls inside `fib` refer to the global name `fib`, which is now the memoized wrapper, each distinct `n` is computed exactly once: **O(n) time and O(n) space** (cache plus recursion depth).\n\n**Typical mistakes:** testing `if cache.get(args):` re-runs the function for results like `0` or `None`; creating the dict inside `wrapper` gives no caching at all; forgetting `return` gives `None`. In real code use `functools.lru_cache(maxsize=None)` (or `functools.cache`), which also supports keyword arguments and a size limit."
     },
     "tests": [
-      { "program": "calls = []\n@memoize\ndef sq(x):\n    calls.append(x)\n    return x * x\nsq(3)\nsq(3)\nsq(4)\nresult = calls", "expected": [3, 4], "tags": ["decorators"], "note": "cache hit skips the call" },
-      { "program": "@memoize\ndef add(a, b):\n    return a + b\nresult = [add(1, 2), add(2, 1), add(1, 2)]", "expected": [3, 3, 3], "tags": ["decorators"], "note": "different argument tuples" },
-      { "program": "calls = []\n@memoize\ndef f(x):\n    calls.append(x)\n    return None if x else 0\nf(1)\nf(1)\nf(0)\nf(0)\nresult = calls", "expected": [1, 0], "tags": ["decorators"], "hidden": true,
-        "diagnosis": "Falsy results (0, None) must be cached too. Test `args in cache` rather than the truthiness of a looked-up value." },
-      { "program": "@memoize\ndef fib(n):\n    \"nth fib\"\n    return n if n < 2 else fib(n - 1) + fib(n - 2)\nresult = [fib.__name__, fib.__doc__]", "expected": ["fib", "nth fib"], "tags": ["decorators"], "hidden": true,
-        "diagnosis": "Apply `functools.wraps(func)` to the wrapper so the decorated function keeps its name and docstring." },
-      { "program": "@memoize\ndef fib(n):\n    return n if n < 2 else fib(n - 1) + fib(n - 2)\nresult = fib(60)", "expected": 1548008755920, "tags": ["complexity"], "hidden": true,
-        "diagnosis": "Plain recursion makes an exponential number of calls. The cache dictionary must be created once, outside the wrapper, so each n is computed only once." }
+      {
+        "program": "calls = []\n@memoize\ndef sq(x):\n    calls.append(x)\n    return x * x\nsq(3)\nsq(3)\nsq(4)\nresult = calls",
+        "expected": [
+          3,
+          4
+        ],
+        "tags": [
+          "decorators"
+        ],
+        "note": "cache hit skips the call"
+      },
+      {
+        "program": "@memoize\ndef add(a, b):\n    return a + b\nresult = [add(1, 2), add(2, 1), add(1, 2)]",
+        "expected": [
+          3,
+          3,
+          3
+        ],
+        "tags": [
+          "decorators"
+        ],
+        "note": "different argument tuples"
+      },
+      {
+        "program": "calls = []\n@memoize\ndef f(x):\n    calls.append(x)\n    return None if x else 0\nf(1)\nf(1)\nf(0)\nf(0)\nresult = calls",
+        "expected": [
+          1,
+          0
+        ],
+        "tags": [
+          "decorators"
+        ],
+        "hidden": true,
+        "diagnosis": "Falsy results (0, None) must be cached too. Test `args in cache` rather than the truthiness of a looked-up value."
+      },
+      {
+        "program": "@memoize\ndef fib(n):\n    \"nth fib\"\n    return n if n < 2 else fib(n - 1) + fib(n - 2)\nresult = [fib.__name__, fib.__doc__]",
+        "expected": [
+          "fib",
+          "nth fib"
+        ],
+        "tags": [
+          "decorators"
+        ],
+        "hidden": true,
+        "diagnosis": "Apply `functools.wraps(func)` to the wrapper so the decorated function keeps its name and docstring."
+      },
+      {
+        "program": "@memoize\ndef fib(n):\n    return n if n < 2 else fib(n - 1) + fib(n - 2)\nresult = fib(60)",
+        "expected": 1548008755920,
+        "tags": [
+          "complexity"
+        ],
+        "hidden": true,
+        "diagnosis": "Plain recursion makes an exponential number of calls. The cache dictionary must be created once, outside the wrapper, so each n is computed only once."
+      }
     ]
   },
   {
@@ -255,7 +791,10 @@
     "title": "Count Triples Below a Target",
     "difficulty": "hard",
     "kind": "interview",
-    "concepts": ["two-pointers", "complexity"],
+    "concepts": [
+      "two-pointers",
+      "complexity"
+    ],
     "estimatedMinutes": 25,
     "prompt": "**Interview framing:** 'Count how many ways to pick three different items whose combined price stays under a budget.'\n\nWrite `three_sum_smaller(nums, target)`. Count the index triples `i < j < k` with `nums[i] + nums[j] + nums[k] < target`. `nums` is unsorted and may contain duplicates and negatives. Return the count.\n\n```python\nthree_sum_smaller([-2, 0, 1, 3], 2)   # 2   (-2+0+1 and -2+0+3)\nthree_sum_smaller([1, 1, 1, 1], 4)    # 4\n```\n\n`nums` can have around 1,500 items, so O(n^3) is too slow. Aim for O(n^2) and explain how you get there.",
     "entry": "three_sum_smaller",
@@ -270,16 +809,90 @@
       "explanation": "**Brute force:** three nested loops over all triples is O(n^3). For 1,500 items that is over 500 million triples.\n\n**Idea:** sort first (the count depends only on the multiset of values). Fix the smallest element `s[i]` and solve a pair problem on the remaining sorted suffix with two pointers. When `s[i] + s[left] + s[right] < target`, the sum is also below the target for every partner between `left + 1` and `right`, because those values are no larger than `s[right]`. That is `right - left` triples counted in one step, and then `left` moves on. When the sum is too large, only moving `right` down can help.\n\nEach inner scan moves the two pointers toward each other at most n times in total, so the cost is **O(n^2) time** (plus O(n log n) for sorting) and O(n) space for the sorted copy (O(1) if you sort in place).\n\nTypical mistakes: adding 1 instead of `right - left` (this makes it correct but only O(n^3) in the worst case if you then loop), and forgetting to sort, which makes the pointer moves meaningless."
     },
     "tests": [
-      { "args": [[-2, 0, 1, 3], 2], "expected": 2, "tags": ["two-pointers"], "note": "classic" },
-      { "args": [[3, 1, 0, -2], 4], "expected": 3, "tags": ["two-pointers"], "note": "unsorted input" },
-      { "args": [[], 0], "expected": 0, "tags": ["two-pointers"], "hidden": true,
-        "diagnosis": "Fewer than three items means no triples; make sure your loop bounds do not fail on short input." },
-      { "args": [[0], 0], "expected": 0, "tags": ["two-pointers"], "hidden": true,
-        "diagnosis": "A single element cannot form a triple. Loop `i` only up to `len(nums) - 3`." },
-      { "args": [[1, 1, 1, 1], 4], "expected": 4, "tags": ["two-pointers"], "hidden": true,
-        "diagnosis": "Duplicates count separately because triples are chosen by index. Do not skip equal values." },
-      { "program": "nums = list(range(1500))\nresult = three_sum_smaller(nums, 1500)", "expected": 93656125, "tags": ["complexity"], "hidden": true,
-        "diagnosis": "With 1,500 items, three nested loops make hundreds of millions of steps. Sort, fix one index, and use two pointers for the other two for O(n^2)." }
+      {
+        "args": [
+          [
+            -2,
+            0,
+            1,
+            3
+          ],
+          2
+        ],
+        "expected": 2,
+        "tags": [
+          "two-pointers"
+        ],
+        "note": "classic"
+      },
+      {
+        "args": [
+          [
+            3,
+            1,
+            0,
+            -2
+          ],
+          4
+        ],
+        "expected": 3,
+        "tags": [
+          "two-pointers"
+        ],
+        "note": "unsorted input"
+      },
+      {
+        "args": [
+          [],
+          0
+        ],
+        "expected": 0,
+        "tags": [
+          "two-pointers"
+        ],
+        "hidden": true,
+        "diagnosis": "Fewer than three items means no triples; make sure your loop bounds do not fail on short input."
+      },
+      {
+        "args": [
+          [
+            0
+          ],
+          0
+        ],
+        "expected": 0,
+        "tags": [
+          "two-pointers"
+        ],
+        "hidden": true,
+        "diagnosis": "A single element cannot form a triple. Loop `i` only up to `len(nums) - 3`."
+      },
+      {
+        "args": [
+          [
+            1,
+            1,
+            1,
+            1
+          ],
+          4
+        ],
+        "expected": 4,
+        "tags": [
+          "two-pointers"
+        ],
+        "hidden": true,
+        "diagnosis": "Duplicates count separately because triples are chosen by index. Do not skip equal values."
+      },
+      {
+        "program": "nums = list(range(1500))\nresult = three_sum_smaller(nums, 1500)",
+        "expected": 93656125,
+        "tags": [
+          "complexity"
+        ],
+        "hidden": true,
+        "diagnosis": "With 1,500 items, three nested loops make hundreds of millions of steps. Sort, fix one index, and use two pointers for the other two for O(n^2)."
+      }
     ]
   },
   {
@@ -287,7 +900,10 @@
     "title": "Longest Substring With At Most K Distinct Characters",
     "difficulty": "hard",
     "kind": "interview",
-    "concepts": ["sliding-window", "hash-map-patterns"],
+    "concepts": [
+      "sliding-window",
+      "hash-map-patterns"
+    ],
     "estimatedMinutes": 25,
     "prompt": "**Interview framing:** 'A cache can hold at most `k` different item types at once. Given a stream of item codes as a string, what is the longest stretch that fits?'\n\nWrite `longest_k_distinct(s, k)` returning the length of the longest **contiguous substring** of `s` that contains **at most `k` distinct characters**. Return `0` if `s` is empty or `k` is 0.\n\n```python\nlongest_k_distinct(\"eceba\", 2)    # 3   (\"ece\")\nlongest_k_distinct(\"aabbcc\", 2)   # 4   (\"aabb\")\n```\n\n`s` may have 100,000 characters. State your time and space complexity.",
     "entry": "longest_k_distinct",
@@ -302,18 +918,86 @@
       "explanation": "**Brute force:** for every start and end, count distinct characters: O(n^2) substrings, each needing O(n) to check, so O(n^3) naively (O(n^2) with an incremental set). Far too slow for 100,000 characters.\n\n**Sliding window + hash map:** keep a window `[left, right]` and a dict of character counts inside it. The number of distinct characters is `len(counts)`. Expand `right` by one; if the window now has more than `k` distinct characters, shrink from `left` until it is legal again. The shrink must use `while`, since removing one character may not drop a distinct key.\n\nA count of zero must be **deleted** from the dict, otherwise `len(counts)` keeps counting characters that are no longer in the window. The width is `right - left + 1`. With `k = 0` the window is emptied every step and `best` stays 0.\n\n**Complexity:** each index enters and leaves the window once, so O(n) time; the dict holds at most `k + 1` keys, so O(k) space (O(min(n, alphabet)) in general)."
     },
     "tests": [
-      { "args": ["eceba", 2], "expected": 3, "tags": ["sliding-window"], "note": "classic" },
-      { "args": ["aabbcc", 2], "expected": 4, "tags": ["sliding-window", "hash-map-patterns"], "note": "counts matter" },
-      { "args": ["", 3], "expected": 0, "tags": ["sliding-window"], "hidden": true,
-        "diagnosis": "An empty string has no substrings; the answer is 0." },
-      { "args": ["abc", 0], "expected": 0, "tags": ["sliding-window"], "hidden": true,
-        "diagnosis": "With k = 0 no non-empty substring qualifies. The window must be shrunk until it is empty." },
-      { "args": ["aa", 1], "expected": 2, "tags": ["hash-map-patterns"], "hidden": true,
-        "diagnosis": "Repeated characters count once as distinct. Track distinct characters with a dict or set, not by window length." },
-      { "args": ["abaccc", 2], "expected": 4, "tags": ["hash-map-patterns"], "hidden": true,
-        "diagnosis": "When a character leaves the window, decrement its count and delete the key only when the count reaches zero; removing it outright loses copies that are still inside." },
-      { "program": "s = 'ab' * 30000 + 'c' * 30000\nresult = longest_k_distinct(s, 2)", "expected": 60000, "tags": ["sliding-window"], "hidden": true,
-        "diagnosis": "60,000 characters: checking every substring is quadratic or worse. Slide a window and update the character counts incrementally so each index is handled a constant number of times." }
+      {
+        "args": [
+          "eceba",
+          2
+        ],
+        "expected": 3,
+        "tags": [
+          "sliding-window"
+        ],
+        "note": "classic"
+      },
+      {
+        "args": [
+          "aabbcc",
+          2
+        ],
+        "expected": 4,
+        "tags": [
+          "sliding-window",
+          "hash-map-patterns"
+        ],
+        "note": "counts matter"
+      },
+      {
+        "args": [
+          "",
+          3
+        ],
+        "expected": 0,
+        "tags": [
+          "sliding-window"
+        ],
+        "hidden": true,
+        "diagnosis": "An empty string has no substrings; the answer is 0."
+      },
+      {
+        "args": [
+          "abc",
+          0
+        ],
+        "expected": 0,
+        "tags": [
+          "sliding-window"
+        ],
+        "hidden": true,
+        "diagnosis": "With k = 0 no non-empty substring qualifies. The window must be shrunk until it is empty."
+      },
+      {
+        "args": [
+          "aa",
+          1
+        ],
+        "expected": 2,
+        "tags": [
+          "hash-map-patterns"
+        ],
+        "hidden": true,
+        "diagnosis": "Repeated characters count once as distinct. Track distinct characters with a dict or set, not by window length."
+      },
+      {
+        "args": [
+          "abaccc",
+          2
+        ],
+        "expected": 4,
+        "tags": [
+          "hash-map-patterns"
+        ],
+        "hidden": true,
+        "diagnosis": "When a character leaves the window, decrement its count and delete the key only when the count reaches zero; removing it outright loses copies that are still inside."
+      },
+      {
+        "program": "s = 'ab' * 30000 + 'c' * 30000\nresult = longest_k_distinct(s, 2)",
+        "expected": 60000,
+        "tags": [
+          "sliding-window"
+        ],
+        "hidden": true,
+        "diagnosis": "60,000 characters: checking every substring is quadratic or worse. Slide a window and update the character counts incrementally so each index is handled a constant number of times."
+      }
     ]
   },
   {
@@ -657,18 +1341,66 @@
     "title": "Separate Syntax Errors from Runtime Errors",
     "difficulty": "easy",
     "kind": "interview",
-    "concepts": ["python-runtime", "exceptions"],
+    "concepts": [
+      "python-runtime",
+      "exceptions"
+    ],
     "estimatedMinutes": 8,
     "prompt": "Write `syntax_valid(source)` that reports whether Python can compile the source into a code object. Do not execute it. Explain why `x = 1 / 0` is syntactically valid even though running it raises an exception.",
     "entry": "syntax_valid",
     "starterCode": "def syntax_valid(source):\n    # Compile to check grammar, but do not execute the code\n    return True\n",
-    "hints": ["Python's built-in `compile()` can create a code object without running it.", "Catch `SyntaxError` only; other failures are not syntax errors.", "Return False when compilation raises SyntaxError and True when it succeeds."],
-    "solution": {"code": "def syntax_valid(source):\n    try:\n        compile(source, '<interview>', 'exec')\n    except SyntaxError:\n        return False\n    return True\n", "explanation": "Compilation checks whether the source follows Python's grammar and creates a code object; it does not run the resulting statements. That is why `x = 1 / 0` passes this check while execution later raises `ZeroDivisionError`. A missing colon or unfinished assignment fails during parsing and raises `SyntaxError`. Catch only `SyntaxError`: swallowing every exception would hide unrelated problems in the checking function. Production tools can also use `ast.parse()` when they need to inspect a syntax tree rather than merely validate compilation."},
+    "hints": [
+      "Python's built-in `compile()` can create a code object without running it.",
+      "Catch `SyntaxError` only; other failures are not syntax errors.",
+      "Return False when compilation raises SyntaxError and True when it succeeds."
+    ],
+    "solution": {
+      "code": "def syntax_valid(source):\n    try:\n        compile(source, '<interview>', 'exec')\n    except SyntaxError:\n        return False\n    return True\n",
+      "explanation": "Compilation checks whether the source follows Python's grammar and creates a code object; it does not run the resulting statements. That is why `x = 1 / 0` passes this check while execution later raises `ZeroDivisionError`. A missing colon or unfinished assignment fails during parsing and raises `SyntaxError`. Catch only `SyntaxError`: swallowing every exception would hide unrelated problems in the checking function. Production tools can also use `ast.parse()` when they need to inspect a syntax tree rather than merely validate compilation."
+    },
     "tests": [
-      {"args": ["total = 2 + 3"], "expected": true, "tags": ["python-runtime"], "note": "valid assignment"},
-      {"args": ["if True print('hello')"], "expected": false, "tags": ["exceptions"], "note": "missing colon"},
-      {"args": ["x = 1 / 0"], "expected": true, "tags": ["python-runtime"], "hidden": true, "diagnosis": "Compilation does not execute the division. Runtime exceptions are separate from syntax validity."},
-      {"args": ["name ="], "expected": false, "tags": ["exceptions"], "hidden": true, "diagnosis": "An incomplete assignment is invalid grammar, so compile() raises SyntaxError."}
+      {
+        "args": [
+          "total = 2 + 3"
+        ],
+        "expected": true,
+        "tags": [
+          "python-runtime"
+        ],
+        "note": "valid assignment"
+      },
+      {
+        "args": [
+          "if True print('hello')"
+        ],
+        "expected": false,
+        "tags": [
+          "exceptions"
+        ],
+        "note": "missing colon"
+      },
+      {
+        "args": [
+          "x = 1 / 0"
+        ],
+        "expected": true,
+        "tags": [
+          "python-runtime"
+        ],
+        "hidden": true,
+        "diagnosis": "Compilation does not execute the division. Runtime exceptions are separate from syntax validity."
+      },
+      {
+        "args": [
+          "name ="
+        ],
+        "expected": false,
+        "tags": [
+          "exceptions"
+        ],
+        "hidden": true,
+        "diagnosis": "An incomplete assignment is invalid grammar, so compile() raises SyntaxError."
+      }
     ]
   },
   {
@@ -676,18 +1408,247 @@
     "title": "Trace Aliases and a Shallow Copy",
     "difficulty": "easy",
     "kind": "interview",
-    "concepts": ["python-runtime", "mutability-aliasing"],
+    "concepts": [
+      "python-runtime",
+      "mutability-aliasing"
+    ],
     "estimatedMinutes": 8,
     "prompt": "Write `reference_report(items)` to make an alias and a shallow copy, append `0` through the alias, then return `[items is alias, items is copied, items == copied, items, copied]`. Explain why the first two booleans differ.",
     "entry": "reference_report",
     "starterCode": "def reference_report(items):\n    # Create an alias and a shallow copy, then mutate through the alias\n    pass\n",
-    "hints": ["Assignment to `alias` binds another name to the same list.", "Use `items.copy()` to create a separate outer list.", "Append through the alias, then return the three comparisons and both lists."],
-    "solution": {"code": "def reference_report(items):\n    alias = items\n    copied = items.copy()\n    alias.append(0)\n    return [items is alias, items is copied, items == copied, items, copied]\n", "explanation": "`alias = items` binds a second name to the exact same list, so `items is alias` is True and appending through either name changes that object. `items.copy()` creates a new outer list, so `items is copied` is False. After the append, their contents differ, so equality is also False. This copy is shallow: nested mutable elements would still be shared. The function intentionally mutates the caller's list to make alias behavior visible; a non-mutating API should copy first and update the copy instead."},
+    "hints": [
+      "Assignment to `alias` binds another name to the same list.",
+      "Use `items.copy()` to create a separate outer list.",
+      "Append through the alias, then return the three comparisons and both lists."
+    ],
+    "solution": {
+      "code": "def reference_report(items):\n    alias = items\n    copied = items.copy()\n    alias.append(0)\n    return [items is alias, items is copied, items == copied, items, copied]\n",
+      "explanation": "`alias = items` binds a second name to the exact same list, so `items is alias` is True and appending through either name changes that object. `items.copy()` creates a new outer list, so `items is copied` is False. After the append, their contents differ, so equality is also False. This copy is shallow: nested mutable elements would still be shared. The function intentionally mutates the caller's list to make alias behavior visible; a non-mutating API should copy first and update the copy instead."
+    },
     "tests": [
-      {"args": [[1, 2]], "expected": [true, false, false, [1, 2, 0], [1, 2]], "tags": ["python-runtime"], "note": "alias and separate outer copy"},
-      {"args": [[]], "expected": [true, false, false, [0], []], "tags": ["mutability-aliasing"], "note": "empty list"},
-      {"args": [["a"]], "expected": [true, false, false, ["a", 0], ["a"]], "tags": ["python-runtime"], "hidden": true},
-      {"args": [[3, 3]], "expected": [true, false, false, [3, 3, 0], [3, 3]], "tags": ["mutability-aliasing"], "hidden": true, "diagnosis": "The alias must point at the original object; the copied outer list must remain unchanged."}
+      {
+        "args": [
+          [
+            1,
+            2
+          ]
+        ],
+        "expected": [
+          true,
+          false,
+          false,
+          [
+            1,
+            2,
+            0
+          ],
+          [
+            1,
+            2
+          ]
+        ],
+        "tags": [
+          "python-runtime"
+        ],
+        "note": "alias and separate outer copy"
+      },
+      {
+        "args": [
+          []
+        ],
+        "expected": [
+          true,
+          false,
+          false,
+          [
+            0
+          ],
+          []
+        ],
+        "tags": [
+          "mutability-aliasing"
+        ],
+        "note": "empty list"
+      },
+      {
+        "args": [
+          [
+            "a"
+          ]
+        ],
+        "expected": [
+          true,
+          false,
+          false,
+          [
+            "a",
+            0
+          ],
+          [
+            "a"
+          ]
+        ],
+        "tags": [
+          "python-runtime"
+        ],
+        "hidden": true
+      },
+      {
+        "args": [
+          [
+            3,
+            3
+          ]
+        ],
+        "expected": [
+          true,
+          false,
+          false,
+          [
+            3,
+            3,
+            0
+          ],
+          [
+            3,
+            3
+          ]
+        ],
+        "tags": [
+          "mutability-aliasing"
+        ],
+        "hidden": true,
+        "diagnosis": "The alias must point at the original object; the copied outer list must remain unchanged."
+      }
+    ]
+  },
+  {
+    "slug": "check-expected-error",
+    "title": "Check for an Expected Exception",
+    "difficulty": "medium",
+    "kind": "interview",
+    "concepts": [
+      "modules-testing",
+      "exceptions"
+    ],
+    "estimatedMinutes": 12,
+    "prompt": "Write `raises_error(func, exception_type, *args, **kwargs)`. Call `func` with the supplied arguments and return `True` only if it raises an instance of `exception_type`. Return `False` if it raises a different exception or returns normally. Catch ordinary exceptions, but do not swallow `KeyboardInterrupt` or `SystemExit`.\n\n```python\ndef parse_count(text):\n    return int(text)\n\nraises_error(parse_count, ValueError, \"many\")  # True\nraises_error(parse_count, TypeError, \"many\")  # False\n```",
+    "entry": "raises_error",
+    "starterCode": "def raises_error(func, exception_type, *args, **kwargs):\n    # Call func and check the exception it raises\n    return False\n",
+    "hints": [
+      "Call `func(*args, **kwargs)` inside a `try` block.",
+      "Catch `Exception` and inspect the caught exception with `isinstance`.",
+      "Return `isinstance(error, exception_type)` from the handler, and return `False` after the `try` block if no exception occurred."
+    ],
+    "solution": {
+      "code": "def raises_error(func, exception_type, *args, **kwargs):\n    try:\n        func(*args, **kwargs)\n    except Exception as error:\n        return isinstance(error, exception_type)\n    return False\n",
+      "explanation": "A useful test helper must distinguish the expected failure from both a different failure and a successful return. The `except Exception as error` clause catches normal application errors, while leaving `KeyboardInterrupt` and `SystemExit` alone because they derive directly from `BaseException`. `isinstance` also accepts subclasses of the expected exception, matching how standard testing tools treat exception classes.\n\nThis helper intentionally returns a boolean; a fuller test framework would also report the unexpected exception and its traceback. A common mistake is to return `True` for every caught exception, which lets code fail for the wrong reason and still pass its test."
+    },
+    "tests": [
+      {
+        "program": "def parse_count(text):\n    return int(text)\nresult = raises_error(parse_count, ValueError, 'many')",
+        "expected": true,
+        "tags": [
+          "modules-testing"
+        ],
+        "note": "expected exception is raised"
+      },
+      {
+        "program": "def parse_count(text):\n    return int(text)\nresult = raises_error(parse_count, TypeError, 'many')",
+        "expected": false,
+        "tags": [
+          "exceptions"
+        ],
+        "note": "wrong exception type"
+      },
+      {
+        "program": "def parse_count(text):\n    return int(text)\nresult = raises_error(parse_count, ValueError, '12')",
+        "expected": false,
+        "tags": [
+          "modules-testing"
+        ],
+        "hidden": true,
+        "diagnosis": "The helper must return False when the call completes without raising."
+      },
+      {
+        "program": "class BadCount(ValueError):\n    pass\ndef parse_count(text):\n    raise BadCount(text)\nresult = raises_error(parse_count, ValueError, 'many')",
+        "expected": true,
+        "tags": [
+          "exceptions"
+        ],
+        "hidden": true,
+        "diagnosis": "An instance of a subclass is also an instance of the expected exception class; use isinstance."
+      }
+    ]
+  },
+  {
+    "slug": "measure-annotation-coverage",
+    "title": "Measure Function Annotation Coverage",
+    "difficulty": "medium",
+    "kind": "practice",
+    "concepts": [
+      "type-hints"
+    ],
+    "estimatedMinutes": 12,
+    "prompt": "Write `annotation_coverage(func)` to inspect a function's type annotations. Return `[annotated, total]`: count every parameter plus one return-value slot in `total`, and count how many of those slots have an annotation in `annotated`. A default value does not count as a type hint.\n\n```python\ndef convert(text: str, radix=10) -> int:\n    return int(text, radix)\n\nannotation_coverage(convert)  # [2, 3]\n```\n\nUse `inspect.signature`. An unannotated parameter has `inspect.Parameter.empty` as its annotation; a missing return hint is `inspect.Signature.empty`.",
+    "entry": "annotation_coverage",
+    "starterCode": "import inspect\n\ndef annotation_coverage(func):\n    # Count annotated parameters and the return slot\n    return [0, 0]\n",
+    "hints": [
+      "`inspect.signature(func).parameters.values()` gives each parameter in declaration order.",
+      "Compare a parameter annotation with `inspect.Parameter.empty`; compare the return annotation with `inspect.Signature.empty`.",
+      "The total is always the number of parameters plus one return slot, even when a function has no parameters."
+    ],
+    "solution": {
+      "code": "import inspect\n\ndef annotation_coverage(func):\n    signature = inspect.signature(func)\n    parameters = list(signature.parameters.values())\n    annotated = sum(parameter.annotation is not inspect.Parameter.empty for parameter in parameters)\n    annotated += signature.return_annotation is not inspect.Signature.empty\n    return [annotated, len(parameters) + 1]\n",
+      "explanation": "Type annotations are metadata attached to a function; Python does not automatically enforce them when the function runs. `inspect.signature` provides an ordered view of the parameters and the return annotation, so this helper can measure which slots are documented without calling the function. The return slot is included even when there is no return hint, which makes coverage comparable between functions.\n\nThe `empty` sentinels matter: an annotation can be a valid false-like value, so checking truthiness would confuse a present annotation with a missing one. Defaults are separate from annotations: `radix=10` supplies a runtime default but says nothing about the parameter's type. The result is a small review aid, not a static type checker."
+    },
+    "tests": [
+      {
+        "program": "def convert(text: str, radix=10) -> int:\n    return int(text, radix)\nresult = annotation_coverage(convert)",
+        "expected": [
+          2,
+          3
+        ],
+        "tags": [
+          "type-hints"
+        ],
+        "note": "mixed annotated and unannotated parameters"
+      },
+      {
+        "program": "def empty():\n    pass\nresult = annotation_coverage(empty)",
+        "expected": [
+          0,
+          1
+        ],
+        "tags": [
+          "type-hints"
+        ],
+        "note": "no parameters and no return hint"
+      },
+      {
+        "program": "def full(*args: int, **kwargs: str) -> None:\n    pass\nresult = annotation_coverage(full)",
+        "expected": [
+          3,
+          3
+        ],
+        "tags": [
+          "type-hints"
+        ],
+        "hidden": true,
+        "diagnosis": "Variadic parameters are parameters too, and `-> None` is a present return annotation."
+      },
+      {
+        "program": "def optional(value: list[int] | None = None, flag=False) -> bool:\n    return True\nresult = annotation_coverage(optional)",
+        "expected": [
+          2,
+          3
+        ],
+        "tags": [
+          "type-hints"
+        ],
+        "hidden": true,
+        "diagnosis": "A default does not imply an annotation; inspect each parameter's annotation sentinel."
+      }
     ]
   }
 ]

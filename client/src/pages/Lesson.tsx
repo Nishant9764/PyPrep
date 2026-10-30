@@ -122,8 +122,8 @@ export function Lesson() {
                 {quizAnswers[String(check.id)] === undefined ? <div className="row"><button className="btn sm primary" disabled={busy} onClick={() => saveQuizAnswer(check.id, true)}>I can explain this</button><button className="btn sm" disabled={busy} onClick={() => saveQuizAnswer(check.id, false)}>I need to review</button></div> : <p className="small">{quizAnswers[String(check.id)] ? 'Marked understood' : 'Marked for review'} · <button className="text-button" disabled={busy} onClick={() => saveQuizAnswer(check.id)}>Try again</button></p>}
               </div>
             </details>)}
-            <p className="small" role="status">{mastered || state.mastered ? `Mastery check passed${state.masteryScore !== null ? ` (${state.masteryScore}%)` : ''}. You can mark this lesson complete.` : checks.length === Object.keys(quizAnswers).length ? 'Review the lesson and retry the questions you marked for review.' : 'Open each question, reveal the answer, and self-check before completing.'}</p>
-            {Object.keys(quizAnswers).length === checks.length && state.masteryScore !== masteryScore && <button className="btn sm" disabled={busy} onClick={() => update({ masteryScore })}>Save mastery result ({masteryScore}%)</button>}
+            <p className="small" role="status">{mastered || state.mastered ? `Self-check passed based on your ratings${state.masteryScore !== null ? ` (${state.masteryScore}%)` : ''}. This is a reflection check, not an independent assessment. You can mark this lesson complete.` : checks.length === Object.keys(quizAnswers).length ? 'Review the lesson and retry the questions you marked for review.' : 'Open each question, reveal the answer, and self-check before completing.'}</p>
+            {Object.keys(quizAnswers).length === checks.length && state.masteryScore !== masteryScore && <button className="btn sm" disabled={busy} onClick={() => update({ masteryScore })}>Save self-check result ({masteryScore}%)</button>}
           </section>}
 
           <footer className="panel stack">

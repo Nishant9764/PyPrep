@@ -156,7 +156,7 @@ progressRouter.get(
     const assessedSkills = skillMastery.filter((c) => c.evidence >= 1);
     const strongSkills = assessedSkills.length ? assessedSkills.filter((c) => (c.mastery ?? 0) >= 0.7).length / assessedSkills.length : 0;
     const readiness = [
-      { level: 'Beginner', score: round(0.6 * solvedRatio('easy') + 0.4 * lessonRatio), basis: [{ label: 'Easy practice solved', value: byDifficulty.easy, total: totalByDifficulty.easy, weight: 60 }, { label: 'Lessons mastered', value: lp.filter((l) => !!l.masteredAt).length, total: lessons.length, weight: 40 }] },
+      { level: 'Beginner', score: round(0.6 * solvedRatio('easy') + 0.4 * lessonRatio), basis: [{ label: 'Easy practice solved', value: byDifficulty.easy, total: totalByDifficulty.easy, weight: 60 }, { label: 'Lesson self-checks passed (self-reported)', value: lp.filter((l) => !!l.masteredAt).length, total: lessons.length, weight: 40 }] },
       { level: 'Internship', score: round(0.3 * solvedRatio('easy') + 0.4 * solvedRatio('medium') + 0.3 * strongSkills), basis: [{ label: 'Easy practice solved', value: byDifficulty.easy, total: totalByDifficulty.easy, weight: 30 }, { label: 'Medium practice solved', value: byDifficulty.medium, total: totalByDifficulty.medium, weight: 40 }, { label: 'Assessed skills at 70%+ mastery', value: assessedSkills.filter((c) => (c.mastery ?? 0) >= 0.7).length, total: assessedSkills.length, weight: 30 }] },
       { level: 'Junior Python', score: round(0.2 * solvedRatio('easy') + 0.35 * solvedRatio('medium') + 0.25 * solvedRatio('hard') + 0.2 * strongSkills), basis: [{ label: 'Easy practice solved', value: byDifficulty.easy, total: totalByDifficulty.easy, weight: 20 }, { label: 'Medium practice solved', value: byDifficulty.medium, total: totalByDifficulty.medium, weight: 35 }, { label: 'Hard practice solved', value: byDifficulty.hard, total: totalByDifficulty.hard, weight: 25 }, { label: 'Assessed skills at 70%+ mastery', value: assessedSkills.filter((c) => (c.mastery ?? 0) >= 0.7).length, total: assessedSkills.length, weight: 20 }] },
     ];
@@ -189,7 +189,7 @@ progressRouter.get(
       topics,
       skillMastery,
       readiness,
-      readinessNote: 'Evidence-based study estimate, not a hiring prediction. Scores use only the displayed practice, lesson, and skill assessments; missing evidence contributes zero.',
+      readinessNote: 'Exploratory study estimate, not calibrated against hiring outcomes. Practice and skill scores use submitted work; lesson self-checks are self-reported. Missing evidence contributes zero.',
       weakConcepts: weak,
       recent: recent.map((a) => ({
         question: a.question,
@@ -346,7 +346,7 @@ progressRouter.put(
     const current = await LessonProgress.findOne({ user, track, topic, lesson });
     const score = body.masteryScore ?? current?.masteryScore ?? 0;
     if (body.completed === true && !current?.completed && score < 80) {
-      throw new HttpError(400, 'Pass the lesson mastery check before marking it complete.', 'MASTERY_CHECK_REQUIRED');
+      throw new HttpError(400, 'Complete the required lesson self-check before marking this lesson complete.', 'MASTERY_CHECK_REQUIRED');
     }
     const set: Record<string, unknown> = {};
     if (body.completed !== undefined) {
