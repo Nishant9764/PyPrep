@@ -15,14 +15,13 @@ function extractSelfChecks(body: string) {
 export function Lesson() {
   const { track = 'python', topic = '', lesson = '' } = useParams();
   const { data, error, loading, reload } = useApi<LessonPayload>(`/tracks/${track}/lessons/${topic}/${lesson}`);
-  const [state, setState] = useState({ completed: false, bookmarked: false, mastered: false, masteryScore: null as number | null });
+  const [state, setState] = useState({ completed: false, bookmarked: false, mastered: false, masteryScore: null as number | null, selfCheckAnswers: {} as Record<string, boolean> });
   const [busy, setBusy] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
-  const [quizAnswers, setQuizAnswers] = useState<Record<number, boolean>>({});
   const [revealedQuiz, setRevealedQuiz] = useState<number | null>(null);
 
   useEffect(() => {
-    if (data) { setState(data.progress); setQuizAnswers({}); setRevealedQuiz(null); }
+    if (data) { setState(data.progress); setRevealedQuiz(null); }
     window.scrollTo({ top: 0 });
   }, [data]);
 
@@ -44,8 +43,15 @@ export function Lesson() {
   const l = data.lesson;
   const checks = extractSelfChecks(l.body);
   const requiredCorrect = Math.max(1, Math.ceil(checks.length * 0.8));
+  const quizAnswers = Object.fromEntries(Object.entries(state.selfCheckAnswers).filter(([id]) => Number(id) < checks.length));
   const mastered = checks.length > 0 && Object.keys(quizAnswers).length === checks.length && Object.values(quizAnswers).filter(Boolean).length >= requiredCorrect;
   const masteryScore = checks.length ? Math.round(Object.values(quizAnswers).filter(Boolean).length / checks.length * 100) : 0;
+  const saveQuizAnswer = (id: number, value?: boolean) => {
+    const next = { ...quizAnswers };
+    if (value === undefined) delete next[String(id)];
+    else next[String(id)] = value;
+    void update({ selfCheckAnswers: next });
+  };
 
   return (
     <div className="page">
@@ -67,7 +73,7 @@ export function Lesson() {
             {checks.map((check) => <details className="lesson-check-item" key={check.id} open={revealedQuiz === check.id} onToggle={(event) => { if ((event.currentTarget as HTMLDetailsElement).open) setRevealedQuiz(check.id); }}>
               <summary><Markdown variant="compact">{check.question}</Markdown></summary>
               <div className="lesson-check-answer"><Markdown variant="compact">{check.answer}</Markdown>
-                {quizAnswers[check.id] === undefined ? <div className="row"><button className="btn sm primary" onClick={() => setQuizAnswers((answers) => ({ ...answers, [check.id]: true }))}>I can explain this</button><button className="btn sm" onClick={() => setQuizAnswers((answers) => ({ ...answers, [check.id]: false }))}>I need to review</button></div> : <p className="small">{quizAnswers[check.id] ? 'Marked understood' : 'Marked for review'} · <button className="text-button" onClick={() => setQuizAnswers((answers) => { const next = { ...answers }; delete next[check.id]; return next; })}>Try again</button></p>}
+                {quizAnswers[String(check.id)] === undefined ? <div className="row"><button className="btn sm primary" disabled={busy} onClick={() => saveQuizAnswer(check.id, true)}>I can explain this</button><button className="btn sm" disabled={busy} onClick={() => saveQuizAnswer(check.id, false)}>I need to review</button></div> : <p className="small">{quizAnswers[String(check.id)] ? 'Marked understood' : 'Marked for review'} · <button className="text-button" disabled={busy} onClick={() => saveQuizAnswer(check.id)}>Try again</button></p>}
               </div>
             </details>)}
             <p className="small" role="status">{mastered || state.mastered ? `Mastery check passed${state.masteryScore !== null ? ` (${state.masteryScore}%)` : ''}. You can mark this lesson complete.` : checks.length === Object.keys(quizAnswers).length ? 'Review the lesson and retry the questions you marked for review.' : 'Open each question, reveal the answer, and self-check before completing.'}</p>

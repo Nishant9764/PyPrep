@@ -155,6 +155,8 @@ const lessonProgressSchema = new Schema(
     lesson: { type: String, required: true },
     completed: { type: Boolean, default: false },
     masteryScore: { type: Number, min: 0, max: 100, default: null },
+    /** Learner's retrieval-practice self-checks, keyed by stable check number. */
+    selfCheckAnswers: { type: Map, of: Boolean, default: {} },
     masteredAt: Date,
     /** Never reset: activity credit for a lesson is given once, however often it is toggled. */
     everCompleted: { type: Boolean, default: false },

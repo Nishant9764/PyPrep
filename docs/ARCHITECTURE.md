@@ -103,13 +103,13 @@ Questions are authored so different tests probe different skills. For one submis
 | Output limits | Captured output is capped in the harness, raw stdout/stderr/result channel are byte-capped in the runner |
 | Container | Read-only filesystem, `cap_drop: ALL` (only SETUID, SETGID, CHOWN), `no-new-privileges`, pid/memory/cpu limits, noexec tmpfs |
 | Request validation | Strict schema, size limits, shared-secret bearer token (constant-time compare), bounded queue with `503` when busy |
-| Hidden test data | Sent over stdin and consumed before learner code runs; never written to disk |
+| Hidden test answers | Kept in the trusted runner process. The Python harness receives test inputs and contracts with expected values removed, then returns actual values for trusted comparison. Hidden inputs must still be supplied to learner code to run the test; they are never written to disk. |
 
 `runner/test/isolation.test.ts` attacks each of these. It passes 23 checks.
 
 ### Honest limits
 
-* A learner can find the harness's result channel and forge their own pass. Scores are advisory.
+* A determined learner can forge the value returned by their own program or hardcode guessed cases. Expected answers no longer enter the learner harness, but this is still a practice runner, not a cheating-proof certification system. Scores are advisory.
 * A kernel or container-runtime escape is outside what this design defends against. For a public deployment add a stronger boundary (gVisor `runsc`, Firecracker, or a per-execution throwaway container) and keep the runner host separate from anything valuable.
 * In non-Docker development the sandbox user can still reach loopback services.
 

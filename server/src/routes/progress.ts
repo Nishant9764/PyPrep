@@ -319,7 +319,7 @@ progressRouter.put(
   }),
 );
 
-const lessonBody = z.object({ completed: z.boolean().optional(), bookmarked: z.boolean().optional(), masteryScore: z.number().int().min(0).max(100).optional() });
+const lessonBody = z.object({ completed: z.boolean().optional(), bookmarked: z.boolean().optional(), masteryScore: z.number().int().min(0).max(100).optional(), selfCheckAnswers: z.record(z.string().regex(/^\d+$/), z.boolean()).optional() });
 
 progressRouter.put(
   '/:track/lessons/:topic/:lesson/state',
@@ -349,9 +349,10 @@ progressRouter.put(
       set.bookmarked = body.bookmarked;
       set.bookmarkedAt = body.bookmarked ? new Date() : undefined;
     }
+    if (body.selfCheckAnswers !== undefined) set.selfCheckAnswers = body.selfCheckAnswers;
     const doc = await LessonProgress.findOneAndUpdate({ user, track, topic, lesson }, { $set: set }, { upsert: true, new: true });
     // Activity only the first time a lesson is ever completed, so toggling cannot inflate the graph.
     if (body.completed && !current?.everCompleted) await bumpActivity(user, track, localDate(req), { lessons: 1 });
-    res.json({ completed: !!doc.completed, bookmarked: !!doc.bookmarked, mastered: !!doc.masteredAt, masteryScore: doc.masteryScore ?? null });
+    res.json({ completed: !!doc.completed, bookmarked: !!doc.bookmarked, mastered: !!doc.masteredAt, masteryScore: doc.masteryScore ?? null, selfCheckAnswers: Object.fromEntries(doc.selfCheckAnswers ?? []) });
   }),
 );

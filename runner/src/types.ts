@@ -19,6 +19,10 @@ export interface RunRequest {
 export interface TestResult {
   index: number;
   passed: boolean;
+  /** Internal value returned by learner code; hidden results are never exposed by the API. */
+  actualValue?: unknown;
+  /** Call-level output used by the trusted runner grader. */
+  callOutput?: string;
   actual?: string;
   stdout?: string;
   error?: string;

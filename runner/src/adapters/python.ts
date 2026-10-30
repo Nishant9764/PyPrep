@@ -29,15 +29,46 @@ function sweep(slot: number): void {
   }
 }
 
-function sanitize(raw: unknown, testCount: number): TestResult | null {
+function decodeFloatSentinels(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(decodeFloatSentinels);
+  if (value && typeof value === 'object') {
+    const object = value as Record<string, unknown>;
+    if (Object.keys(object).length === 1 && typeof object.$float === 'string') return Number(object.$float);
+    return Object.fromEntries(Object.entries(object).map(([key, item]) => [key, decodeFloatSentinels(item)]));
+  }
+  return value;
+}
+
+function jsonEqual(a: unknown, b: unknown): boolean {
+  if (typeof a === 'boolean' || typeof b === 'boolean') return typeof a === 'boolean' && typeof b === 'boolean' && a === b;
+  if (typeof a === 'number' && typeof b === 'number') return a === b || Math.abs(a - b) <= 1e-9 * Math.max(1, Math.abs(a), Math.abs(b));
+  if (Array.isArray(a) || Array.isArray(b)) return Array.isArray(a) && Array.isArray(b) && a.length === b.length && a.every((value, index) => jsonEqual(value, b[index]));
+  if (a && b && typeof a === 'object' && typeof b === 'object') {
+    const aKeys = Object.keys(a); const bKeys = Object.keys(b);
+    return aKeys.length === bKeys.length && aKeys.every((key) => Object.hasOwn(b, key) && jsonEqual((a as Record<string, unknown>)[key], (b as Record<string, unknown>)[key]));
+  }
+  return a === b;
+}
+
+function outputEqual(actual: string, expected: string): boolean {
+  const lines = (value: string) => value.trimEnd().split(/\r?\n/).map((line) => line.trimEnd());
+  const a = lines(actual); const b = lines(expected);
+  return a.length === b.length && a.every((line, index) => line === b[index]);
+}
+
+function sanitize(raw: unknown, index: number, test: RunRequest['tests'][number]): TestResult | null {
   if (!raw || typeof raw !== 'object') return null;
   const r = raw as Record<string, unknown>;
-  const index = r.index;
-  if (typeof index !== 'number' || !Number.isInteger(index) || index < 0 || index >= testCount) return null;
+  const rawIndex = r.index;
+  if (typeof rawIndex !== 'number' || !Number.isInteger(rawIndex) || rawIndex !== index) return null;
   const clip = (v: unknown, n: number) => (typeof v === 'string' ? v.slice(0, n) : undefined);
+  const passedExpected = Object.hasOwn(test, 'expected') ? jsonEqual(r.actualValue, decodeFloatSentinels(test.expected)) : true;
+  const passedStdout = test.stdout !== undefined ? outputEqual(typeof r.callOutput === 'string' ? r.callOutput : '', test.stdout) : true;
   return {
     index,
-    passed: r.passed === true,
+    passed: r.error === undefined && passedExpected && passedStdout,
+    actualValue: r.actualValue,
+    callOutput: clip(r.callOutput, 20000),
     actual: clip(r.actual, 700),
     stdout: clip(r.stdout, 2000),
     error: clip(r.error, 700),
@@ -59,6 +90,9 @@ export const pythonAdapter: LanguageAdapter = {
         PYPREP_CPU_S: String(config.cpuLimitSeconds),
         PYPREP_NPROC: String(config.processLimit),
       };
+      // Keep authored answers and expected output in this trusted process. The Python harness
+      // sees only test inputs and returns actual values for comparison here.
+      const learnerTests = req.tests.map(({ expected: _expected, stdout: _expectedStdout, ...test }) => test);
       const child = spawn(
         config.pythonBin,
         ['-I', '-B', '-X', 'utf8', path.join(config.harnessDir, 'python_harness.py'), '--result-fd', '3'],
@@ -97,7 +131,10 @@ export const pythonAdapter: LanguageAdapter = {
         for (const line of resultBuf.split('\n')) {
           if (!line.trim()) continue;
           try {
-            const r = sanitize(JSON.parse(line), req.tests.length);
+            const raw = JSON.parse(line) as { index?: unknown };
+            const index = raw.index;
+            const test = typeof index === 'number' && Number.isInteger(index) ? req.tests[index] : undefined;
+            const r = test ? sanitize(raw, index as number, test) : null;
             if (r && !results.some((x) => x.index === r.index)) results.push(r);
           } catch {
             /* ignore garbage lines */
@@ -164,7 +201,7 @@ export const pythonAdapter: LanguageAdapter = {
       child.on('close', (code, signal) => finish(code, signal));
 
       child.stdin?.end(
-        JSON.stringify({ code: req.code, entry: req.entry, tests: req.tests }),
+        JSON.stringify({ code: req.code, entry: req.entry, tests: learnerTests }),
       );
     });
   },

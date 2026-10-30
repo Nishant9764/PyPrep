@@ -24,7 +24,8 @@ const testSchema = z
     inPlace: z.boolean().optional(),
     program: z.string().max(10000).optional(),
   })
-  .strict();
+  .strict()
+  .refine((test) => Object.hasOwn(test, 'expected') || test.stdout !== undefined, 'Each test must assert an expected value or printed output.');
 
 const bodySchema = z.object({
   language: z.string().max(32),

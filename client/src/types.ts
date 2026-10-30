@@ -50,7 +50,7 @@ export interface LessonPayload {
   practice: { slug: string; title: string; difficulty: Difficulty; kind: string; solved: boolean }[];
   prev: { topic: string; slug: string; title: string } | null;
   next: { topic: string; slug: string; title: string } | null;
-  progress: { completed: boolean; bookmarked: boolean; mastered: boolean; masteryScore: number | null };
+  progress: { completed: boolean; bookmarked: boolean; mastered: boolean; masteryScore: number | null; selfCheckAnswers: Record<string, boolean> };
 }
 
 export interface QuestionRow {

@@ -7,6 +7,12 @@ import { HttpError, wrap } from '../utils/http';
 export const contentRouter = Router();
 contentRouter.use(requireAuth);
 
+function plainSelfChecks(value: unknown): Record<string, boolean> {
+  if (value instanceof Map) return Object.fromEntries(value) as Record<string, boolean>;
+  if (value && typeof value === 'object') return value as Record<string, boolean>;
+  return {};
+}
+
 async function getTrack(slug: string) {
   const track = await Track.findOne({ slug }).lean();
   if (!track) throw new HttpError(404, 'Track not found.');
@@ -150,7 +156,7 @@ contentRouter.get(
       practice,
       prev: i > 0 ? flat[i - 1] : null,
       next: i >= 0 && i < flat.length - 1 ? flat[i + 1] : null,
-      progress: { completed: !!progress?.completed, bookmarked: !!progress?.bookmarked, mastered: !!progress?.masteredAt, masteryScore: progress?.masteryScore ?? null },
+      progress: { completed: !!progress?.completed, bookmarked: !!progress?.bookmarked, mastered: !!progress?.masteredAt, masteryScore: progress?.masteryScore ?? null, selfCheckAnswers: plainSelfChecks(progress?.selfCheckAnswers) },
     });
   }),
 );
