@@ -8,8 +8,8 @@ and writes one JSON line per test result to a result sink
 (file descriptor 3 by default, or --result-file PATH for local tooling).
 
 Test shapes (all optional keys noted):
-    {"args": [...], "kwargs": {...}, "expected": <json>, "stdout": "text", "stdin": "text", "inPlace": bool}
-    {"program": "<python source that sets `result`>", "expected": <json>}
+    {"args": [...], "kwargs": {...}, "stdin": "text", "inPlace": bool}
+    {"program": "<python source that sets `result`>"}
 
 Design notes
 - The harness runs INSIDE a locked-down container with OS-level limits applied by the
@@ -17,9 +17,11 @@ Design notes
 - Hidden-test data arrives over stdin and is never written to disk, so learner code
   cannot open() it.
 - The learner's code is re-executed per test so state never leaks between tests.
+- This process returns actual values and printed output only. Expected answers stay in the
+  trusted runner, which compares the observations after the harness exits.
 - Timeouts raise a BaseException subclass so `except Exception:` cannot swallow them.
 """
-import sys, json, io, os, copy, signal, math, time, fcntl
+import sys, json, io, os, copy, signal, time, fcntl
 
 PER_TEST_SECONDS = 2.0
 MAX_TIMEOUTS = 2
@@ -72,30 +74,9 @@ def norm(v):
         return repr(v)
 
 
-def equal(a, b):
-    if isinstance(a, bool) or isinstance(b, bool):
-        return isinstance(a, bool) and isinstance(b, bool) and a == b
-    if isinstance(a, (int, float)) and isinstance(b, (int, float)):
-        if a == b:
-            return True
-        try:
-            return math.isclose(a, b, rel_tol=1e-9, abs_tol=1e-9)
-        except Exception:
-            return False
-    if isinstance(a, list) and isinstance(b, list):
-        return len(a) == len(b) and all(equal(x, y) for x, y in zip(a, b))
-    if isinstance(a, dict) and isinstance(b, dict):
-        return a.keys() == b.keys() and all(equal(a[k], b[k]) for k in a)
-    return a == b
-
-
 def short(v):
     s = repr(v)
     return s if len(s) <= MAX_REPR else s[:MAX_REPR] + "…"
-
-
-def lines(s):
-    return [ln.rstrip() for ln in s.rstrip().splitlines()]
 
 
 def fmt_error(exc):
@@ -147,15 +128,12 @@ def run_test(code, entry, test, index):
                 actual = fn(*args, **kwargs)
                 if test.get("inPlace"):
                     actual = args[0]
-            ok = True
-            if "expected" in test:
-                ok = ok and equal(norm(actual), test["expected"])
-            if "stdout" in test:
-                ok = ok and lines(call_buf.getvalue()) == lines(test["stdout"])
-                res["actual"] = call_buf.getvalue()[:MAX_REPR]
-            else:
-                res["actual"] = short(actual)
-            res["passed"] = bool(ok)
+            # Expected answers stay in the trusted Node runner. This process receives
+            # only inputs and returns observations for the adapter to compare.
+            res["actualValue"] = norm(actual)
+            res["callOutput"] = call_buf.getvalue()
+            res["actual"] = short(actual)
+            res["passed"] = True
         finally:
             signal.setitimer(signal.ITIMER_REAL, 0)
             sys.stdout, sys.stderr, sys.stdin = old

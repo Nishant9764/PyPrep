@@ -27,7 +27,10 @@ def run_harness(code, entry, tests):
     with tempfile.NamedTemporaryFile("r", suffix=".json", delete=False) as tf:
         out_path = tf.name
     try:
-        spec = json.dumps({"code": code, "entry": entry, "tests": tests})
+        # Keep expected values in this trusted validator process, matching the runner's
+        # contract. The execution harness receives only inputs and returns observations.
+        inputs = [{k: t[k] for k in ("args", "kwargs", "stdin", "inPlace", "program") if k in t} for t in tests]
+        spec = json.dumps({"code": code, "entry": entry, "tests": inputs})
         p = subprocess.run(
             [sys.executable, "-I", "-B", str(HARNESS), "--result-file", out_path],
             input=spec.encode(), capture_output=True, timeout=120,
@@ -40,6 +43,31 @@ def run_harness(code, entry, tests):
         return None, "harness timed out"
     finally:
         os.unlink(out_path)
+
+
+def values_equal(actual, expected):
+    if isinstance(actual, bool) or isinstance(expected, bool):
+        return isinstance(actual, bool) and isinstance(expected, bool) and actual == expected
+    if isinstance(actual, (int, float)) and isinstance(expected, (int, float)):
+        return actual == expected or abs(actual - expected) <= 1e-9 * max(1, abs(actual), abs(expected))
+    if isinstance(actual, list) and isinstance(expected, list):
+        return len(actual) == len(expected) and all(values_equal(a, e) for a, e in zip(actual, expected))
+    if isinstance(actual, dict) and isinstance(expected, dict):
+        return actual.keys() == expected.keys() and all(values_equal(actual[k], expected[k]) for k in actual)
+    return actual == expected
+
+
+def result_passes(test, result):
+    if result.get("error"):
+        return False
+    if "expected" in test and not values_equal(result.get("actualValue"), test["expected"]):
+        return False
+    if "stdout" in test:
+        actual = (result.get("callOutput") or "").rstrip().splitlines()
+        expected = test["stdout"].rstrip().splitlines()
+        if [line.rstrip() for line in actual] != [line.rstrip() for line in expected]:
+            return False
+    return True
 
 
 FM = re.compile(r"\A---\n(.*?)\n---\n(.*)\Z", re.S)
@@ -203,13 +231,13 @@ def main():
                     err(f"{tag} harness failure: {problem}")
                 else:
                     for t, r in zip(tests, results):
-                        if not r["passed"]:
+                        if not result_passes(t, r):
                             err(f"{tag} reference solution FAILS test {r['index']} args={t.get('args', t.get('program'))!r}: actual={r.get('actual')} error={r.get('error')}")
                 # starter must fail something
                 results, problem = run_harness(q["starterCode"], q["entry"], tests)
                 if results is None:
                     err(f"{tag} starter harness failure: {problem}")
-                elif all(r["passed"] for r in results):
+                elif all(result_passes(t, r) for t, r in zip(tests, results)):
                     err(f"{tag} starterCode already passes every test")
                 total_q += 1
             if counts["easy"] < 2 or counts["medium"] < 2:
